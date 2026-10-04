@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head><meta charset="UTF-8"><title>مجموعات الأصناف</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+<link href="style.css" rel="stylesheet">
+<style>
+.tree-node { padding: 8px 12px; border-bottom: 1px solid #eee; }
+.tree-node:hover { background: #f8f9fa; }
+.tree-level-1 { font-weight: 700; background: #e8f5e9; }
+.tree-level-2 { padding-right: 40px; }
+.tree-level-3 { padding-right: 80px; }
+</style>
+</head>
+<body><div class="container-fluid"><div class="row">
+<div class="col-md-2 sidebar p-0">
+<div class="brand"><i class="bi bi-box-seam" style="font-size:2rem;"></i><h5 class="mt-2 mb-0">موديول المخازن</h5></div>
+<nav class="mt-3">
+<a href="index.html"><i class="bi bi-speedometer2"></i> لوحة التحكم</a>
+<a href="notifications.html"><i class="bi bi-bell"></i> الإشعارات</a>
+<a href="accounts.html"><i class="bi bi-book"></i> الدليل المحاسبي</a>
+<a href="warehouses.html"><i class="bi bi-building"></i> المستودعات</a>
+<a href="item_groups.html" class="active"><i class="bi bi-diagram-3"></i> مجموعات الأصناف</a>
+<a href="items.html"><i class="bi bi-box"></i> الأصناف</a>
+<a href="uom.html"><i class="bi bi-rulers"></i> وحدات القياس</a>
+<a href="suppliers.html"><i class="bi bi-truck"></i> الموردون</a>
+<a href="customers.html"><i class="bi bi-people"></i> العملاء</a>
+<a href="requisitions.html"><i class="bi bi-clipboard-check"></i> طلبات الاحتياج</a>
+<a href="purchase_orders.html"><i class="bi bi-file-earmark-text"></i> أوامر الشراء</a>
+<a href="purchase_invoices.html"><i class="bi bi-receipt"></i> فواتير الشراء</a>
+<a href="sales_invoices.html"><i class="bi bi-cart-check"></i> فواتير البيع</a>
+<a href="purchase_returns.html"><i class="bi bi-arrow-return-left"></i> مرتجع شراء</a>
+<a href="sales_returns.html"><i class="bi bi-arrow-return-right"></i> مرتجع بيع</a>
+<a href="payments.html"><i class="bi bi-cash-coin"></i> مدفوعات الموردين</a>
+<a href="customer_receipts.html"><i class="bi bi-cash-stack"></i> تحصيلات العملاء</a>
+<a href="receipts.html"><i class="bi bi-arrow-down-circle"></i> الاستلام</a>
+<a href="material_requests.html"><i class="bi bi-clipboard-plus"></i> طلبات الصرف</a>
+<a href="issues.html"><i class="bi bi-arrow-up-circle"></i> الصرف</a>
+<a href="transfers.html"><i class="bi bi-arrow-left-right"></i> التحويلات</a>
+<a href="counts.html"><i class="bi bi-clipboard-check"></i> الجرد</a>
+<a href="clearing.html"><i class="bi bi-shuffle"></i> الحسابات الوسيطة</a>
+<a href="financial_reports.html"><i class="bi bi-graph-up"></i> التقارير المالية</a>
+<a href="reports.html"><i class="bi bi-file-earmark-bar-graph"></i> التقارير</a>
+<a href="journal.html"><i class="bi bi-journal-text"></i> القيود</a>
+</nav></div>
+<div class="col-md-10 p-4">
+<div class="d-flex justify-content-between mb-4">
+<h2><i class="bi bi-diagram-3"></i> مجموعات الأصناف</h2>
+<div>
+<button class="btn btn-outline-secondary" onclick="load()"><i class="bi bi-arrow-clockwise"></i> تحديث</button>
+<button class="btn btn-primary" onclick="openAdd()"><i class="bi bi-plus-circle"></i> مجموعة جديدة</button>
+</div>
+</div>
+<div class="row g-3 mb-3">
+<div class="col-md-3"><div class="stat-card card p-3"><div class="label">إجمالي المجموعات</div><div class="value text-primary" id="stat-total">-</div></div></div>
+<div class="col-md-3"><div class="stat-card card p-3"><div class="label">مستوى 1</div><div class="value text-success" id="stat-l1">-</div></div></div>
+<div class="col-md-3"><div class="stat-card card p-3"><div class="label">مستوى 2</div><div class="value text-warning" id="stat-l2">-</div></div></div>
+<div class="col-md-3"><div class="stat-card card p-3"><div class="label">مستوى 3</div><div class="value text-info" id="stat-l3">-</div></div></div>
+</div>
+<div class="card p-3"><div id="tree"><div class="text-center text-muted p-4">جاري التحميل...</div></div></div>
+</div></div></div>
+
+<div class="modal fade" id="groupModal" tabindex="-1">
+<div class="modal-dialog modal-lg">
+<div class="modal-content">
+<div class="modal-header bg-primary text-white"><h5 class="modal-title" id="modal-title"><i class="bi bi-plus-circle"></i> مجموعة جديدة</h5><button class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
+<div class="modal-body">
+<div class="row g-3">
+<div class="col-md-4"><label class="form-label">الكود *</label><input class="form-control" id="f-code"></div>
+<div class="col-md-4"><label class="form-label">الاسم بالعربي *</label><input class="form-control" id="f-name_ar"></div>
+<div class="col-md-4"><label class="form-label">الاسم بالإنجليزي</label><input class="form-control" id="f-name_en"></div>
+<div class="col-md-6"><label class="form-label">المجموعة الأب</label><select class="form-select" id="f-parent_id"><option value="">— بدون (مستوى أول) —</option></select></div>
+<div class="col-md-6"><label class="form-label">الوحدة الافتراضية</label><select class="form-select" id="f-default_uom_id"><option value="">— بدون —</option></select></div>
+</div>
+<hr>
+<h6 class="text-primary"><i class="bi bi-book"></i> الحسابات من الدليل</h6>
+<div class="alert alert-info small py-2">الحسابات تُورَث للأصناف التابعة.</div>
+<div class="row g-3">
+<div class="col-md-3"><label class="form-label">حساب المخزون</label><select class="form-select" id="f-inventory_account"><option value="">— بدون —</option></select></div>
+<div class="col-md-3"><label class="form-label">حساب التكلفة</label><select class="form-select" id="f-cost_account"><option value="">— بدون —</option></select></div>
+<div class="col-md-3"><label class="form-label">حساب الإيراد</label><select class="form-select" id="f-revenue_account"><option value="">— بدون —</option></select></div>
+<div class="col-md-3"><label class="form-label">حساب الوسيط</label><select class="form-select" id="f-clearing_account"><option value="">— بدون —</option></select></div>
+<div class="col-md-4"><label class="form-label">طريقة التكلفة</label>
+<select class="form-select" id="f-default_cost_method">
+<option value="WEIGHTED_AVERAGE">المتوسط المرجح</option>
+<option value="FIFO">FIFO</option>
+<option value="LIFO">LIFO</option>
+</select></div>
+<div class="col-md-8"><label class="form-label">ملاحظات</label><input class="form-control" id="f-notes"></div>
+</div>
+</div>
+<div class="modal-footer">
+<button class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+<button class="btn btn-primary" onclick="save()"><i class="bi bi-check-circle"></i> حفظ</button>
+</div>
+</div></div></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+const API='http://localhost:5000/api/v1';
+const modal = new bootstrap.Modal(document.getElementById('groupModal'));
+let allGroups = [], uomList = [], leafAccounts = [];
+let editId = null;
+
+async function loadRefs(){
+ const [u,a] = await Promise.all([
+  fetch(`${API}/uom/`).then(r=>r.json()),
+  fetch(`${API}/accounts/leaf`).then(r=>r.json())]);
+ uomList = u.data||[];
+ leafAccounts = a.data||[];
+ 
+ document.getElementById('f-default_uom_id').innerHTML = '<option value="">— بدون —</option>' +
+  uomList.map(u=>`<option value="${u.id}">${u.name_ar} (${u.code})</option>`).join('');
+ 
+ const accOpts = '<option value="">— بدون —</option>' + 
+  leafAccounts.map(a=>`<option value="${a.code}">${a.code} - ${a.name_ar}</option>`).join('');
+ document.getElementById('f-inventory_account').innerHTML = accOpts;
+ document.getElementById('f-cost_account').innerHTML = accOpts;
+ document.getElementById('f-revenue_account').innerHTML = accOpts;
+ document.getElementById('f-clearing_account').innerHTML = accOpts;
+}
+
+async function load(){
+ const r = await fetch(`${API}/groups/`).then(x=>x.json());
+ allGroups = r.data||[];
+ renderTree();
+ renderStats();
+}
+
+function renderStats(){
+ document.getElementById('stat-total').textContent = allGroups.length;
+ document.getElementById('stat-l1').textContent = allGroups.filter(g=>g.level===1).length;
+ document.getElementById('stat-l2').textContent = allGroups.filter(g=>g.level===2).length;
+ document.getElementById('stat-l3').textContent = allGroups.filter(g=>g.level===3).length;
+}
+
+function renderTree(){
+ const byParent = {};
+ allGroups.forEach(g=>{
+  const p = g.parent_id || 0;
+  if (!byParent[p]) byParent[p] = [];
+  byParent[p].push(g);
+ });
+ 
+ let html = '';
+ function renderNode(g, depth=1){
+  const levelClass = `tree-level-${Math.min(depth,3)}`;
+  const accounts = [];
+  if (g.inventory_account) accounts.push(`<span class="badge bg-secondary" title="حساب المخزون">📦 ${g.inventory_account}</span>`);
+  if (g.cost_account) accounts.push(`<span class="badge bg-secondary" title="حساب التكلفة">💰 ${g.cost_account}</span>`);
+  if (g.revenue_account) accounts.push(`<span class="badge bg-secondary" title="حساب الإيراد">💵 ${g.revenue_account}</span>`);
+  if (g.clearing_account) accounts.push(`<span class="badge bg-warning text-dark" title="حساب الوسيط">🔄 ${g.clearing_account}</span>`);
+  
+  html += `<div class="tree-node ${levelClass}">
+   <div class="d-flex justify-content-between align-items-center">
+    <div>
+     <i class="bi bi-folder-fill text-warning"></i>
+     <strong>${g.name_ar}</strong>
+     <small class="text-muted">(${g.code})</small>
+     <span class="badge bg-info ms-2">L${g.level}</span>
+     ${accounts.join(' ')}
+    </div>
+    <div>
+     <button class="btn btn-sm btn-outline-success" onclick="openAdd(${g.id})" title="إضافة فرع"><i class="bi bi-plus"></i></button>
+     <button class="btn btn-sm btn-outline-warning" onclick="openEdit(${g.id})" title="تعديل"><i class="bi bi-pencil"></i></button>
+     <button class="btn btn-sm btn-outline-danger" onclick="del(${g.id},'${g.name_ar}')" title="حذف"><i class="bi bi-trash"></i></button>
+    </div>
+   </div>
+  </div>`;
+  (byParent[g.id] || []).forEach(c=>renderNode(c, depth+1));
+ }
+ (byParent[0]||[]).forEach(g=>renderNode(g,1));
+ 
+ if (!html) html = '<div class="text-center text-muted p-4">لا توجد مجموعات.</div>';
+ document.getElementById('tree').innerHTML = html;
+}
+
+function refreshParentOptions(excludeId=null){
+ const opts = ['<option value="">— بدون (مستوى أول) —</option>'];
+ allGroups.filter(g=>g.id !== excludeId && g.level < 3).forEach(g=>{
+  const indent = '　'.repeat(g.level-1);
+  opts.push(`<option value="${g.id}">${indent}${g.code} — ${g.name_ar}</option>`);
+ });
+ document.getElementById('f-parent_id').innerHTML = opts.join('');
+}
+
+function clearForm(){
+ ['f-code','f-name_ar','f-name_en','f-notes'].forEach(id=>document.getElementById(id).value='');
+ ['f-inventory_account','f-cost_account','f-revenue_account','f-clearing_account'].forEach(id=>document.getElementById(id).value='');
+ document.getElementById('f-parent_id').value = '';
+ document.getElementById('f-default_uom_id').value = '';
+ document.getElementById('f-default_cost_method').value = 'WEIGHTED_AVERAGE';
+ document.getElementById('f-code').disabled = false;
+}
+
+function openAdd(parentId=null){
+ editId = null; clearForm();
+ refreshParentOptions();
+ if (parentId) document.getElementById('f-parent_id').value = parentId;
+ document.getElementById('modal-title').innerHTML = '<i class="bi bi-plus-circle"></i> مجموعة جديدة';
+ modal.show();
+}
+
+function openEdit(id){
+ editId = id;
+ const g = allGroups.find(x=>x.id===id);
+ if (!g) return;
+ refreshParentOptions(id);
+ document.getElementById('f-code').value = g.code;
+ document.getElementById('f-code').disabled = true;
+ document.getElementById('f-name_ar').value = g.name_ar;
+ document.getElementById('f-name_en').value = g.name_en||'';
+ document.getElementById('f-parent_id').value = g.parent_id||'';
+ document.getElementById('f-default_uom_id').value = g.default_uom_id||'';
+ document.getElementById('f-inventory_account').value = g.inventory_account||'';
+ document.getElementById('f-cost_account').value = g.cost_account||'';
+ document.getElementById('f-revenue_account').value = g.revenue_account||'';
+ document.getElementById('f-clearing_account').value = g.clearing_account||'';
+ document.getElementById('f-default_cost_method').value = g.default_cost_method||'WEIGHTED_AVERAGE';
+ document.getElementById('f-notes').value = g.notes||'';
+ document.getElementById('modal-title').innerHTML = '<i class="bi bi-pencil"></i> تعديل المجموعة';
+ modal.show();
+}
+
+async function save(){
+ const parent_id = document.getElementById('f-parent_id').value;
+ const data = {
+  name_ar: document.getElementById('f-name_ar').value.trim(),
+  name_en: document.getElementById('f-name_en').value.trim(),
+  parent_id: parent_id ? parseInt(parent_id) : null,
+  default_uom_id: document.getElementById('f-default_uom_id').value ? parseInt(document.getElementById('f-default_uom_id').value) : null,
+  inventory_account: document.getElementById('f-inventory_account').value || null,
+  cost_account: document.getElementById('f-cost_account').value || null,
+  revenue_account: document.getElementById('f-revenue_account').value || null,
+  clearing_account: document.getElementById('f-clearing_account').value || null,
+  default_cost_method: document.getElementById('f-default_cost_method').value,
+  notes: document.getElementById('f-notes').value.trim()
+ };
+ if (!data.name_ar) { alert('الاسم مطلوب'); return; }
+ 
+ if (editId) {
+  const r = await fetch(`${API}/groups/${editId}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)}).then(x=>x.json());
+  if (r.success) { modal.hide(); load(); } else alert(r.message||'خطأ');
+ } else {
+  data.code = document.getElementById('f-code').value.trim();
+  if (!data.code) { alert('الكود مطلوب'); return; }
+  const r = await fetch(`${API}/groups/`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)}).then(x=>x.json());
+  if (r.success) { modal.hide(); load(); } else alert(r.message||'خطأ');
+ }
+}
+
+async function del(id,name){
+ if (!confirm(`حذف المجموعة "${name}"؟`)) return;
+ const r = await fetch(`${API}/groups/${id}`,{method:'DELETE'}).then(x=>x.json());
+ if (r.success) load();
+ else alert(r.message||'خطأ');
+}
+
+(async()=>{ await loadRefs(); await load(); })();
+</script></body></html>

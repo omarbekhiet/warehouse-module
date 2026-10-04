@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head><meta charset="UTF-8"><title>إذون الصرف</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+<link href="style.css" rel="stylesheet"></head>
+<body><div class="container-fluid"><div class="row">
+<div class="col-md-2 sidebar p-0">
+<div class="brand"><i class="bi bi-box-seam" style="font-size:2rem;"></i><h5 class="mt-2 mb-0">موديول المخازن</h5></div>
+<nav class="mt-3">
+<a href="index.html"><i class="bi bi-speedometer2"></i> لوحة التحكم</a>
+<a href="notifications.html"><i class="bi bi-bell"></i> الإشعارات</a>
+<a href="accounts.html"><i class="bi bi-book"></i> الدليل المحاسبي</a>
+<a href="warehouses.html"><i class="bi bi-building"></i> المستودعات</a>
+<a href="item_groups.html"><i class="bi bi-diagram-3"></i> مجموعات الأصناف</a>
+<a href="items.html"><i class="bi bi-box"></i> الأصناف</a>
+<a href="uom.html"><i class="bi bi-rulers"></i> وحدات القياس</a>
+<a href="suppliers.html"><i class="bi bi-truck"></i> الموردون</a>
+<a href="customers.html"><i class="bi bi-people"></i> العملاء</a>
+<a href="requisitions.html"><i class="bi bi-clipboard-check"></i> طلبات الاحتياج</a>
+<a href="purchase_orders.html"><i class="bi bi-file-earmark-text"></i> أوامر الشراء</a>
+<a href="purchase_invoices.html"><i class="bi bi-receipt"></i> فواتير الشراء</a>
+<a href="sales_invoices.html"><i class="bi bi-cart-check"></i> فواتير البيع</a>
+<a href="purchase_returns.html"><i class="bi bi-arrow-return-left"></i> مرتجع شراء</a>
+<a href="sales_returns.html"><i class="bi bi-arrow-return-right"></i> مرتجع بيع</a>
+<a href="payments.html"><i class="bi bi-cash-coin"></i> مدفوعات الموردين</a>
+<a href="customer_receipts.html"><i class="bi bi-cash-stack"></i> تحصيلات العملاء</a>
+<a href="receipts.html"><i class="bi bi-arrow-down-circle"></i> الاستلام</a>
+<a href="material_requests.html"><i class="bi bi-clipboard-plus"></i> طلبات الصرف</a>
+<a href="issues.html" class="active"><i class="bi bi-arrow-up-circle"></i> الصرف</a>
+<a href="transfers.html"><i class="bi bi-arrow-left-right"></i> التحويلات</a>
+<a href="counts.html"><i class="bi bi-clipboard-check"></i> الجرد</a>
+<a href="clearing.html"><i class="bi bi-shuffle"></i> الحسابات الوسيطة</a>
+<a href="financial_reports.html"><i class="bi bi-graph-up"></i> التقارير المالية</a>
+<a href="reports.html"><i class="bi bi-file-earmark-bar-graph"></i> التقارير</a>
+<a href="journal.html"><i class="bi bi-journal-text"></i> القيود</a>
+</nav></div>
+<div class="col-md-10 p-4">
+<div class="d-flex justify-content-between mb-4">
+<h2><i class="bi bi-arrow-up-circle text-danger"></i> إذون الصرف</h2>
+<button class="btn btn-danger" onclick="openAdd()"><i class="bi bi-plus-circle"></i> إذن صرف جديد</button>
+</div>
+
+<div class="alert alert-warning">
+<i class="bi bi-info-circle"></i> إذن الصرف يُنشأ أيضاً <b>تلقائياً من فاتورة البيع</b>. استخدام الإنشاء اليدوي هنا للحالات الاستثنائية (تلف، استخدام داخلي، عينات).
+</div>
+
+<div class="card p-3">
+<table class="table table-hover">
+<thead><tr>
+<th>رقم الإذن</th><th>التاريخ</th><th>المستودع</th><th>الكمية</th><th>القيمة</th>
+<th>المرجع</th><th>الحالة</th><th>إجراءات</th>
+</tr></thead>
+<tbody id="tbl"><tr><td colspan="8" class="text-center">جاري التحميل...</td></tr></tbody>
+</table></div></div></div></div>
+
+<!-- Add/Edit Modal -->
+<div class="modal fade" id="txnModal" tabindex="-1">
+<div class="modal-dialog modal-xl">
+<div class="modal-content">
+<div class="modal-header bg-danger text-white"><h5 class="modal-title" id="modal-title"><i class="bi bi-plus-circle"></i> إذن صرف</h5><button class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
+<div class="modal-body">
+<div class="row g-3 mb-3">
+<div class="col-md-4"><label class="form-label">التاريخ *</label><input type="date" class="form-control" id="r-date"></div>
+<div class="col-md-4"><label class="form-label">المستودع *</label><select class="form-select" id="r-warehouse"></select></div>
+<div class="col-md-4"><label class="form-label">سبب الصرف *</label>
+<select class="form-select" id="r-reason">
+<option value="PRODUCTION">إنتاج داخلي</option>
+<option value="DAMAGE">تلف / هالك</option>
+<option value="INTERNAL_USE">استخدام داخلي</option>
+<option value="SAMPLE">عينة</option>
+<option value="OTHER">أخرى</option>
+</select></div>
+<div class="col-md-8"><label class="form-label">ملاحظات</label><input class="form-control" id="r-notes"></div>
+<div class="col-md-4"><label class="form-label">مرجع</label><input class="form-control" id="r-ref"></div>
+</div>
+
+<h6>البنود</h6>
+<table class="table table-bordered">
+<thead class="table-light">
+<tr>
+<th style="width:40%">الصنف</th>
+<th style="width:25%">الوحدة</th>
+<th style="width:20%">الكمية</th>
+<th style="width:10%">الرصيد المتاح</th>
+<th style="width:5%"></th>
+</tr>
+</thead>
+<tbody id="r-lines"></tbody>
+</table>
+<button class="btn btn-outline-danger btn-sm" onclick="addLine()"><i class="bi bi-plus"></i> إضافة بند</button>
+
+<div class="alert alert-info mt-3 mb-0 small">
+<i class="bi bi-info-circle"></i> التكلفة تُحسب تلقائياً من متوسط رصيد المخزون بالوحدة الصغرى.
+</div>
+</div>
+<div class="modal-footer">
+<button class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+<button class="btn btn-danger" onclick="save(true)"><i class="bi bi-check-circle"></i> حفظ وترحيل</button>
+<button class="btn btn-outline-danger" onclick="save(false)">حفظ كمسودة</button>
+</div>
+</div></div></div>
+
+<!-- View Modal -->
+<div class="modal fade" id="viewModal" tabindex="-1">
+<div class="modal-dialog modal-lg">
+<div class="modal-content">
+<div class="modal-header bg-info text-white"><h5 class="modal-title"><i class="bi bi-eye"></i> تفاصيل الإذن</h5><button class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
+<div class="modal-body" id="viewBody"></div>
+</div></div></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+const API='http://localhost:5000/api/v1';
+const txnModal = new bootstrap.Modal(document.getElementById('txnModal'));
+const viewModal = new bootstrap.Modal(document.getElementById('viewModal'));
+let itemsList=[], warehousesList=[], itemTiersMap={}, balancesMap={};
+let editId = null;
+
+async function loadLists(){
+ const [i,w] = await Promise.all([
+  fetch(`${API}/items/`).then(r=>r.json()),
+  fetch(`${API}/warehouses/`).then(r=>r.json())]);
+ itemsList = i.data||[];
+ warehousesList = w.data||[];
+ document.getElementById('r-warehouse').innerHTML = warehousesList.map(w=>`<option value="${w.id}">${w.code} - ${w.name_ar}</option>`).join('');
+ 
+ itemTiersMap = {};
+ for (const it of itemsList) {
+  const r = await fetch(`${API}/tiers/item/${it.id}`).then(x=>x.json());
+  if (r.success) itemTiersMap[it.id] = r.data.tiers||[];
+ }
+}
+
+async function loadBalances(warehouseId){
+ // get all balances for warehouse
+ balancesMap = {};
+ if (!warehouseId) return;
+ for (const it of itemsList) {
+  const r = await fetch(`${API}/items/${it.id}/stock`).then(x=>x.json()).catch(()=>({data:[]}));
+  const rows = r.data||[];
+  const row = rows.find(x=>x.warehouse_id == warehouseId);
+  if (row) balancesMap[it.id] = parseFloat(row.quantity);
+ }
+}
+
+async function load(){
+ const r = await fetch(`${API}/issues/`).then(x=>x.json());
+ const rows = r.data||[];
+ document.getElementById('tbl').innerHTML = rows.length?rows.map(t=>`
+  <tr>
+   <td><code>${t.transaction_no}</code></td>
+   <td>${t.transaction_date}</td>
+   <td>${t.warehouse_name||'-'}</td>
+   <td>${t.total_qty}</td>
+   <td>${parseFloat(t.total_value||0).toFixed(2)}</td>
+   <td><small>${t.reference_no||'-'}</small></td>
+   <td><span class="badge-status badge-${t.status}">${t.status}</span></td>
+   <td>
+    <button class="btn btn-sm btn-outline-info" onclick="viewTxn(${t.id})" title="عرض"><i class="bi bi-eye"></i></button>
+    ${t.status==='DRAFT'?`
+     <button class="btn btn-sm btn-outline-warning" onclick="editTxn(${t.id})" title="تعديل"><i class="bi bi-pencil"></i></button>
+     <button class="btn btn-sm btn-outline-danger" onclick="delTxn(${t.id})" title="حذف"><i class="bi bi-trash"></i></button>
+     <button class="btn btn-sm btn-danger" onclick="postTxn(${t.id})" title="ترحيل"><i class="bi bi-check-circle"></i></button>
+    `:''}
+   </td>
+  </tr>`).join('') : '<tr><td colspan="8" class="text-center text-muted">لا توجد أذون</td></tr>';
+}
+
+async function openAdd(){
+ editId = null;
+ document.getElementById('r-date').value = new Date().toISOString().split('T')[0];
+ document.getElementById('r-warehouse').value = warehousesList[0]?.id||'';
+ document.getElementById('r-ref').value = '';
+ document.getElementById('r-notes').value = '';
+ document.getElementById('r-reason').value = 'PRODUCTION';
+ document.getElementById('r-lines').innerHTML = '';
+ document.getElementById('modal-title').innerHTML = '<i class="bi bi-plus-circle"></i> إذن صرف';
+ await loadBalances(document.getElementById('r-warehouse').value);
+ addLine();
+ txnModal.show();
+}
+
+document.getElementById('r-warehouse')?.addEventListener('change', async function(){
+ await loadBalances(this.value);
+});
+
+async function editTxn(id){
+ editId = id;
+ const r = await fetch(`${API}/txn/${id}`).then(x=>x.json());
+ if (!r.success) { alert('خطأ في التحميل'); return; }
+ const t = r.data;
+ document.getElementById('r-date').value = t.transaction_date;
+ document.getElementById('r-warehouse').value = t.from_warehouse_id;
+ document.getElementById('r-ref').value = t.reference_no||'';
+ document.getElementById('r-notes').value = t.notes||'';
+ document.getElementById('r-lines').innerHTML = '';
+ await loadBalances(t.from_warehouse_id);
+ t.lines.forEach(l=>addLine({item_id:l.item_id,uom_id:l.uom_id,quantity:l.quantity}));
+ document.getElementById('modal-title').innerHTML = '<i class="bi bi-pencil"></i> تعديل الإذن';
+ txnModal.show();
+}
+
+function addLine(data={}){
+ const tr = document.createElement('tr');
+ const itemOpts = itemsList.map(i=>`<option value="${i.id}" ${data.item_id==i.id?'selected':''}>${i.code} - ${i.name_ar}</option>`).join('');
+ tr.innerHTML = `
+  <td><select class="form-select form-select-sm item-sel">${itemOpts}</select></td>
+  <td><select class="form-select form-select-sm uom-sel"></select></td>
+  <td><input type="number" class="form-control form-control-sm qty-in" value="${data.quantity||1}" step="0.0001" min="0.0001"></td>
+  <td class="bal-cell text-muted">-</td>
+  <td><button class="btn btn-sm btn-danger" onclick="this.closest('tr').remove()"><i class="bi bi-trash"></i></button></td>`;
+ document.getElementById('r-lines').appendChild(tr);
+ 
+ const itemSel = tr.querySelector('.item-sel');
+ const uomSel = tr.querySelector('.uom-sel');
+ const balCell = tr.querySelector('.bal-cell');
+ 
+ const refreshUoms = ()=>{
+  const itemId = parseInt(itemSel.value);
+  const tiers = itemTiersMap[itemId] || [];
+  const order = {MAJOR:1, MEDIUM:2, MINOR:3};
+  const sorted = [...tiers].sort((a,b)=>order[a.tier]-order[b.tier]);
+  const labels = {MAJOR:'🔵', MEDIUM:'🟡', MINOR:'🟢'};
+  uomSel.innerHTML = sorted.map(t=>`<option value="${t.uom_id}" ${data.uom_id==t.uom_id?'selected':''}>${labels[t.tier]} ${t.uom_name} (${t.uom_code})</option>`).join('');
+  // Show available balance
+  const bal = balancesMap[itemId];
+  if (bal !== undefined) {
+   balCell.textContent = bal.toFixed(2);
+   balCell.classList.remove('text-muted','text-danger','text-success');
+   balCell.classList.add(bal > 0 ? 'text-success' : 'text-danger');
+  } else {
+   balCell.textContent = '0';
+   balCell.classList.add('text-danger');
+  }
+ };
+ itemSel.addEventListener('change', refreshUoms);
+ refreshUoms();
+}
+
+async function save(postNow){
+ const lines = [];
+ document.querySelectorAll('#r-lines tr').forEach(tr=>{
+  const item_id = parseInt(tr.querySelector('.item-sel').value);
+  const uom_id = parseInt(tr.querySelector('.uom-sel').value);
+  const quantity = parseFloat(tr.querySelector('.qty-in').value);
+  if (quantity>0 && uom_id) lines.push({item_id,uom_id,quantity});
+ });
+ if (!lines.length) { alert('أضف بنداً'); return; }
+ if (!document.getElementById('r-warehouse').value) { alert('اختر المستودع'); return; }
+ 
+ if (editId) {
+  const r = await fetch(`${API}/txn/${editId}`,{
+   method:'PUT',headers:{'Content-Type':'application/json'},
+   body:JSON.stringify({
+    transaction_date: document.getElementById('r-date').value,
+    reference_no: document.getElementById('r-ref').value,
+    notes: document.getElementById('r-notes').value,
+    lines
+   })
+  }).then(x=>x.json());
+  if (!r.success) { alert(r.message||'خطأ'); return; }
+  if (postNow) {
+   const pr = await fetch(`${API}/issues/${editId}/post`,{method:'POST'}).then(x=>x.json());
+   if (!pr.success) { alert(pr.message); return; }
+  }
+  txnModal.hide(); load(); return;
+ }
+ 
+ const body = {
+  transaction_date: document.getElementById('r-date').value,
+  warehouse_id: parseInt(document.getElementById('r-warehouse').value),
+  reference_no: document.getElementById('r-ref').value,
+  notes: document.getElementById('r-notes').value,
+  lines
+ };
+ 
+ const r = await fetch(`${API}/issues/`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}).then(x=>x.json());
+ if (!r.success) { alert(r.message||'خطأ'); return; }
+ 
+ if (postNow) {
+  const pr = await fetch(`${API}/issues/${r.data.id}/post`,{method:'POST'}).then(x=>x.json());
+  if (!pr.success) { alert(pr.message); return; }
+ }
+ txnModal.hide(); load();
+}
+
+async function viewTxn(id){
+ const r = await fetch(`${API}/txn/${id}`).then(x=>x.json());
+ if (!r.success) return;
+ const t = r.data;
+ let html = `
+ <div class="row mb-3">
+  <div class="col-md-6"><strong>رقم الإذن:</strong> <code>${t.transaction_no}</code></div>
+  <div class="col-md-6"><strong>التاريخ:</strong> ${t.transaction_date}</div>
+  <div class="col-md-6"><strong>الحالة:</strong> <span class="badge-status badge-${t.status}">${t.status}</span></div>
+  <div class="col-md-6"><strong>المرجع:</strong> ${t.reference_no||'-'}</div>
+  <div class="col-md-12"><strong>ملاحظات:</strong> ${t.notes||'-'}</div>
+ </div>
+ <h6>البنود:</h6>
+ <table class="table table-sm table-bordered">
+  <thead><tr><th>#</th><th>الصنف</th><th>الوحدة</th><th>الكمية</th><th>التكلفة</th></tr></thead>
+  <tbody>`;
+ t.lines.forEach((l,i)=>{
+  html += `<tr><td>${i+1}</td><td>${l.item_name}</td><td>${l.uom_name||'-'}</td><td>${l.quantity}</td><td>${parseFloat(l.total_cost).toFixed(2)}</td></tr>`;
+ });
+ html += '</tbody></table>';
+ document.getElementById('viewBody').innerHTML = html;
+ viewModal.show();
+}
+
+async function postTxn(id){
+ if (!confirm('ترحيل الإذن؟')) return;
+ const r = await fetch(`${API}/issues/${id}/post`,{method:'POST'}).then(x=>x.json());
+ if (r.success) load();
+ else alert(r.message);
+}
+
+async function delTxn(id){
+ if (!confirm('حذف الإذن؟')) return;
+ const r = await fetch(`${API}/txn/${id}`,{method:'DELETE'}).then(x=>x.json());
+ if (r.success) load();
+ else alert(r.message);
+}
+
+(async()=>{ await loadLists(); await load(); })();
+</script></body></html>

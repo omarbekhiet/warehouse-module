@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head><meta charset="UTF-8"><title>مدفوعات الموردين</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+<link href="style.css" rel="stylesheet"></head>
+<body><div class="container-fluid"><div class="row">
+<div class="col-md-2 sidebar p-0">
+<div class="brand"><i class="bi bi-box-seam" style="font-size:2rem;"></i><h5 class="mt-2 mb-0">موديول المخازن</h5></div>
+<nav class="mt-3">
+<a href="index.html"><i class="bi bi-speedometer2"></i> لوحة التحكم</a>
+<a href="notifications.html"><i class="bi bi-bell"></i> الإشعارات</a>
+<a href="accounts.html"><i class="bi bi-book"></i> الدليل المحاسبي</a>
+<a href="warehouses.html"><i class="bi bi-building"></i> المستودعات</a>
+<a href="item_groups.html"><i class="bi bi-diagram-3"></i> مجموعات الأصناف</a>
+<a href="items.html"><i class="bi bi-box"></i> الأصناف</a>
+<a href="uom.html"><i class="bi bi-rulers"></i> وحدات القياس</a>
+<a href="suppliers.html"><i class="bi bi-truck"></i> الموردون</a>
+<a href="customers.html"><i class="bi bi-people"></i> العملاء</a>
+<a href="requisitions.html"><i class="bi bi-clipboard-check"></i> طلبات الاحتياج</a>
+<a href="purchase_orders.html"><i class="bi bi-file-earmark-text"></i> أوامر الشراء</a>
+<a href="purchase_invoices.html"><i class="bi bi-receipt"></i> فواتير الشراء</a>
+<a href="sales_invoices.html"><i class="bi bi-cart-check"></i> فواتير البيع</a>
+<a href="purchase_returns.html"><i class="bi bi-arrow-return-left"></i> مرتجع شراء</a>
+<a href="sales_returns.html"><i class="bi bi-arrow-return-right"></i> مرتجع بيع</a>
+<a href="payments.html" class="active"><i class="bi bi-cash-coin"></i> مدفوعات الموردين</a>
+<a href="customer_receipts.html"><i class="bi bi-cash-stack"></i> تحصيلات العملاء</a>
+<a href="receipts.html"><i class="bi bi-arrow-down-circle"></i> الاستلام</a>
+<a href="material_requests.html"><i class="bi bi-clipboard-plus"></i> طلبات الصرف</a>
+<a href="issues.html"><i class="bi bi-arrow-up-circle"></i> الصرف</a>
+<a href="transfers.html"><i class="bi bi-arrow-left-right"></i> التحويلات</a>
+<a href="counts.html"><i class="bi bi-clipboard-check"></i> الجرد</a>
+<a href="clearing.html"><i class="bi bi-shuffle"></i> الحسابات الوسيطة</a>
+<a href="financial_reports.html"><i class="bi bi-graph-up"></i> التقارير المالية</a>
+<a href="reports.html"><i class="bi bi-file-earmark-bar-graph"></i> التقارير</a>
+<a href="journal.html"><i class="bi bi-journal-text"></i> القيود</a>
+</nav></div>
+<div class="col-md-10 p-4">
+<div class="d-flex justify-content-between mb-4">
+<h2><i class="bi bi-cash-coin text-danger"></i> مدفوعات الموردين</h2>
+<button class="btn btn-danger" onclick="openAdd()"><i class="bi bi-plus-circle"></i> دفعة جديدة</button>
+</div>
+
+<div class="alert alert-warning">
+<i class="bi bi-info-circle"></i> سداد مورد مقابل فواتير الشراء. القيد: <b>مدين 2211 ذمم الموردين</b> / <b>دائن 1211/1212 النقدية</b>.
+</div>
+
+<div class="card p-3">
+<table class="table table-hover">
+<thead><tr>
+<th>رقم الدفعة</th><th>التاريخ</th><th>المورد</th><th>طريقة الدفع</th>
+<th>المبلغ</th><th>المرجع</th><th>إجراءات</th>
+</tr></thead>
+<tbody id="tbl"><tr><td colspan="7" class="text-center">جاري التحميل...</td></tr></tbody>
+</table></div></div></div></div>
+
+<div class="modal fade" id="payModal" tabindex="-1">
+<div class="modal-dialog">
+<div class="modal-content">
+<div class="modal-header bg-danger text-white"><h5 class="modal-title"><i class="bi bi-cash-coin"></i> دفعة جديدة</h5><button class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
+<div class="modal-body">
+<div class="mb-3"><label class="form-label">التاريخ *</label><input type="date" class="form-control" id="f-date"></div>
+<div class="mb-3"><label class="form-label">المورد *</label><select class="form-select" id="f-supplier"></select></div>
+<div class="mb-3"><label class="form-label">المبلغ *</label><input type="number" class="form-control" id="f-amount" step="0.01" min="0.01"></div>
+<div class="mb-3"><label class="form-label">طريقة الدفع</label>
+<select class="form-select" id="f-method">
+<option value="CASH">نقدي</option>
+<option value="BANK">تحويل بنكي</option>
+</select></div>
+<div class="mb-3"><label class="form-label">المرجع</label><input class="form-control" id="f-reference" placeholder="رقم شيك / حوالة"></div>
+<div class="mb-3"><label class="form-label">ملاحظات</label><input class="form-control" id="f-notes"></div>
+</div>
+<div class="modal-footer">
+<button class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+<button class="btn btn-danger" onclick="save()"><i class="bi bi-check-circle"></i> حفظ</button>
+</div>
+</div></div></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+const API='http://localhost:5000/api/v1';
+const modal = new bootstrap.Modal(document.getElementById('payModal'));
+let suppliersList=[];
+
+async function loadSuppliers(){
+ const r = await fetch(`${API}/suppliers/`).then(x=>x.json());
+ suppliersList = r.data||[];
+ document.getElementById('f-supplier').innerHTML = suppliersList.length 
+  ? suppliersList.map(s=>`<option value="${s.id}">${s.code} - ${s.name_ar}</option>`).join('')
+  : '<option value="">— لا يوجد موردون —</option>';
+}
+
+async function load(){
+ const r = await fetch(`${API}/payments/payments/`).then(x=>x.json());
+ const rows = r.data||[];
+ document.getElementById('tbl').innerHTML = rows.length ? rows.map(p=>`
+  <tr>
+   <td><code>${p.payment_no}</code></td>
+   <td>${p.payment_date}</td>
+   <td>${p.supplier_name||'-'}</td>
+   <td>${p.payment_method==='CASH' ? 'نقدي' : 'بنكي'}</td>
+   <td><strong class="text-danger">${parseFloat(p.amount).toFixed(2)}</strong></td>
+   <td><small>${p.reference||'-'}</small></td>
+   <td>
+    <button class="btn btn-sm btn-outline-danger" onclick="del(${p.id})"><i class="bi bi-trash"></i></button>
+   </td></tr>`).join('') : '<tr><td colspan="7" class="text-center text-muted">لا توجد مدفوعات</td></tr>';
+}
+
+function openAdd(){
+ if (!suppliersList.length) { alert('أضف مورداً أولاً'); return; }
+ document.getElementById('f-date').value = new Date().toISOString().split('T')[0];
+ document.getElementById('f-amount').value = '';
+ document.getElementById('f-reference').value = '';
+ document.getElementById('f-notes').value = '';
+ document.getElementById('f-method').value = 'CASH';
+ modal.show();
+}
+
+async function save(){
+ const data = {
+  payment_date: document.getElementById('f-date').value,
+  supplier_id: parseInt(document.getElementById('f-supplier').value),
+  amount: parseFloat(document.getElementById('f-amount').value),
+  payment_method: document.getElementById('f-method').value,
+  reference: document.getElementById('f-reference').value,
+  notes: document.getElementById('f-notes').value
+ };
+ if (!data.amount || data.amount <= 0) { alert('أدخل مبلغ صحيح'); return; }
+ 
+ const r = await fetch(`${API}/payments/payments/`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)}).then(x=>x.json());
+ if (r.success) { modal.hide(); load(); alert('تمت إضافة الدفعة + قيد محاسبي'); }
+ else alert(r.message||'خطأ');
+}
+
+async function del(id){
+ if (!confirm('حذف الدفعة؟ سيُحذف القيد المحاسبي أيضاً.')) return;
+ const r = await fetch(`${API}/payments/payments/${id}`,{method:'DELETE'}).then(x=>x.json());
+ if (r.success) { alert('تم الحذف'); load(); }
+ else alert(r.message||'خطأ');
+}
+
+(async()=>{ await loadSuppliers(); await load(); })();
+</script></body></html>

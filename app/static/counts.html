@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head><meta charset="UTF-8"><title>الجرد</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+<link href="style.css" rel="stylesheet"></head>
+<body><div class="container-fluid"><div class="row">
+<div class="col-md-2 sidebar p-0">
+<div class="brand"><i class="bi bi-box-seam" style="font-size:2rem;"></i><h5 class="mt-2 mb-0">موديول المخازن</h5></div>
+<nav class="mt-3">
+<a href="index.html"><i class="bi bi-speedometer2"></i> لوحة التحكم</a>
+<a href="notifications.html"><i class="bi bi-bell"></i> الإشعارات</a>
+<a href="accounts.html"><i class="bi bi-book"></i> الدليل المحاسبي</a>
+<a href="warehouses.html"><i class="bi bi-building"></i> المستودعات</a>
+<a href="item_groups.html"><i class="bi bi-diagram-3"></i> مجموعات الأصناف</a>
+<a href="items.html"><i class="bi bi-box"></i> الأصناف</a>
+<a href="uom.html"><i class="bi bi-rulers"></i> وحدات القياس</a>
+<a href="suppliers.html"><i class="bi bi-truck"></i> الموردون</a>
+<a href="customers.html"><i class="bi bi-people"></i> العملاء</a>
+<a href="requisitions.html"><i class="bi bi-clipboard-check"></i> طلبات الاحتياج</a>
+<a href="purchase_orders.html"><i class="bi bi-file-earmark-text"></i> أوامر الشراء</a>
+<a href="purchase_invoices.html"><i class="bi bi-receipt"></i> فواتير الشراء</a>
+<a href="sales_invoices.html"><i class="bi bi-cart-check"></i> فواتير البيع</a>
+<a href="purchase_returns.html"><i class="bi bi-arrow-return-left"></i> مرتجع شراء</a>
+<a href="sales_returns.html"><i class="bi bi-arrow-return-right"></i> مرتجع بيع</a>
+<a href="payments.html"><i class="bi bi-cash-coin"></i> مدفوعات الموردين</a>
+<a href="customer_receipts.html"><i class="bi bi-cash-stack"></i> تحصيلات العملاء</a>
+<a href="receipts.html"><i class="bi bi-arrow-down-circle"></i> الاستلام</a>
+<a href="material_requests.html"><i class="bi bi-clipboard-plus"></i> طلبات الصرف</a>
+<a href="issues.html"><i class="bi bi-arrow-up-circle"></i> الصرف</a>
+<a href="transfers.html"><i class="bi bi-arrow-left-right"></i> التحويلات</a>
+<a href="counts.html" class="active"><i class="bi bi-clipboard-check"></i> الجرد</a>
+<a href="clearing.html"><i class="bi bi-shuffle"></i> الحسابات الوسيطة</a>
+<a href="financial_reports.html"><i class="bi bi-graph-up"></i> التقارير المالية</a>
+<a href="reports.html"><i class="bi bi-file-earmark-bar-graph"></i> التقارير</a>
+<a href="journal.html"><i class="bi bi-journal-text"></i> القيود</a>
+</nav></div>
+<div class="col-md-10 p-4">
+<div class="d-flex justify-content-between mb-4">
+<h2><i class="bi bi-clipboard-check"></i> الجرد المخزني</h2>
+<button class="btn btn-warning" onclick="openAdd()"><i class="bi bi-plus-circle"></i> جرد جديد</button>
+</div>
+<div class="card p-3">
+<table class="table table-hover">
+<thead><tr>
+<th>رقم الجرد</th><th>التاريخ</th><th>المستودع</th><th>النوع</th>
+<th>الحالة</th><th>إجراءات</th>
+</tr></thead>
+<tbody id="tbl"><tr><td colspan="6" class="text-center">جاري التحميل...</td></tr></tbody>
+</table></div></div></div></div>
+
+<!-- Add Modal -->
+<div class="modal fade" id="addModal" tabindex="-1">
+<div class="modal-dialog">
+<div class="modal-content">
+<div class="modal-header bg-warning"><h5 class="modal-title"><i class="bi bi-plus-circle"></i> جرد جديد</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
+<div class="modal-body">
+<div class="mb-3"><label class="form-label">المستودع *</label><select class="form-select" id="f-warehouse"></select></div>
+<div class="mb-3"><label class="form-label">التاريخ *</label><input type="date" class="form-control" id="f-date"></div>
+<div class="mb-3"><label class="form-label">النوع</label>
+<select class="form-select" id="f-type">
+<option value="FULL">جرد شامل</option>
+<option value="PARTIAL">جرد جزئي</option>
+<option value="CYCLE">جرد دوري</option>
+<option value="SPOT">جرد مفاجئ</option>
+</select></div>
+</div>
+<div class="modal-footer">
+<button class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+<button class="btn btn-warning" onclick="createCount()">إنشاء الجرد</button>
+</div>
+</div></div></div>
+
+<!-- Edit Count Modal -->
+<div class="modal fade" id="editModal" tabindex="-1">
+<div class="modal-dialog modal-lg">
+<div class="modal-content">
+<div class="modal-header bg-info text-white"><h5 class="modal-title" id="e-title"><i class="bi bi-pencil"></i> إدخال الكميات المجرودة</h5><button class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
+<div class="modal-body">
+<table class="table table-bordered">
+<thead class="table-light"><tr>
+<th>الصنف</th><th>الرصيد الدفتري</th><th>الكمية الفعلية</th><th>الفرق</th><th>القيمة</th>
+</tr></thead>
+<tbody id="e-lines"></tbody>
+</table>
+</div>
+<div class="modal-footer">
+<button class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+<button class="btn btn-primary" onclick="saveCounted()">حفظ الكميات</button>
+<button class="btn btn-success" onclick="postCount()">ترحيل الجرد</button>
+</div>
+</div></div></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+const API='http://localhost:5000/api/v1';
+const addModal = new bootstrap.Modal(document.getElementById('addModal'));
+const editModal = new bootstrap.Modal(document.getElementById('editModal'));
+let warehousesList=[];
+let currentCountId=null;
+let currentLines=[];
+
+async function loadWarehouses(){
+ const r = await fetch(`${API}/warehouses/`).then(x=>x.json());
+ warehousesList = r.data||[];
+ document.getElementById('f-warehouse').innerHTML = warehousesList.map(w=>`<option value="${w.id}">${w.code} - ${w.name_ar}</option>`).join('');
+}
+
+async function load(){
+ const r = await fetch(`${API}/counts/`).then(x=>x.json());
+ const rows = r.data||[];
+ const typeLabels = {FULL:'شامل', PARTIAL:'جزئي', CYCLE:'دوري', SPOT:'مفاجئ'};
+ document.getElementById('tbl').innerHTML = rows.length ? rows.map(c=>`
+  <tr>
+   <td><code>${c.count_no}</code></td>
+   <td>${c.count_date}</td>
+   <td>${c.warehouse_name||'-'}</td>
+   <td>${typeLabels[c.count_type]||c.count_type}</td>
+   <td><span class="badge-status badge-${c.status}">${c.status}</span></td>
+   <td>
+    ${c.status==='DRAFT' || c.status==='IN_PROGRESS' ? `
+     <button class="btn btn-sm btn-info" onclick="openEdit(${c.id})" title="إدخال الكميات"><i class="bi bi-pencil"></i></button>
+     <button class="btn btn-sm btn-outline-danger" onclick="delCount(${c.id})" title="حذف"><i class="bi bi-trash"></i></button>
+     <button class="btn btn-sm btn-success" onclick="postCountById(${c.id})" title="ترحيل"><i class="bi bi-check-circle"></i></button>
+    ` : '<span class="text-muted">مكتمل</span>'}
+   </td>
+  </tr>`).join('') : '<tr><td colspan="6" class="text-center text-muted">لا توجد عمليات جرد</td></tr>';
+}
+
+function openAdd(){
+ document.getElementById('f-date').value = new Date().toISOString().split('T')[0];
+ addModal.show();
+}
+
+async function createCount(){
+ const body = {
+  warehouse_id: parseInt(document.getElementById('f-warehouse').value),
+  count_date: document.getElementById('f-date').value,
+  count_type: document.getElementById('f-type').value
+ };
+ const r = await fetch(`${API}/counts/`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}).then(x=>x.json());
+ if (r.success) { addModal.hide(); load(); }
+ else alert(r.message||'خطأ');
+}
+
+async function openEdit(id){
+ currentCountId = id;
+ const r = await fetch(`${API}/counts/${id}`).then(x=>x.json());
+ if (!r.success) { alert('خطأ'); return; }
+ const data = r.data;
+ currentLines = data.lines||[];
+ document.getElementById('e-title').innerHTML = `<i class="bi bi-pencil"></i> جرد ${data.count_no} — ${data.count_date}`;
+ document.getElementById('e-lines').innerHTML = currentLines.map(l=>`
+  <tr data-line-id="${l.id}" data-unit-cost="${l.unit_cost}">
+   <td>${l.item_name}</td>
+   <td>${parseFloat(l.system_qty).toFixed(2)}</td>
+   <td><input type="number" class="form-control form-control-sm cnt-in" value="${l.counted_qty}" step="0.0001" oninput="recalc(this)"></td>
+   <td class="diff-cell">0</td>
+   <td class="val-cell">0</td>
+  </tr>`).join('');
+ currentLines.forEach(l=>{
+  const tr = document.querySelector(`tr[data-line-id="${l.id}"]`);
+  recalc(tr.querySelector('.cnt-in'));
+ });
+ editModal.show();
+}
+
+function recalc(inp){
+ const tr = inp.closest('tr');
+ const sys = parseFloat(tr.children[1].textContent)||0;
+ const cnt = parseFloat(inp.value)||0;
+ const uc = parseFloat(tr.dataset.unitCost)||0;
+ const diff = cnt - sys;
+ tr.querySelector('.diff-cell').textContent = diff.toFixed(2);
+ tr.querySelector('.val-cell').textContent = (diff*uc).toFixed(2);
+}
+
+async function saveCounted(){
+ const lines = [];
+ document.querySelectorAll('#e-lines tr').forEach(tr=>{
+  lines.push({
+   id: parseInt(tr.dataset.lineId),
+   counted_qty: parseFloat(tr.querySelector('.cnt-in').value)||0
+  });
+ });
+ const r = await fetch(`${API}/counts/${currentCountId}/count`,{
+  method:'PUT',headers:{'Content-Type':'application/json'},
+  body:JSON.stringify({lines})
+ }).then(x=>x.json());
+ if (r.success) { alert('تم حفظ الكميات'); }
+ else alert(r.message||'خطأ');
+}
+
+async function postCount(){
+ const lines = [];
+ document.querySelectorAll('#e-lines tr').forEach(tr=>{
+  lines.push({
+   id: parseInt(tr.dataset.lineId),
+   counted_qty: parseFloat(tr.querySelector('.cnt-in').value)||0
+  });
+ });
+ await fetch(`${API}/counts/${currentCountId}/count`,{
+  method:'PUT',headers:{'Content-Type':'application/json'},
+  body:JSON.stringify({lines})
+ });
+ const r = await fetch(`${API}/counts/${currentCountId}/post`,{method:'POST'}).then(x=>x.json());
+ if (r.success) {
+  alert('تم ترحيل الجرد بنجاح');
+  editModal.hide();
+  load();
+ } else alert(r.message||'خطأ');
+}
+
+async function postCountById(id){
+ if (!confirm('ترحيل الجرد؟')) return;
+ const r = await fetch(`${API}/counts/${id}/post`,{method:'POST'}).then(x=>x.json());
+ if (r.success) { alert('تم الترحيل'); load(); }
+ else alert(r.message||'خطأ');
+}
+
+async function delCount(id){
+ if (!confirm('حذف الجرد؟')) return;
+ const r = await fetch(`${API}/counts/${id}`,{method:'DELETE'}).then(x=>x.json());
+ if (r.success) load();
+ else alert(r.message||'خطأ');
+}
+
+(async()=>{ await loadWarehouses(); await load(); })();
+</script></body></html>

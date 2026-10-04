@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>لوحة التحكم</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+<link href="style.css" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+<div class="container-fluid"><div class="row">
+<div class="col-md-2 sidebar p-0">
+<div class="brand"><i class="bi bi-box-seam" style="font-size:2rem;"></i><h5 class="mt-2 mb-0">موديول المخازن</h5></div>
+<nav class="mt-3">
+<a href="index.html" class="active"><i class="bi bi-speedometer2"></i> لوحة التحكم</a>
+<a href="notifications.html"><i class="bi bi-bell"></i> الإشعارات</a>
+<a href="accounts.html"><i class="bi bi-book"></i> الدليل المحاسبي</a>
+<a href="warehouses.html"><i class="bi bi-building"></i> المستودعات</a>
+<a href="item_groups.html"><i class="bi bi-diagram-3"></i> مجموعات الأصناف</a>
+<a href="suppliers.html"><i class="bi bi-truck"></i> الموردون</a>
+<a href="customers.html"><i class="bi bi-people"></i> العملاء</a>
+<a href="requisitions.html"><i class="bi bi-clipboard-check"></i> طلبات الاحتياج</a>
+<a href="purchase_orders.html"><i class="bi bi-file-earmark-text"></i> أوامر الشراء</a>
+<a href="purchase_invoices.html"><i class="bi bi-receipt"></i> فواتير الشراء</a>
+<a href="sales_invoices.html"><i class="bi bi-cart-check"></i> فواتير البيع</a>
+<a href="purchase_returns.html"><i class="bi bi-arrow-return-left"></i> مرتجع شراء</a>
+<a href="sales_returns.html"><i class="bi bi-arrow-return-right"></i> مرتجع بيع</a>
+<a href="payments.html"><i class="bi bi-cash-coin"></i> مدفوعات الموردين</a>
+<a href="customer_receipts.html"><i class="bi bi-cash-stack"></i> تحصيلات العملاء</a>
+<a href="items.html"><i class="bi bi-box"></i> الأصناف</a>
+<a href="uom.html"><i class="bi bi-rulers"></i> وحدات القياس</a>
+<a href="receipts.html"><i class="bi bi-arrow-down-circle"></i> الاستلام</a>
+<a href="material_requests.html"><i class="bi bi-clipboard-plus"></i> طلبات الصرف</a>
+<a href="issues.html"><i class="bi bi-arrow-up-circle"></i> الصرف</a>
+<a href="transfers.html"><i class="bi bi-arrow-left-right"></i> التحويلات</a>
+<a href="counts.html"><i class="bi bi-clipboard-check"></i> الجرد</a>
+<a href="clearing.html"><i class="bi bi-arrow-left-right"></i> الحسابات الوسيطة</a>
+<a href="financial_reports.html"><i class="bi bi-graph-up"></i> التقارير المالية</a>
+<a href="reports.html"><i class="bi bi-file-earmark-bar-graph"></i> التقارير</a>
+<a href="journal.html"><i class="bi bi-journal-text"></i> القيود</a>
+</nav></div>
+
+<div class="col-md-10 p-4">
+<div class="d-flex justify-content-between mb-4">
+<h2><i class="bi bi-speedometer2"></i> لوحة التحكم</h2>
+<button class="btn btn-outline-primary btn-sm" onclick="loadAll()"><i class="bi bi-arrow-clockwise"></i> تحديث</button>
+</div>
+
+<!-- Stats -->
+<div class="row g-3 mb-4">
+<div class="col-md-3"><div class="stat-card card p-3"><div class="d-flex justify-content-between"><div><div class="label">المستودعات</div><div class="value text-primary" id="s1">-</div></div><i class="bi bi-building icon text-primary"></i></div></div></div>
+<div class="col-md-3"><div class="stat-card card p-3"><div class="d-flex justify-content-between"><div><div class="label">الأصناف</div><div class="value text-success" id="s2">-</div></div><i class="bi bi-box icon text-success"></i></div></div></div>
+<div class="col-md-3"><div class="stat-card card p-3"><div class="d-flex justify-content-between"><div><div class="label">الحركات</div><div class="value text-warning" id="s3">-</div></div><i class="bi bi-arrow-left-right icon text-warning"></i></div></div></div>
+<div class="col-md-3"><div class="stat-card card p-3"><div class="d-flex justify-content-between"><div><div class="label">قيمة المخزون</div><div class="value text-danger" id="s4">-</div></div><i class="bi bi-cash-stack icon text-danger"></i></div></div></div>
+</div>
+
+<!-- Charts -->
+<div class="row g-3 mb-4">
+<div class="col-md-6"><div class="card p-3"><h5>الحركات حسب النوع</h5><canvas id="chart1" style="max-height:280px;"></canvas></div></div>
+<div class="col-md-6"><div class="card p-3"><h5>تقييم المخزون حسب النوع</h5><canvas id="chart2" style="max-height:280px;"></canvas></div></div>
+</div>
+
+<!-- Recent + Low Stock -->
+<div class="row g-3">
+<div class="col-md-7"><div class="card p-3"><h5><i class="bi bi-clock-history"></i> آخر الحركات</h5>
+<table class="table table-hover"><thead><tr><th>رقم الحركة</th><th>النوع</th><th>الكمية</th><th>القيمة</th><th>الحالة</th></tr></thead><tbody id="tx"><tr><td colspan="5" class="text-center">جاري التحميل...</td></tr></tbody></table></div></div>
+<div class="col-md-5"><div class="card p-3"><h5><i class="bi bi-exclamation-triangle text-warning"></i> أصناف تحت الحد الأدنى</h5>
+<table class="table table-hover"><thead><tr><th>الصنف</th><th>المتاح</th><th>الحد</th></tr></thead><tbody id="low"><tr><td colspan="3" class="text-center">جاري التحميل...</td></tr></tbody></table></div></div>
+</div>
+</div></div></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+const API='http://localhost:5000/api/v1';
+let chart1, chart2;
+
+async function loadAll(){
+ try{
+  const [w,i,r,is,t,b,l,v]=await Promise.all([
+   fetch(`${API}/warehouses/`).then(x=>x.json()),
+   fetch(`${API}/items/`).then(x=>x.json()),
+   fetch(`${API}/receipts/`).then(x=>x.json()),
+   fetch(`${API}/issues/`).then(x=>x.json()),
+   fetch(`${API}/transfers/`).then(x=>x.json()),
+   fetch(`${API}/reports/stock-balance`).then(x=>x.json()),
+   fetch(`${API}/reports/low-stock`).then(x=>x.json()),
+   fetch(`${API}/reports/valuation`).then(x=>x.json())]);
+
+  document.getElementById('s1').textContent=w.data?.length||0;
+  document.getElementById('s2').textContent=i.data?.length||0;
+  document.getElementById('s3').textContent=(r.data?.length||0)+(is.data?.length||0)+(t.data?.length||0);
+  const val=(b.data||[]).reduce((s,x)=>s+parseFloat(x.total_value||0),0);
+  document.getElementById('s4').textContent=val.toLocaleString('ar-EG')+' ج.م';
+
+  // Charts
+  const cntTypes = {
+   'استلام': (r.data||[]).length,
+   'صرف': (is.data||[]).length,
+   'تحويل': (t.data||[]).length
+  };
+  if (chart1) chart1.destroy();
+  chart1 = new Chart(document.getElementById('chart1'), {
+   type: 'doughnut',
+   data: {
+    labels: Object.keys(cntTypes),
+    datasets: [{
+     data: Object.values(cntTypes),
+     backgroundColor: ['#28a745','#dc3545','#17a2b8']
+    }]
+   },
+   options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
+  });
+
+  const vLabels = (v.data||[]).map(x=>x.item_type);
+  const vValues = (v.data||[]).map(x=>parseFloat(x.total_value||0));
+  if (chart2) chart2.destroy();
+  chart2 = new Chart(document.getElementById('chart2'), {
+   type: 'bar',
+   data: {
+    labels: vLabels,
+    datasets: [{
+     label: 'القيمة',
+     data: vValues,
+     backgroundColor: '#3498db'
+    }]
+   },
+   options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
+  });
+
+  // Recent
+  const all=[...(r.data||[]).map(x=>({...x,ty:'استلام',c:'success'})),...(is.data||[]).map(x=>({...x,ty:'صرف',c:'danger'})),...(t.data||[]).map(x=>({...x,ty:'تحويل',c:'info'}))].sort((a,b)=>b.id-a.id).slice(0,8);
+  document.getElementById('tx').innerHTML=all.length?all.map(x=>`<tr><td><code>${x.transaction_no}</code></td><td><span class="badge bg-${x.c}">${x.ty}</span></td><td>${x.total_qty}</td><td>${x.total_value}</td><td><span class="badge-status badge-${x.status}">${x.status}</span></td></tr>`).join(''):'<tr><td colspan="5" class="text-center text-muted">لا توجد حركات</td></tr>';
+
+  const ld=l.data||[];
+  document.getElementById('low').innerHTML=ld.length?ld.map(x=>`<tr><td>${x.name_ar}</td><td class="text-danger">${x.total_qty}</td><td>${x.reorder_level}</td></tr>`).join(''):'<tr><td colspan="3" class="text-center text-success">لا توجد أصناف ✅</td></tr>';
+ }catch(e){console.error(e)}
+}
+loadAll();
+setInterval(loadAll, 30000);
+</script>
+</body></html>

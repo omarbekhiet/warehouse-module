@@ -1,0 +1,105 @@
+﻿<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head><meta charset="UTF-8"><title>تسجيل الدخول</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+<style>
+body {
+    background: linear-gradient(135deg, #2c3e50 0%, #1abc9c 100%);
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Segoe UI', Tahoma, sans-serif;
+}
+.login-card {
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    padding: 40px;
+    max-width: 450px;
+    width: 100%;
+}
+.login-card .logo {
+    font-size: 4rem;
+    color: #1abc9c;
+    text-align: center;
+    margin-bottom: 10px;
+}
+.login-card h2 {
+    text-align: center;
+    color: #2c3e50;
+    margin-bottom: 30px;
+}
+.form-control { border-radius: 10px; padding: 12px; }
+.btn-login {
+    background: linear-gradient(135deg, #1abc9c 0%, #16a085 100%);
+    border: none;
+    border-radius: 10px;
+    padding: 12px;
+    color: white;
+    font-weight: 600;
+    width: 100%;
+    margin-top: 10px;
+}
+.btn-login:hover { color: white; opacity: 0.9; }
+.hint { font-size: 0.85rem; color: #7f8c8d; text-align: center; margin-top: 20px; }
+</style>
+</head>
+<body>
+<div class="login-card">
+<div class="logo"><i class="bi bi-box-seam"></i></div>
+<h2>موديول المخازن</h2>
+
+<form onsubmit="login(event)">
+<div class="mb-3">
+<label class="form-label"><i class="bi bi-person"></i> اسم المستخدم</label>
+<input type="text" class="form-control" id="username" value="admin" autocomplete="username">
+</div>
+<div class="mb-3">
+<label class="form-label"><i class="bi bi-lock"></i> كلمة المرور</label>
+<input type="password" class="form-control" id="password" value="admin123" autocomplete="current-password">
+</div>
+<button type="submit" class="btn btn-login">
+<i class="bi bi-box-arrow-in-right"></i> دخول
+</button>
+</form>
+
+<div id="error" class="alert alert-danger mt-3" style="display:none;"></div>
+
+<div class="hint">
+<i class="bi bi-info-circle"></i> افتراضي: admin / admin123
+</div>
+</div>
+
+<script>
+async function login(e) {
+    e.preventDefault();
+    const username = document.getElementById('username').value.trim();
+    const password = document.getElementById('password').value.trim();
+    const err = document.getElementById('error');
+    err.style.display = 'none';
+
+    try {
+        const r = await fetch('http://localhost:5000/api/v1/auth/login', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({username, password})
+        }).then(x => x.json());
+
+        if (r.success) {
+            localStorage.setItem('user', JSON.stringify(r.data.user));
+            localStorage.setItem('token', r.data.token);
+            window.location.href = 'index.html';
+        } else {
+            err.textContent = r.message || 'خطأ في تسجيل الدخول';
+            err.style.display = 'block';
+        }
+    } catch (e) {
+        err.textContent = 'خطأ في الاتصال بالخادم';
+        err.style.display = 'block';
+    }
+}
+</script>
+</body>
+</html>

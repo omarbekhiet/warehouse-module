@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head><meta charset="UTF-8"><title>الدليل المحاسبي</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+<link href="style.css" rel="stylesheet">
+<style>
+.tree-node { padding: 8px 12px; border-bottom: 1px solid #eee; }
+.tree-node:hover { background: #f8f9fa; }
+.level-L1 { font-weight: 700; background: #e8f5e9; }
+.level-L2 { padding-right: 30px; }
+.level-L3 { padding-right: 60px; }
+.level-L4 { padding-right: 90px; }
+.badge-nature-D { background: #d4edda; color: #155724; }
+.badge-nature-C { background: #f8d7da; color: #721c24; }
+.badge-nature-CC { background: #fff3cd; color: #856404; }
+</style>
+</head>
+<body><div class="container-fluid"><div class="row">
+<div class="col-md-2 sidebar p-0">
+<div class="brand"><i class="bi bi-box-seam" style="font-size:2rem;"></i><h5 class="mt-2 mb-0">موديول المخازن</h5></div>
+<nav class="mt-3">
+<a href="index.html"><i class="bi bi-speedometer2"></i> لوحة التحكم</a>
+<a href="notifications.html"><i class="bi bi-bell"></i> الإشعارات</a>
+<a href="accounts.html" class="active"><i class="bi bi-book"></i> الدليل المحاسبي</a>
+<a href="warehouses.html"><i class="bi bi-building"></i> المستودعات</a>
+<a href="item_groups.html"><i class="bi bi-diagram-3"></i> مجموعات الأصناف</a>
+<a href="items.html"><i class="bi bi-box"></i> الأصناف</a>
+<a href="uom.html"><i class="bi bi-rulers"></i> وحدات القياس</a>
+<a href="suppliers.html"><i class="bi bi-truck"></i> الموردون</a>
+<a href="customers.html"><i class="bi bi-people"></i> العملاء</a>
+<a href="requisitions.html"><i class="bi bi-clipboard-check"></i> طلبات الاحتياج</a>
+<a href="purchase_orders.html"><i class="bi bi-file-earmark-text"></i> أوامر الشراء</a>
+<a href="purchase_invoices.html"><i class="bi bi-receipt"></i> فواتير الشراء</a>
+<a href="sales_invoices.html"><i class="bi bi-cart-check"></i> فواتير البيع</a>
+<a href="purchase_returns.html"><i class="bi bi-arrow-return-left"></i> مرتجع شراء</a>
+<a href="sales_returns.html"><i class="bi bi-arrow-return-right"></i> مرتجع بيع</a>
+<a href="payments.html"><i class="bi bi-cash-coin"></i> مدفوعات الموردين</a>
+<a href="customer_receipts.html"><i class="bi bi-cash-stack"></i> تحصيلات العملاء</a>
+<a href="receipts.html"><i class="bi bi-arrow-down-circle"></i> الاستلام</a>
+<a href="material_requests.html"><i class="bi bi-clipboard-plus"></i> طلبات الصرف</a>
+<a href="issues.html"><i class="bi bi-arrow-up-circle"></i> الصرف</a>
+<a href="transfers.html"><i class="bi bi-arrow-left-right"></i> التحويلات</a>
+<a href="counts.html"><i class="bi bi-clipboard-check"></i> الجرد</a>
+<a href="clearing.html"><i class="bi bi-shuffle"></i> الحسابات الوسيطة</a>
+<a href="financial_reports.html"><i class="bi bi-graph-up"></i> التقارير المالية</a>
+<a href="reports.html"><i class="bi bi-file-earmark-bar-graph"></i> التقارير</a>
+<a href="journal.html"><i class="bi bi-journal-text"></i> القيود</a>
+</nav></div>
+<div class="col-md-10 p-4">
+<div class="d-flex justify-content-between mb-4">
+<h2><i class="bi bi-book"></i> الدليل المحاسبي</h2>
+<div>
+<button class="btn btn-outline-secondary" onclick="load()"><i class="bi bi-arrow-clockwise"></i> تحديث</button>
+<button class="btn btn-primary" onclick="openAdd()"><i class="bi bi-plus-circle"></i> حساب جديد</button>
+</div>
+</div>
+
+<div class="row g-3 mb-3">
+<div class="col-md-3"><div class="stat-card card p-3"><div class="label">إجمالي الحسابات</div><div class="value text-primary" id="s-total">-</div></div></div>
+<div class="col-md-3"><div class="stat-card card p-3"><div class="label">قابلة للترحيل</div><div class="value text-success" id="s-leaf">-</div></div></div>
+<div class="col-md-3"><div class="stat-card card p-3"><div class="label">تجميعية</div><div class="value text-warning" id="s-group">-</div></div></div>
+<div class="col-md-3"><div class="stat-card card p-3"><div class="label">أنواع الحسابات</div><div class="value text-info" id="s-types">-</div></div></div>
+</div>
+
+<div class="card p-3 mb-3">
+<div class="row g-2">
+<div class="col-md-3"><input class="form-control" id="flt-search" placeholder="ابحث بالكود أو الاسم..." oninput="filterTree()"></div>
+<div class="col-md-2">
+<select class="form-select" id="flt-level" onchange="filterTree()">
+<option value="">كل المستويات</option>
+<option value="L1">L1 - رئيسي</option>
+<option value="L2">L2 - فئة</option>
+<option value="L3">L3 - مجموعة</option>
+<option value="L4">L4 - حساب</option>
+</select></div>
+<div class="col-md-2">
+<select class="form-select" id="flt-nature" onchange="filterTree()">
+<option value="">كل الطبائع</option>
+<option value="D">مدين (D)</option>
+<option value="C">دائن (C)</option>
+<option value="CC">دائن مقابل (CC)</option>
+</select></div>
+<div class="col-md-2">
+<select class="form-select" id="flt-stmt" onchange="filterTree()">
+<option value="">كل القوائم</option>
+<option value="BS">الميزانية (BS)</option>
+<option value="IS">الدخل (IS)</option>
+<option value="EQ">حقوق الملكية (EQ)</option>
+</select></div>
+<div class="col-md-3"><button class="btn btn-outline-secondary w-100" onclick="resetFilters()"><i class="bi bi-x-circle"></i> مسح الفلاتر</button></div>
+</div>
+</div>
+
+<div class="card p-3">
+<div id="tree" style="max-height:600px; overflow-y:auto;"><div class="text-center text-muted p-4">جاري التحميل...</div></div>
+</div>
+
+</div></div></div>
+
+<!-- Add/Edit Modal -->
+<div class="modal fade" id="accModal" tabindex="-1">
+<div class="modal-dialog modal-lg">
+<div class="modal-content">
+<div class="modal-header bg-primary text-white"><h5 class="modal-title" id="modal-title"><i class="bi bi-plus-circle"></i> حساب جديد</h5><button class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
+<div class="modal-body">
+<div class="row g-3">
+<div class="col-md-4"><label class="form-label">الكود *</label><input class="form-control" id="f-code"></div>
+<div class="col-md-4"><label class="form-label">الاسم بالعربي *</label><input class="form-control" id="f-name_ar"></div>
+<div class="col-md-4"><label class="form-label">الاسم بالإنجليزي</label><input class="form-control" id="f-name_en"></div>
+<div class="col-md-3"><label class="form-label">المستوى *</label>
+<select class="form-select" id="f-level">
+<option value="L1">L1 - رئيسي</option>
+<option value="L2">L2 - فئة</option>
+<option value="L3">L3 - مجموعة</option>
+<option value="L4">L4 - حساب</option>
+</select></div>
+<div class="col-md-3"><label class="form-label">الطبيعة *</label>
+<select class="form-select" id="f-nature">
+<option value="D">مدين (D)</option>
+<option value="C">دائن (C)</option>
+<option value="CC">دائن مقابل (CC)</option>
+</select></div>
+<div class="col-md-3"><label class="form-label">القائمة المالية</label>
+<select class="form-select" id="f-financial_statement">
+<option value="">— بدون —</option>
+<option value="BS">الميزانية (BS)</option>
+<option value="IS">قائمة الدخل (IS)</option>
+<option value="EQ">حقوق الملكية (EQ)</option>
+</select></div>
+<div class="col-md-3"><label class="form-label">الحساب الأب</label><select class="form-select" id="f-parent_code"><option value="">— بدون (مستوى أول) —</option></select></div>
+<div class="col-md-4"><label class="form-label">BS Group</label><input class="form-control" id="f-bs_group"></div>
+<div class="col-md-4"><label class="form-label">P&L Group</label><input class="form-control" id="f-pl_group"></div>
+<div class="col-md-4"><label class="form-label">النوع</label>
+<select class="form-select" id="f-account_type">
+<option value="0">حساب تفصيلي (قابل للترحيل)</option>
+<option value="1">حساب تجميعي</option>
+</select></div>
+</div>
+</div>
+<div class="modal-footer">
+<button class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+<button class="btn btn-primary" onclick="save()"><i class="bi bi-check-circle"></i> حفظ</button>
+</div>
+</div></div></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+const API='http://localhost:5000/api/v1';
+const modal = new bootstrap.Modal(document.getElementById('accModal'));
+let allAccounts = [];
+let editId = null;
+
+async function load(){
+ const r = await fetch(`${API}/accounts/`).then(x=>x.json());
+ allAccounts = r.data||[];
+ 
+ document.getElementById('s-total').textContent = allAccounts.length;
+ document.getElementById('s-leaf').textContent = allAccounts.filter(a=>a.is_leaf).length;
+ document.getElementById('s-group').textContent = allAccounts.filter(a=>a.is_group).length;
+ 
+ // type counts
+ try {
+  const t = await fetch(`${API}/accounts/types`).then(x=>x.json());
+  document.getElementById('s-types').textContent = (t.data||[]).length;
+ } catch(e) { document.getElementById('s-types').textContent = '-'; }
+ 
+ refreshParentOptions();
+ renderTree(allAccounts);
+}
+
+function refreshParentOptions(){
+ const opts = ['<option value="">— بدون (مستوى أول) —</option>'];
+ allAccounts.filter(a=>a.is_group || a.level!=='L4').forEach(a=>{
+  const indent = '　'.repeat((parseInt(a.level.replace('L',''))||1)-1);
+  opts.push(`<option value="${a.code}">${indent}${a.code} - ${a.name_ar}</option>`);
+ });
+ document.getElementById('f-parent_code').innerHTML = opts.join('');
+}
+
+function renderTree(accounts){
+ if (!accounts.length) {
+  document.getElementById('tree').innerHTML = '<div class="text-center text-muted p-4">لا توجد حسابات</div>';
+  return;
+ }
+ 
+ // Build tree
+ const byCode = {};
+ accounts.forEach(a=>{ byCode[a.code] = {...a, children: []}; });
+ const roots = [];
+ accounts.forEach(a=>{
+  if (a.parent_code && byCode[a.parent_code]) {
+   byCode[a.parent_code].children.push(byCode[a.code]);
+  } else {
+   roots.push(byCode[a.code]);
+  }
+ });
+ 
+ let html = '';
+ function renderNode(n){
+  const natureClass = n.nature === 'D' ? 'badge-nature-D' : (n.nature === 'C' ? 'badge-nature-C' : 'badge-nature-CC');
+  const natureTxt = n.nature === 'D' ? 'مدين' : (n.nature === 'C' ? 'دائن' : 'مقابل');
+  const stmtBadge = n.financial_statement ? `<span class="badge bg-info">${n.financial_statement}</span>` : '';
+  const leafBadge = n.is_leaf ? '<span class="badge bg-success">قابل للترحيل</span>' : '<span class="badge bg-secondary">تجميعي</span>';
+  const icon = n.children && n.children.length ? 'folder-fill text-warning' : 'file-earmark text-secondary';
+  
+  html += `<div class="tree-node level-${n.level}">
+   <div class="d-flex justify-content-between align-items-center">
+    <div>
+     <i class="bi bi-${icon}"></i>
+     <code>${n.code}</code>
+     <strong class="ms-1">${n.name_ar}</strong>
+     <small class="text-muted ms-1">(${n.name_en||''})</small>
+     <span class="badge ${natureClass} ms-1">${natureTxt}</span>
+     ${stmtBadge}
+     ${leafBadge}
+     <span class="badge bg-dark ms-1">${n.level}</span>
+    </div>
+    <div>
+     <button class="btn btn-sm btn-outline-info" onclick="viewAccount(${n.id})" title="عرض"><i class="bi bi-eye"></i></button>
+     <button class="btn btn-sm btn-outline-warning" onclick="openEdit(${n.id})" title="تعديل"><i class="bi bi-pencil"></i></button>
+     <button class="btn btn-sm btn-outline-danger" onclick="del(${n.id},'${n.code}')" title="حذف"><i class="bi bi-trash"></i></button>
+    </div>
+   </div>
+  </div>`;
+  (n.children||[]).forEach(renderNode);
+ }
+ roots.forEach(renderNode);
+ document.getElementById('tree').innerHTML = html;
+}
+
+function filterTree(){
+ const search = document.getElementById('flt-search').value.toLowerCase();
+ const level = document.getElementById('flt-level').value;
+ const nature = document.getElementById('flt-nature').value;
+ const stmt = document.getElementById('flt-stmt').value;
+ 
+ let filtered = allAccounts;
+ if (search) {
+  filtered = filtered.filter(a => 
+   (a.code||'').toLowerCase().includes(search) ||
+   (a.name_ar||'').includes(search) ||
+   (a.name_en||'').toLowerCase().includes(search)
+  );
+ }
+ if (level) filtered = filtered.filter(a => a.level === level);
+ if (nature) filtered = filtered.filter(a => a.nature === nature);
+ if (stmt) filtered = filtered.filter(a => a.financial_statement === stmt);
+ 
+ renderTree(filtered);
+}
+
+function resetFilters(){
+ document.getElementById('flt-search').value = '';
+ document.getElementById('flt-level').value = '';
+ document.getElementById('flt-nature').value = '';
+ document.getElementById('flt-stmt').value = '';
+ renderTree(allAccounts);
+}
+
+function openAdd(){
+ editId = null;
+ ['f-code','f-name_ar','f-name_en','f-bs_group','f-pl_group'].forEach(id=>document.getElementById(id).value='');
+ document.getElementById('f-level').value = 'L4';
+ document.getElementById('f-nature').value = 'D';
+ document.getElementById('f-financial_statement').value = '';
+ document.getElementById('f-parent_code').value = '';
+ document.getElementById('f-account_type').value = '0';
+ document.getElementById('f-code').disabled = false;
+ document.getElementById('modal-title').innerHTML = '<i class="bi bi-plus-circle"></i> حساب جديد';
+ refreshParentOptions();
+ modal.show();
+}
+
+async function openEdit(id){
+ editId = id;
+ const a = allAccounts.find(x=>x.id===id);
+ if (!a) return;
+ document.getElementById('f-code').value = a.code;
+ document.getElementById('f-code').disabled = true;
+ document.getElementById('f-name_ar').value = a.name_ar;
+ document.getElementById('f-name_en').value = a.name_en||'';
+ document.getElementById('f-level').value = a.level;
+ document.getElementById('f-nature').value = a.nature;
+ document.getElementById('f-financial_statement').value = a.financial_statement||'';
+ document.getElementById('f-parent_code').value = a.parent_code||'';
+ document.getElementById('f-bs_group').value = a.bs_group||'';
+ document.getElementById('f-pl_group').value = a.pl_group||'';
+ document.getElementById('f-account_type').value = a.is_group ? '1' : '0';
+ document.getElementById('modal-title').innerHTML = '<i class="bi bi-pencil"></i> تعديل الحساب';
+ refreshParentOptions();
+ modal.show();
+}
+
+function viewAccount(id){
+ const a = allAccounts.find(x=>x.id===id);
+ if (!a) return;
+ alert(
+  `الكود: ${a.code}\n` +
+  `الاسم: ${a.name_ar}\n` +
+  `الاسم EN: ${a.name_en||'-'}\n` +
+  `المستوى: ${a.level}\n` +
+  `الأب: ${a.parent_code||'-'}\n` +
+  `الطبيعة: ${a.nature}\n` +
+  `القائمة: ${a.financial_statement||'-'}\n` +
+  `BS Group: ${a.bs_group||'-'}\n` +
+  `P&L Group: ${a.pl_group||'-'}\n` +
+  `نوع: ${a.is_leaf ? 'قابل للترحيل' : 'تجميعي'}\n` +
+  `نشط: ${a.is_active ? 'نعم' : 'لا'}`
+ );
+}
+
+async function save(){
+ const data = {
+  name_ar: document.getElementById('f-name_ar').value.trim(),
+  name_en: document.getElementById('f-name_en').value.trim(),
+  level: document.getElementById('f-level').value,
+  nature: document.getElementById('f-nature').value,
+  financial_statement: document.getElementById('f-financial_statement').value || null,
+  parent_code: document.getElementById('f-parent_code').value || null,
+  bs_group: document.getElementById('f-bs_group').value.trim() || null,
+  pl_group: document.getElementById('f-pl_group').value.trim() || null,
+  is_group: document.getElementById('f-account_type').value === '1' ? 1 : 0,
+  is_leaf: document.getElementById('f-account_type').value === '1' ? 0 : 1
+ };
+ if (!data.name_ar) { alert('الاسم مطلوب'); return; }
+ 
+ if (editId) {
+  const r = await fetch(`${API}/accounts/${editId}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)}).then(x=>x.json());
+  if (r.success) { modal.hide(); load(); } else alert(r.message||'خطأ');
+ } else {
+  data.code = document.getElementById('f-code').value.trim();
+  if (!data.code) { alert('الكود مطلوب'); return; }
+  const r = await fetch(`${API}/accounts/`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)}).then(x=>x.json());
+  if (r.success) { modal.hide(); load(); } else alert(r.message||'خطأ');
+ }
+}
+
+async function del(id,code){
+ if (!confirm(`حذف الحساب "${code}"؟`)) return;
+ const r = await fetch(`${API}/accounts/${id}`,{method:'DELETE'}).then(x=>x.json());
+ if (r.success) load();
+ else alert(r.message||'خطأ');
+}
+
+load();
+</script></body></html>

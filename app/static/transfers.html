@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head><meta charset="UTF-8"><title>التحويلات</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+<link href="style.css" rel="stylesheet"></head>
+<body><div class="container-fluid"><div class="row">
+<div class="col-md-2 sidebar p-0">
+<div class="brand"><i class="bi bi-box-seam" style="font-size:2rem;"></i><h5 class="mt-2 mb-0">موديول المخازن</h5></div>
+<nav class="mt-3">
+<a href="index.html"><i class="bi bi-speedometer2"></i> لوحة التحكم</a>
+<a href="notifications.html"><i class="bi bi-bell"></i> الإشعارات</a>
+<a href="accounts.html"><i class="bi bi-book"></i> الدليل المحاسبي</a>
+<a href="warehouses.html"><i class="bi bi-building"></i> المستودعات</a>
+<a href="item_groups.html"><i class="bi bi-diagram-3"></i> مجموعات الأصناف</a>
+<a href="items.html"><i class="bi bi-box"></i> الأصناف</a>
+<a href="uom.html"><i class="bi bi-rulers"></i> وحدات القياس</a>
+<a href="suppliers.html"><i class="bi bi-truck"></i> الموردون</a>
+<a href="customers.html"><i class="bi bi-people"></i> العملاء</a>
+<a href="requisitions.html"><i class="bi bi-clipboard-check"></i> طلبات الاحتياج</a>
+<a href="purchase_orders.html"><i class="bi bi-file-earmark-text"></i> أوامر الشراء</a>
+<a href="purchase_invoices.html"><i class="bi bi-receipt"></i> فواتير الشراء</a>
+<a href="sales_invoices.html"><i class="bi bi-cart-check"></i> فواتير البيع</a>
+<a href="purchase_returns.html"><i class="bi bi-arrow-return-left"></i> مرتجع شراء</a>
+<a href="sales_returns.html"><i class="bi bi-arrow-return-right"></i> مرتجع بيع</a>
+<a href="payments.html"><i class="bi bi-cash-coin"></i> مدفوعات الموردين</a>
+<a href="customer_receipts.html"><i class="bi bi-cash-stack"></i> تحصيلات العملاء</a>
+<a href="receipts.html"><i class="bi bi-arrow-down-circle"></i> الاستلام</a>
+<a href="material_requests.html"><i class="bi bi-clipboard-plus"></i> طلبات الصرف</a>
+<a href="issues.html"><i class="bi bi-arrow-up-circle"></i> الصرف</a>
+<a href="transfers.html" class="active"><i class="bi bi-arrow-left-right"></i> التحويلات</a>
+<a href="counts.html"><i class="bi bi-clipboard-check"></i> الجرد</a>
+<a href="clearing.html"><i class="bi bi-shuffle"></i> الحسابات الوسيطة</a>
+<a href="financial_reports.html"><i class="bi bi-graph-up"></i> التقارير المالية</a>
+<a href="reports.html"><i class="bi bi-file-earmark-bar-graph"></i> التقارير</a>
+<a href="journal.html"><i class="bi bi-journal-text"></i> القيود</a>
+</nav></div>
+<div class="col-md-10 p-4">
+<div class="d-flex justify-content-between mb-4">
+<h2><i class="bi bi-arrow-left-right text-info"></i> التحويلات المخزنية</h2>
+<button class="btn btn-info" onclick="openAdd()"><i class="bi bi-plus-circle"></i> تحويل جديد</button>
+</div>
+<div class="card p-3">
+<table class="table table-hover">
+<thead><tr>
+<th>رقم التحويل</th><th>التاريخ</th><th>من مستودع</th><th>إلى مستودع</th>
+<th>الكمية</th><th>القيمة</th><th>الحالة</th><th>إجراءات</th>
+</tr></thead>
+<tbody id="tbl"><tr><td colspan="8" class="text-center">جاري التحميل...</td></tr></tbody>
+</table></div></div></div></div>
+
+<div class="modal fade" id="trfModal" tabindex="-1">
+<div class="modal-dialog modal-xl">
+<div class="modal-content">
+<div class="modal-header bg-info text-white"><h5 class="modal-title" id="modal-title"><i class="bi bi-plus-circle"></i> تحويل جديد</h5><button class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
+<div class="modal-body">
+<div class="row g-3 mb-3">
+<div class="col-md-3"><label class="form-label">التاريخ *</label><input type="date" class="form-control" id="f-date"></div>
+<div class="col-md-3"><label class="form-label">من مستودع *</label><select class="form-select" id="f-from"></select></div>
+<div class="col-md-3"><label class="form-label">إلى مستودع *</label><select class="form-select" id="f-to"></select></div>
+<div class="col-md-3"><label class="form-label">مرجع</label><input class="form-control" id="f-ref"></div>
+<div class="col-md-12"><label class="form-label">ملاحظات</label><input class="form-control" id="f-notes"></div>
+</div>
+
+<h6>البنود</h6>
+<table class="table table-bordered">
+<thead class="table-light">
+<tr>
+<th style="width:35%">الصنف</th>
+<th style="width:20%">الوحدة</th>
+<th style="width:15%">الكمية</th>
+<th style="width:15%">الرصيد المتاح</th>
+<th style="width:10%">الحالة</th>
+<th style="width:5%"></th>
+</tr>
+</thead>
+<tbody id="f-lines"></tbody>
+</table>
+<button class="btn btn-outline-info btn-sm" onclick="addLine()"><i class="bi bi-plus"></i> إضافة بند</button>
+</div>
+<div class="modal-footer">
+<button class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+<button class="btn btn-info" onclick="save(true)"><i class="bi bi-check-circle"></i> حفظ وترحيل</button>
+<button class="btn btn-outline-info" onclick="save(false)">حفظ كمسودة</button>
+</div>
+</div></div></div>
+
+<!-- View Modal -->
+<div class="modal fade" id="viewModal" tabindex="-1">
+<div class="modal-dialog modal-lg">
+<div class="modal-content">
+<div class="modal-header bg-info text-white"><h5 class="modal-title"><i class="bi bi-eye"></i> تفاصيل التحويل</h5><button class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
+<div class="modal-body" id="viewBody"></div>
+</div></div></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+const API='http://localhost:5000/api/v1';
+const trfModal = new bootstrap.Modal(document.getElementById('trfModal'));
+const viewModal = new bootstrap.Modal(document.getElementById('viewModal'));
+let itemsList=[], warehousesList=[], itemTiersMap={}, balancesMap={};
+let editId = null;
+
+async function loadLists(){
+ const [i,w] = await Promise.all([
+  fetch(`${API}/items/`).then(r=>r.json()),
+  fetch(`${API}/warehouses/`).then(r=>r.json())]);
+ itemsList = i.data||[];
+ warehousesList = w.data||[];
+ const opts = warehousesList.map(w=>`<option value="${w.id}">${w.code} - ${w.name_ar}</option>`).join('');
+ document.getElementById('f-from').innerHTML = opts;
+ document.getElementById('f-to').innerHTML = opts;
+ if (warehousesList.length > 1) document.getElementById('f-to').value = warehousesList[1].id;
+ 
+ itemTiersMap = {};
+ for (const it of itemsList) {
+  const r = await fetch(`${API}/tiers/item/${it.id}`).then(x=>x.json());
+  if (r.success) itemTiersMap[it.id] = r.data.tiers||[];
+ }
+}
+
+async function loadBalances(warehouseId){
+ balancesMap = {};
+ if (!warehouseId) return;
+ for (const it of itemsList) {
+  const r = await fetch(`${API}/items/${it.id}/stock`).then(x=>x.json()).catch(()=>({data:[]}));
+  const rows = r.data||[];
+  const row = rows.find(x=>x.warehouse_id == warehouseId);
+  if (row) balancesMap[it.id] = parseFloat(row.quantity);
+ }
+}
+
+async function load(){
+ const r = await fetch(`${API}/transfers/`).then(x=>x.json());
+ const rows = r.data||[];
+ document.getElementById('tbl').innerHTML = rows.length?rows.map(t=>`
+  <tr>
+   <td><code>${t.transaction_no}</code></td>
+   <td>${t.transaction_date}</td>
+   <td>${t.from_wh||'-'}</td>
+   <td>${t.to_wh||'-'}</td>
+   <td>${t.total_qty}</td>
+   <td>${parseFloat(t.total_value||0).toFixed(2)}</td>
+   <td><span class="badge-status badge-${t.status}">${t.status}</span></td>
+   <td>
+    <button class="btn btn-sm btn-outline-info" onclick="viewTxn(${t.id})" title="عرض"><i class="bi bi-eye"></i></button>
+    ${t.status==='DRAFT'?`
+     <button class="btn btn-sm btn-outline-danger" onclick="delTxn(${t.id})" title="حذف"><i class="bi bi-trash"></i></button>
+     <button class="btn btn-sm btn-info" onclick="postTxn(${t.id})" title="ترحيل"><i class="bi bi-check-circle"></i></button>
+    `:''}
+   </td>
+  </tr>`).join('') : '<tr><td colspan="8" class="text-center text-muted">لا توجد تحويلات</td></tr>';
+}
+
+async function openAdd(){
+ editId = null;
+ document.getElementById('f-date').value = new Date().toISOString().split('T')[0];
+ document.getElementById('f-ref').value = '';
+ document.getElementById('f-notes').value = '';
+ document.getElementById('f-lines').innerHTML = '';
+ await loadBalances(document.getElementById('f-from').value);
+ addLine();
+ trfModal.show();
+}
+
+document.getElementById('f-from')?.addEventListener('change', async function(){
+ await loadBalances(this.value);
+ document.querySelectorAll('#f-lines tr').forEach(tr=>{
+  const itemSel = tr.querySelector('.item-sel');
+  if (itemSel) {
+   const bal = balancesMap[parseInt(itemSel.value)];
+   const cell = tr.querySelector('.bal-cell');
+   if (cell) {
+    cell.textContent = bal !== undefined ? bal.toFixed(2) : '0';
+   }
+  }
+ });
+});
+
+function addLine(){
+ const tr = document.createElement('tr');
+ const itemOpts = itemsList.map(i=>`<option value="${i.id}">${i.code} - ${i.name_ar}</option>`).join('');
+ tr.innerHTML = `
+  <td><select class="form-select form-select-sm item-sel">${itemOpts}</select></td>
+  <td><select class="form-select form-select-sm uom-sel"></select></td>
+  <td><input type="number" class="form-control form-control-sm qty-in" value="1" step="0.0001" min="0.0001"></td>
+  <td class="bal-cell text-success">-</td>
+  <td class="status-cell"></td>
+  <td><button class="btn btn-sm btn-danger" onclick="this.closest('tr').remove()"><i class="bi bi-trash"></i></button></td>`;
+ document.getElementById('f-lines').appendChild(tr);
+ 
+ const itemSel = tr.querySelector('.item-sel');
+ const uomSel = tr.querySelector('.uom-sel');
+ const balCell = tr.querySelector('.bal-cell');
+ const statCell = tr.querySelector('.status-cell');
+ 
+ const refreshUoms = ()=>{
+  const itemId = parseInt(itemSel.value);
+  const tiers = itemTiersMap[itemId] || [];
+  const order = {MAJOR:1, MEDIUM:2, MINOR:3};
+  const sorted = [...tiers].sort((a,b)=>order[a.tier]-order[b.tier]);
+  const labels = {MAJOR:'🔵', MEDIUM:'🟡', MINOR:'🟢'};
+  uomSel.innerHTML = sorted.map(t=>`<option value="${t.uom_id}">${labels[t.tier]} ${t.uom_name} (${t.uom_code})</option>`).join('');
+  const bal = balancesMap[itemId];
+  balCell.textContent = bal !== undefined ? bal.toFixed(2) : '0';
+  balCell.className = 'bal-cell ' + (bal > 0 ? 'text-success' : 'text-danger');
+ };
+ itemSel.addEventListener('change', refreshUoms);
+ refreshUoms();
+}
+
+async function save(postNow){
+ const lines = [];
+ document.querySelectorAll('#f-lines tr').forEach(tr=>{
+  const item_id = parseInt(tr.querySelector('.item-sel').value);
+  const uom_id = parseInt(tr.querySelector('.uom-sel').value);
+  const quantity = parseFloat(tr.querySelector('.qty-in').value);
+  if (quantity>0 && uom_id) lines.push({item_id,uom_id,quantity});
+ });
+ if (!lines.length) { alert('أضف بنداً'); return; }
+ 
+ const from_id = parseInt(document.getElementById('f-from').value);
+ const to_id = parseInt(document.getElementById('f-to').value);
+ if (from_id === to_id) { alert('لا يمكن التحويل لنفس المستودع'); return; }
+ 
+ const body = {
+  transaction_date: document.getElementById('f-date').value,
+  from_warehouse_id: from_id,
+  to_warehouse_id: to_id,
+  reference_no: document.getElementById('f-ref').value,
+  notes: document.getElementById('f-notes').value,
+  lines
+ };
+ 
+ const r = await fetch(`${API}/transfers/`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}).then(x=>x.json());
+ if (!r.success) { alert(r.message||'خطأ'); return; }
+ 
+ if (postNow) {
+  const pr = await fetch(`${API}/transfers/${r.data.id}/post`,{method:'POST'}).then(x=>x.json());
+  if (!pr.success) { alert(pr.message); return; }
+ }
+ trfModal.hide(); load();
+}
+
+async function viewTxn(id){
+ const r = await fetch(`${API}/txn/${id}`).then(x=>x.json());
+ if (!r.success) return;
+ const t = r.data;
+ let html = `
+ <div class="row mb-3">
+  <div class="col-md-6"><strong>رقم التحويل:</strong> <code>${t.transaction_no}</code></div>
+  <div class="col-md-6"><strong>التاريخ:</strong> ${t.transaction_date}</div>
+  <div class="col-md-6"><strong>الحالة:</strong> <span class="badge-status badge-${t.status}">${t.status}</span></div>
+  <div class="col-md-6"><strong>المرجع:</strong> ${t.reference_no||'-'}</div>
+  <div class="col-md-12"><strong>ملاحظات:</strong> ${t.notes||'-'}</div>
+ </div>
+ <h6>البنود:</h6>
+ <table class="table table-sm table-bordered">
+  <thead><tr><th>#</th><th>الصنف</th><th>الوحدة</th><th>الكمية</th><th>التكلفة</th></tr></thead>
+  <tbody>`;
+ t.lines.forEach((l,i)=>{
+  html += `<tr><td>${i+1}</td><td>${l.item_name}</td><td>${l.uom_name||'-'}</td><td>${l.quantity}</td><td>${parseFloat(l.total_cost||0).toFixed(2)}</td></tr>`;
+ });
+ html += '</tbody></table>';
+ document.getElementById('viewBody').innerHTML = html;
+ viewModal.show();
+}
+
+async function postTxn(id){
+ if (!confirm('ترحيل التحويل؟')) return;
+ const r = await fetch(`${API}/transfers/${id}/post`,{method:'POST'}).then(x=>x.json());
+ if (r.success) load();
+ else alert(r.message);
+}
+
+async function delTxn(id){
+ if (!confirm('حذف التحويل؟')) return;
+ const r = await fetch(`${API}/txn/${id}`,{method:'DELETE'}).then(x=>x.json());
+ if (r.success) load();
+ else alert(r.message);
+}
+
+(async()=>{ await loadLists(); await load(); })();
+</script></body></html>

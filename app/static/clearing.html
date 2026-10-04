@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head><meta charset="UTF-8"><title>الحسابات الوسيطة</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+<link href="style.css" rel="stylesheet"></head>
+<body><div class="container-fluid"><div class="row">
+<div class="col-md-2 sidebar p-0">
+<div class="brand"><i class="bi bi-box-seam" style="font-size:2rem;"></i><h5 class="mt-2 mb-0">موديول المخازن</h5></div>
+<nav class="mt-3">
+<a href="index.html"><i class="bi bi-speedometer2"></i> لوحة التحكم</a>
+<a href="notifications.html"><i class="bi bi-bell"></i> الإشعارات</a>
+<a href="accounts.html"><i class="bi bi-book"></i> الدليل المحاسبي</a>
+<a href="warehouses.html"><i class="bi bi-building"></i> المستودعات</a>
+<a href="item_groups.html"><i class="bi bi-diagram-3"></i> مجموعات الأصناف</a>
+<a href="items.html"><i class="bi bi-box"></i> الأصناف</a>
+<a href="uom.html"><i class="bi bi-rulers"></i> وحدات القياس</a>
+<a href="suppliers.html"><i class="bi bi-truck"></i> الموردون</a>
+<a href="customers.html"><i class="bi bi-people"></i> العملاء</a>
+<a href="requisitions.html"><i class="bi bi-clipboard-check"></i> طلبات الاحتياج</a>
+<a href="purchase_orders.html"><i class="bi bi-file-earmark-text"></i> أوامر الشراء</a>
+<a href="purchase_invoices.html"><i class="bi bi-receipt"></i> فواتير الشراء</a>
+<a href="sales_invoices.html"><i class="bi bi-cart-check"></i> فواتير البيع</a>
+<a href="purchase_returns.html"><i class="bi bi-arrow-return-left"></i> مرتجع شراء</a>
+<a href="sales_returns.html"><i class="bi bi-arrow-return-right"></i> مرتجع بيع</a>
+<a href="payments.html"><i class="bi bi-cash-coin"></i> مدفوعات الموردين</a>
+<a href="customer_receipts.html"><i class="bi bi-cash-stack"></i> تحصيلات العملاء</a>
+<a href="receipts.html"><i class="bi bi-arrow-down-circle"></i> الاستلام</a>
+<a href="material_requests.html"><i class="bi bi-clipboard-plus"></i> طلبات الصرف</a>
+<a href="issues.html"><i class="bi bi-arrow-up-circle"></i> الصرف</a>
+<a href="transfers.html"><i class="bi bi-arrow-left-right"></i> التحويلات</a>
+<a href="counts.html"><i class="bi bi-clipboard-check"></i> الجرد</a>
+<a href="clearing.html" class="active"><i class="bi bi-arrow-left-right"></i> الحسابات الوسيطة</a>
+<a href="financial_reports.html"><i class="bi bi-graph-up"></i> التقارير المالية</a>
+<a href="reports.html"><i class="bi bi-file-earmark-bar-graph"></i> التقارير</a>
+<a href="journal.html"><i class="bi bi-journal-text"></i> القيود</a>
+</nav></div>
+<div class="col-md-10 p-4">
+<h2 class="mb-4"><i class="bi bi-arrow-left-right"></i> الحسابات الوسيطة</h2>
+
+<ul class="nav nav-tabs mb-3" role="tablist">
+<li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-summary"><i class="bi bi-calculator"></i> الملخص</button></li>
+<li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-grni"><i class="bi bi-box-arrow-in-down"></i> بضاعة بدون فاتورة</button></li>
+<li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-invoices"><i class="bi bi-receipt"></i> الفواتير</button></li>
+</ul>
+
+<div class="tab-content">
+<div class="tab-pane fade show active" id="tab-summary">
+<div class="row g-3 mb-3">
+<div class="col-md-4"><div class="stat-card card p-3"><div class="label">1236-01 استلام</div><div class="value text-warning" id="s1">-</div></div></div>
+<div class="col-md-4"><div class="stat-card card p-3"><div class="label">1236-02 تسليم</div><div class="value text-info" id="s2">-</div></div></div>
+<div class="col-md-4"><div class="stat-card card p-3"><div class="label">إجمالي الوسيط</div><div class="value text-danger" id="s3">-</div></div></div>
+</div>
+<div class="card p-3">
+<h5>ملخص الحسابات الوسيطة</h5>
+<table class="table table-hover">
+<thead><tr><th>الحساب</th><th>مدين</th><th>دائن</th><th>الرصيد</th><th>الحالة</th></tr></thead>
+<tbody id="summary-tbl"><tr><td colspan="5" class="text-center">جاري التحميل...</td></tr></tbody>
+</table>
+</div>
+</div>
+
+<div class="tab-pane fade" id="tab-grni">
+<div class="card p-3">
+<h5><i class="bi bi-exclamation-triangle text-warning"></i> بضاعة مستلمة بدون فاتورة</h5>
+<table class="table table-hover">
+<thead><tr>
+<th>رقم الاستلام</th><th>التاريخ</th><th>المستودع</th>
+<th>الصنف</th><th>الكمية</th><th>القيمة</th><th>حساب الوسيط</th>
+</tr></thead>
+<tbody id="grni-tbl"><tr><td colspan="7" class="text-center">جاري التحميل...</td></tr></tbody>
+</table>
+</div>
+</div>
+
+<div class="tab-pane fade" id="tab-invoices">
+<div class="card p-3">
+<h5><i class="bi bi-receipt"></i> الفواتير المرتبطة</h5>
+<table class="table table-hover">
+<thead><tr>
+<th>رقم الفاتورة</th><th>التاريخ</th><th>المورد</th>
+<th>الإجمالي</th><th>إذن الاستلام</th><th>الحالة</th>
+</tr></thead>
+<tbody id="inv-tbl"><tr><td colspan="6" class="text-center">جاري التحميل...</td></tr></tbody>
+</table>
+</div>
+</div>
+</div>
+
+</div></div></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+const API='http://localhost:5000/api/v1';
+
+async function loadSummary(){
+ const r = await fetch(`${API}/clearing/summary`).then(x=>x.json());
+ const rows = r.data||[];
+ let total = 0;
+ let s1 = 0, s2 = 0;
+ rows.forEach(row=>{
+  if (row.account_code === '1236-01') s1 += parseFloat(row.balance||0);
+  if (row.account_code === '1236-02') s2 += parseFloat(row.balance||0);
+  total += parseFloat(row.balance||0);
+ });
+ document.getElementById('s1').textContent = s1.toFixed(2) + ' ج.م';
+ document.getElementById('s2').textContent = s2.toFixed(2) + ' ج.م';
+ document.getElementById('s3').textContent = total.toFixed(2) + ' ج.م';
+ 
+ document.getElementById('summary-tbl').innerHTML = rows.length ? rows.map(row=>`
+  <tr>
+   <td><code>${row.account_code}</code></td>
+   <td class="text-success">${parseFloat(row.total_debit||0).toFixed(2)}</td>
+   <td class="text-danger">${parseFloat(row.total_credit||0).toFixed(2)}</td>
+   <td><strong>${parseFloat(row.balance||0).toFixed(2)}</strong></td>
+   <td>${parseFloat(row.balance||0) === 0 ? '<span class="badge bg-success">مسوّى ✅</span>' : '<span class="badge bg-warning">معلّق</span>'}</td>
+  </tr>`).join('') : '<tr><td colspan="5" class="text-center text-muted">لا توجد بيانات</td></tr>';
+}
+
+async function loadGRNI(){
+ const r = await fetch(`${API}/clearing/grni`).then(x=>x.json());
+ const rows = r.data||[];
+ document.getElementById('grni-tbl').innerHTML = rows.length ? rows.map(row=>`
+  <tr>
+   <td><code>${row.transaction_no}</code></td>
+   <td>${row.transaction_date}</td>
+   <td>${row.warehouse_name}</td>
+   <td>${row.item_name}</td>
+   <td>${row.base_quantity}</td>
+   <td>${parseFloat(row.total_cost).toFixed(2)}</td>
+   <td><code>${row.clearing_account||'-'}</code></td>
+  </tr>`).join('') : '<tr><td colspan="7" class="text-center text-success">لا توجد بضاعة بدون فاتورة ✅</td></tr>';
+}
+
+async function loadInvoices(){
+ const r = await fetch(`${API}/clearing/invoices`).then(x=>x.json());
+ const rows = r.data||[];
+ document.getElementById('inv-tbl').innerHTML = rows.length ? rows.map(row=>`
+  <tr>
+   <td><code>${row.invoice_no}</code></td>
+   <td>${row.invoice_date}</td>
+   <td>${row.supplier_name||'-'}</td>
+   <td>${parseFloat(row.total_amount).toFixed(2)}</td>
+   <td>${row.stock_txn_no ? `<code>${row.stock_txn_no}</code>` : '-'}</td>
+   <td><span class="badge-status badge-${row.status}">${row.status}</span></td>
+  </tr>`).join('') : '<tr><td colspan="6" class="text-center text-muted">لا توجد فواتير</td></tr>';
+}
+
+loadSummary();
+loadGRNI();
+loadInvoices();
+</script></body></html>

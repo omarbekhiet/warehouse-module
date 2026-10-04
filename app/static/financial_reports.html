@@ -1,0 +1,423 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head><meta charset="UTF-8"><title>التقارير المالية</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+<link href="style.css" rel="stylesheet">
+<style>
+.report-tab .table { font-size: 0.9rem; }
+.report-tab .total-row { background: #e8f5e9; font-weight: 700; }
+.report-tab .header-row { background: #f8f9fa; font-weight: 600; }
+.account-code { font-family: monospace; color: #555; }
+.print-only { display: none; }
+@media print {
+    .sidebar, .nav-tabs, .filter-card, .btn { display: none !important; }
+    .col-md-10 { width: 100% !important; flex: 0 0 100% !important; max-width: 100% !important; }
+    .print-only { display: block !important; }
+}
+</style>
+</head>
+<body><div class="container-fluid"><div class="row">
+<div class="col-md-2 sidebar p-0">
+<div class="brand"><i class="bi bi-box-seam" style="font-size:2rem;"></i><h5 class="mt-2 mb-0">موديول المخازن</h5></div>
+<nav class="mt-3">
+<a href="index.html"><i class="bi bi-speedometer2"></i> لوحة التحكم</a>
+<a href="notifications.html"><i class="bi bi-bell"></i> الإشعارات</a>
+<a href="accounts.html"><i class="bi bi-book"></i> الدليل المحاسبي</a>
+<a href="warehouses.html"><i class="bi bi-building"></i> المستودعات</a>
+<a href="item_groups.html"><i class="bi bi-diagram-3"></i> مجموعات الأصناف</a>
+<a href="items.html"><i class="bi bi-box"></i> الأصناف</a>
+<a href="uom.html"><i class="bi bi-rulers"></i> وحدات القياس</a>
+<a href="suppliers.html"><i class="bi bi-truck"></i> الموردون</a>
+<a href="customers.html"><i class="bi bi-people"></i> العملاء</a>
+<a href="requisitions.html"><i class="bi bi-clipboard-check"></i> طلبات الاحتياج</a>
+<a href="purchase_orders.html"><i class="bi bi-file-earmark-text"></i> أوامر الشراء</a>
+<a href="purchase_invoices.html"><i class="bi bi-receipt"></i> فواتير الشراء</a>
+<a href="sales_invoices.html"><i class="bi bi-cart-check"></i> فواتير البيع</a>
+<a href="purchase_returns.html"><i class="bi bi-arrow-return-left"></i> مرتجع شراء</a>
+<a href="sales_returns.html"><i class="bi bi-arrow-return-right"></i> مرتجع بيع</a>
+<a href="payments.html"><i class="bi bi-cash-coin"></i> مدفوعات الموردين</a>
+<a href="customer_receipts.html"><i class="bi bi-cash-stack"></i> تحصيلات العملاء</a>
+<a href="receipts.html"><i class="bi bi-arrow-down-circle"></i> الاستلام</a>
+<a href="material_requests.html"><i class="bi bi-clipboard-plus"></i> طلبات الصرف</a>
+<a href="issues.html"><i class="bi bi-arrow-up-circle"></i> الصرف</a>
+<a href="transfers.html"><i class="bi bi-arrow-left-right"></i> التحويلات</a>
+<a href="counts.html"><i class="bi bi-clipboard-check"></i> الجرد</a>
+<a href="clearing.html"><i class="bi bi-shuffle"></i> الحسابات الوسيطة</a>
+<a href="financial_reports.html" class="active"><i class="bi bi-graph-up"></i> التقارير المالية</a>
+<a href="reports.html"><i class="bi bi-file-earmark-bar-graph"></i> تقارير المخازن</a>
+<a href="journal.html"><i class="bi bi-journal-text"></i> القيود</a>
+</nav></div>
+<div class="col-md-10 p-4">
+<h2 class="mb-4"><i class="bi bi-graph-up"></i> التقارير المالية</h2>
+
+<!-- Filter Card -->
+<div class="card filter-card p-3 mb-3">
+<div class="row g-3 align-items-end">
+<div class="col-md-3"><label class="form-label">من تاريخ</label><input type="date" class="form-control" id="f-from"></div>
+<div class="col-md-3"><label class="form-label">إلى تاريخ</label><input type="date" class="form-control" id="f-to"></div>
+<div class="col-md-3"><label class="form-label">حتى تاريخ (للميزانية)</label><input type="date" class="form-control" id="f-asof"></div>
+<div class="col-md-3">
+<button class="btn btn-primary w-100" onclick="loadCurrent()"><i class="bi bi-search"></i> تطبيق</button>
+</div>
+</div>
+</div>
+
+<!-- Tabs -->
+<ul class="nav nav-tabs mb-3" role="tablist">
+<li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-tb" onclick="currentTab='tb'; loadCurrent()"><i class="bi bi-list-check"></i> ميزان المراجعة</button></li>
+<li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-bs" onclick="currentTab='bs'; loadCurrent()"><i class="bi bi-file-earmark-bar-graph"></i> الميزانية</button></li>
+<li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-is" onclick="currentTab='is'; loadCurrent()"><i class="bi bi-graph-up-arrow"></i> قائمة الدخل</button></li>
+<li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-ar" onclick="currentTab='ar'; loadCurrent()"><i class="bi bi-people"></i> أعمار AR</button></li>
+<li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-ap" onclick="currentTab='ap'; loadCurrent()"><i class="bi bi-truck"></i> أعمار AP</button></li>
+<li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-ledger" onclick="currentTab='ledger'; loadCurrent()"><i class="bi bi-book"></i> دفتر الأستاذ</button></li>
+</ul>
+
+<div class="tab-content report-tab">
+
+<!-- Trial Balance -->
+<div class="tab-pane fade show active" id="tab-tb">
+<div class="card p-3">
+<div class="d-flex justify-content-between align-items-center mb-3">
+<h5 class="mb-0"><i class="bi bi-list-check"></i> ميزان المراجعة</h5>
+<div id="tb-status"></div>
+</div>
+<table class="table table-hover table-sm">
+<thead class="table-light"><tr>
+<th>الكود</th><th>اسم الحساب</th><th>المستوى</th>
+<th class="text-end">مدين</th><th class="text-end">دائن</th>
+</tr></thead>
+<tbody id="tb-body"><tr><td colspan="5" class="text-center">جاري التحميل...</td></tr></tbody>
+</table>
+</div>
+</div>
+
+<!-- Balance Sheet -->
+<div class="tab-pane fade" id="tab-bs">
+<div class="card p-3">
+<h5><i class="bi bi-file-earmark-bar-graph"></i> الميزانية العمومية</h5>
+<div id="bs-content"><div class="text-center text-muted">جاري التحميل...</div></div>
+</div>
+</div>
+
+<!-- Income Statement -->
+<div class="tab-pane fade" id="tab-is">
+<div class="card p-3">
+<h5><i class="bi bi-graph-up-arrow"></i> قائمة الدخل</h5>
+<div id="is-content"><div class="text-center text-muted">جاري التحميل...</div></div>
+</div>
+</div>
+
+<!-- AR Aging -->
+<div class="tab-pane fade" id="tab-ar">
+<div class="card p-3">
+<h5><i class="bi bi-people"></i> أعمار الذمم المدينة (AR)</h5>
+<div class="row g-3 mb-3" id="ar-buckets"></div>
+<div class="table-responsive">
+<table class="table table-hover table-sm">
+<thead class="table-light"><tr>
+<th>رقم الفاتورة</th><th>التاريخ</th><th>العميل</th>
+<th class="text-end">المبلغ</th><th>أيام</th><th>الفئة</th>
+</tr></thead>
+<tbody id="ar-body"><tr><td colspan="6" class="text-center">جاري التحميل...</td></tr></tbody>
+</table>
+</div>
+</div>
+</div>
+
+<!-- AP Aging -->
+<div class="tab-pane fade" id="tab-ap">
+<div class="card p-3">
+<h5><i class="bi bi-truck"></i> أعمار الذمم الدائنة (AP)</h5>
+<div class="row g-3 mb-3" id="ap-buckets"></div>
+<div class="table-responsive">
+<table class="table table-hover table-sm">
+<thead class="table-light"><tr>
+<th>رقم الفاتورة</th><th>التاريخ</th><th>المورد</th>
+<th class="text-end">المبلغ</th><th>أيام</th><th>الفئة</th>
+</tr></thead>
+<tbody id="ap-body"><tr><td colspan="6" class="text-center">جاري التحميل...</td></tr></tbody>
+</table>
+</div>
+</div>
+</div>
+
+<!-- Account Ledger -->
+<div class="tab-pane fade" id="tab-ledger">
+<div class="card p-3">
+<h5><i class="bi bi-book"></i> دفتر الأستاذ</h5>
+<div class="row g-2 mb-3">
+<div class="col-md-4">
+<label class="form-label">اختر حساب</label>
+<select class="form-select" id="ledger-account" onchange="loadLedger()"></select>
+</div>
+</div>
+<div id="ledger-content"><div class="text-center text-muted">اختر حساباً لعرض حركاته</div></div>
+</div>
+</div>
+
+</div>
+
+</div></div></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+const API='http://localhost:5000/api/v1';
+let currentTab = 'tb';
+let leafAccounts = [];
+
+async function loadAccounts(){
+ try {
+  const r = await fetch(`${API}/accounts/leaf`).then(x=>x.json());
+  leafAccounts = r.data||[];
+  document.getElementById('ledger-account').innerHTML = 
+   '<option value="">— اختر حساب —</option>' +
+   leafAccounts.map(a=>`<option value="${a.code}">${a.code} - ${a.name_ar}</option>`).join('');
+ } catch(e) { console.error(e); }
+}
+
+function getFilters(){
+ const f = {};
+ const from = document.getElementById('f-from').value;
+ const to = document.getElementById('f-to').value;
+ const asof = document.getElementById('f-asof').value;
+ if (from) f.date_from = from;
+ if (to) f.date_to = to;
+ if (asof) f.as_of = asof;
+ return f;
+}
+
+function buildQS(filters){
+ const p = new URLSearchParams();
+ for (const k in filters) p.append(k, filters[k]);
+ const s = p.toString();
+ return s ? '?' + s : '';
+}
+
+function loadCurrent(){
+ if (currentTab === 'tb') loadTrialBalance();
+ else if (currentTab === 'bs') loadBalanceSheet();
+ else if (currentTab === 'is') loadIncomeStatement();
+ else if (currentTab === 'ar') loadAR();
+ else if (currentTab === 'ap') loadAP();
+ else if (currentTab === 'ledger') loadLedger();
+}
+
+async function loadTrialBalance(){
+ try {
+  const r = await fetch(`${API}/financial-reports/trial-balance${buildQS(getFilters())}`).then(x=>x.json());
+  const rows = r.data||[];
+  const totals = r.totals||{};
+  
+  document.getElementById('tb-body').innerHTML = rows.length ? rows.map(x=>`
+   <tr>
+    <td class="account-code">${x.code}</td>
+    <td>${x.name_ar}</td>
+    <td><span class="badge bg-secondary">${x.level}</span></td>
+    <td class="text-end text-success">${x.debit_balance > 0 ? x.debit_balance.toFixed(2) : '-'}</td>
+    <td class="text-end text-danger">${x.credit_balance > 0 ? x.credit_balance.toFixed(2) : '-'}</td>
+   </tr>`).join('') : '<tr><td colspan="5" class="text-center text-muted">لا توجد بيانات</td></tr>';
+  
+  if (rows.length) {
+   document.getElementById('tb-body').innerHTML += `
+    <tr class="total-row">
+     <td colspan="3" class="text-end"><strong>الإجمالي:</strong></td>
+     <td class="text-end text-success"><strong>${totals.debit.toFixed(2)}</strong></td>
+     <td class="text-end text-danger"><strong>${totals.credit.toFixed(2)}</strong></td>
+    </tr>`;
+  }
+  
+  document.getElementById('tb-status').innerHTML = totals.balanced 
+   ? '<span class="badge bg-success fs-6">متوازن ✅</span>'
+   : '<span class="badge bg-danger fs-6">غير متوازن ⚠️</span>';
+ } catch(e) { console.error(e); }
+}
+
+async function loadBalanceSheet(){
+ try {
+  const r = await fetch(`${API}/financial-reports/balance-sheet${buildQS(getFilters())}`).then(x=>x.json());
+  const d = r.data||{};
+  const t = d.totals||{};
+  
+  let html = '<div class="row"><div class="col-md-6">';
+  html += '<h6 class="text-primary">الأصول</h6><table class="table table-sm">';
+  (d.assets||[]).forEach(a=>{
+   html += `<tr><td>${a.name_ar}</td><td class="text-end">${a.balance.toFixed(2)}</td></tr>`;
+  });
+  html += `<tr class="total-row"><td><strong>إجمالي الأصول</strong></td><td class="text-end"><strong>${t.assets.toFixed(2)}</strong></td></tr>`;
+  html += '</table></div>';
+  
+  html += '<div class="col-md-6">';
+  html += '<h6 class="text-danger">الخصوم وحقوق الملكية</h6><table class="table table-sm">';
+  (d.liabilities||[]).forEach(a=>{
+   html += `<tr><td>${a.name_ar}</td><td class="text-end">${a.balance.toFixed(2)}</td></tr>`;
+  });
+  html += `<tr class="header-row"><td><strong>إجمالي الخصوم</strong></td><td class="text-end"><strong>${t.liabilities.toFixed(2)}</strong></td></tr>`;
+  (d.equity||[]).forEach(a=>{
+   html += `<tr><td>${a.name_ar}</td><td class="text-end">${a.balance.toFixed(2)}</td></tr>`;
+  });
+  html += `<tr class="header-row"><td><strong>إجمالي حقوق الملكية</strong></td><td class="text-end"><strong>${t.equity.toFixed(2)}</strong></td></tr>`;
+  html += `<tr class="total-row"><td><strong>الخصوم + حقوق الملكية</strong></td><td class="text-end"><strong>${t.liab_plus_equity.toFixed(2)}</strong></td></tr>`;
+  html += '</table></div></div>';
+  
+  html += `<div class="alert ${t.balanced ? 'alert-success' : 'alert-danger'} text-center">`;
+  html += t.balanced ? '✅ الميزانية متوازنة' : '⚠️ الميزانية غير متوازنة';
+  html += `</div>`;
+  
+  document.getElementById('bs-content').innerHTML = html;
+ } catch(e) { console.error(e); }
+}
+
+async function loadIncomeStatement(){
+ try {
+  const r = await fetch(`${API}/financial-reports/income-statement${buildQS(getFilters())}`).then(x=>x.json());
+  const d = r.data||{};
+  const t = d.totals||{};
+  
+  let html = '<table class="table table-sm">';
+  
+  html += '<tr class="header-row"><td colspan="2"><strong>الإيرادات</strong></td></tr>';
+  (d.revenue||[]).forEach(x=>{
+   html += `<tr><td class="ps-4">${x.name_ar}</td><td class="text-end">${x.amount.toFixed(2)}</td></tr>`;
+  });
+  html += `<tr><td class="ps-4"><strong>إجمالي الإيرادات</strong></td><td class="text-end"><strong>${t.total_revenue.toFixed(2)}</strong></td></tr>`;
+  
+  html += '<tr class="header-row"><td colspan="2"><strong>تكلفة النشاط</strong></td></tr>';
+  (d.cogs||[]).forEach(x=>{
+   html += `<tr><td class="ps-4">${x.name_ar}</td><td class="text-end">${x.amount.toFixed(2)}</td></tr>`;
+  });
+  html += `<tr><td class="ps-4"><strong>إجمالي التكلفة</strong></td><td class="text-end"><strong>(${t.total_cogs.toFixed(2)})</strong></td></tr>`;
+  
+  html += `<tr class="total-row"><td><strong>إجمالي الربح</strong></td><td class="text-end"><strong>${t.gross_profit.toFixed(2)}</strong></td></tr>`;
+  
+  html += '<tr class="header-row"><td colspan="2"><strong>المصروفات التشغيلية</strong></td></tr>';
+  (d.expenses||[]).forEach(x=>{
+   html += `<tr><td class="ps-4">${x.name_ar}</td><td class="text-end">(${x.amount.toFixed(2)})</td></tr>`;
+  });
+  html += `<tr><td class="ps-4"><strong>إجمالي المصروفات</strong></td><td class="text-end"><strong>(${t.total_expenses.toFixed(2)})</strong></td></tr>`;
+  
+  html += `<tr class="total-row"><td><strong>الربح التشغيلي</strong></td><td class="text-end"><strong>${t.operating_profit.toFixed(2)}</strong></td></tr>`;
+  
+  if ((d.other_income||[]).length) {
+   html += '<tr class="header-row"><td colspan="2"><strong>إيرادات أخرى</strong></td></tr>';
+   (d.other_income||[]).forEach(x=>{
+    html += `<tr><td class="ps-4">${x.name_ar}</td><td class="text-end">${x.amount.toFixed(2)}</td></tr>`;
+   });
+  }
+  
+  if ((d.finance_costs||[]).length) {
+   html += '<tr class="header-row"><td colspan="2"><strong>تكاليف التمويل</strong></td></tr>';
+   (d.finance_costs||[]).forEach(x=>{
+    html += `<tr><td class="ps-4">${x.name_ar}</td><td class="text-end">(${x.amount.toFixed(2)})</td></tr>`;
+   });
+  }
+  
+  html += `<tr class="header-row"><td><strong>الربح قبل الضريبة</strong></td><td class="text-end"><strong>${t.profit_before_tax.toFixed(2)}</strong></td></tr>`;
+  
+  if ((d.taxes||[]).length) {
+   (d.taxes||[]).forEach(x=>{
+    html += `<tr><td class="ps-4">${x.name_ar}</td><td class="text-end">(${x.amount.toFixed(2)})</td></tr>`;
+   });
+  }
+  
+  const npColor = t.net_profit >= 0 ? 'text-success' : 'text-danger';
+  html += `<tr class="total-row"><td><strong>صافي الربح</strong></td><td class="text-end ${npColor}"><strong>${t.net_profit.toFixed(2)}</strong></td></tr>`;
+  
+  html += '</table>';
+  document.getElementById('is-content').innerHTML = html;
+ } catch(e) { console.error(e); }
+}
+
+async function loadAR(){
+ try {
+  const r = await fetch(`${API}/financial-reports/aging/ar`).then(x=>x.json());
+  const rows = r.data||[];
+  const b = r.buckets||{};
+  
+  let bhtml = '';
+  const colors = {'0-30':'success','31-60':'info','61-90':'warning','90+':'danger'};
+  for (const k in b) {
+   bhtml += `<div class="col-md-3"><div class="card p-3 bg-${colors[k]} text-white">
+    <div class="small">${k} يوم</div>
+    <div class="h4 mb-0">${b[k].toFixed(2)}</div>
+   </div></div>`;
+  }
+  document.getElementById('ar-buckets').innerHTML = bhtml;
+  
+  document.getElementById('ar-body').innerHTML = rows.length ? rows.map(x=>`
+   <tr>
+    <td><code>${x.invoice_no}</code></td>
+    <td>${x.invoice_date}</td>
+    <td>${x.customer_name||'-'}</td>
+    <td class="text-end"><strong>${x.amount.toFixed(2)}</strong></td>
+    <td>${x.days_old}</td>
+    <td><span class="badge bg-${colors[x.bucket]}">${x.bucket}</span></td>
+   </tr>`).join('') : '<tr><td colspan="6" class="text-center text-muted">لا توجد فواتير</td></tr>';
+ } catch(e) { console.error(e); }
+}
+
+async function loadAP(){
+ try {
+  const r = await fetch(`${API}/financial-reports/aging/ap`).then(x=>x.json());
+  const rows = r.data||[];
+  const b = r.buckets||{};
+  
+  let bhtml = '';
+  const colors = {'0-30':'success','31-60':'info','61-90':'warning','90+':'danger'};
+  for (const k in b) {
+   bhtml += `<div class="col-md-3"><div class="card p-3 bg-${colors[k]} text-white">
+    <div class="small">${k} يوم</div>
+    <div class="h4 mb-0">${b[k].toFixed(2)}</div>
+   </div></div>`;
+  }
+  document.getElementById('ap-buckets').innerHTML = bhtml;
+  
+  document.getElementById('ap-body').innerHTML = rows.length ? rows.map(x=>`
+   <tr>
+    <td><code>${x.invoice_no}</code></td>
+    <td>${x.invoice_date}</td>
+    <td>${x.supplier_name||'-'}</td>
+    <td class="text-end"><strong>${x.amount.toFixed(2)}</strong></td>
+    <td>${x.days_old}</td>
+    <td><span class="badge bg-${colors[x.bucket]}">${x.bucket}</span></td>
+   </tr>`).join('') : '<tr><td colspan="6" class="text-center text-muted">لا توجد فواتير</td></tr>';
+ } catch(e) { console.error(e); }
+}
+
+async function loadLedger(){
+ const code = document.getElementById('ledger-account').value;
+ if (!code) {
+  document.getElementById('ledger-content').innerHTML = '<div class="text-center text-muted">اختر حساباً</div>';
+  return;
+ }
+ try {
+  const r = await fetch(`${API}/financial-reports/account-ledger/${code}${buildQS(getFilters())}`).then(x=>x.json());
+  if (!r.success) { document.getElementById('ledger-content').innerHTML = '<div class="alert alert-danger">خطأ</div>'; return; }
+  const acc = r.data.account;
+  const txs = r.data.transactions||[];
+  
+  let html = `<h6>${acc.code} - ${acc.name_ar}</h6>`;
+  if (!txs.length) {
+   html += '<div class="alert alert-info">لا توجد حركات على هذا الحساب</div>';
+  } else {
+   html += '<table class="table table-sm table-hover">';
+   html += '<thead class="table-light"><tr><th>التاريخ</th><th>رقم القيد</th><th>الوصف</th><th>المرجع</th><th class="text-end">مدين</th><th class="text-end">دائن</th><th class="text-end">الرصيد</th></tr></thead><tbody>';
+   txs.forEach(t=>{
+    html += `<tr>
+     <td>${t.entry_date}</td>
+     <td><code>${t.entry_no}</code></td>
+     <td><small>${t.description||'-'}</small></td>
+     <td><small>${t.reference_no||'-'}</small></td>
+     <td class="text-end text-success">${t.debit>0 ? t.debit.toFixed(2) : '-'}</td>
+     <td class="text-end text-danger">${t.credit>0 ? t.credit.toFixed(2) : '-'}</td>
+     <td class="text-end"><strong>${t.balance.toFixed(2)}</strong></td>
+    </tr>`;
+   });
+   html += '</tbody></table>';
+  }
+  document.getElementById('ledger-content').innerHTML = html;
+ } catch(e) { console.error(e); }
+}
+
+(async()=>{ await loadAccounts(); loadCurrent(); })();
+</script></body></html>

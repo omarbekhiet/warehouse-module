@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head><meta charset="UTF-8"><title>العملاء</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+<link href="style.css" rel="stylesheet"></head>
+<body><div class="container-fluid"><div class="row">
+<div class="col-md-2 sidebar p-0">
+<div class="brand"><i class="bi bi-box-seam" style="font-size:2rem;"></i><h5 class="mt-2 mb-0">موديول المخازن</h5></div>
+<nav class="mt-3">
+<a href="index.html"><i class="bi bi-speedometer2"></i> لوحة التحكم</a>
+<a href="notifications.html"><i class="bi bi-bell"></i> الإشعارات</a>
+<a href="accounts.html"><i class="bi bi-book"></i> الدليل المحاسبي</a>
+<a href="warehouses.html"><i class="bi bi-building"></i> المستودعات</a>
+<a href="item_groups.html"><i class="bi bi-diagram-3"></i> مجموعات الأصناف</a>
+<a href="items.html"><i class="bi bi-box"></i> الأصناف</a>
+<a href="uom.html"><i class="bi bi-rulers"></i> وحدات القياس</a>
+<a href="suppliers.html"><i class="bi bi-truck"></i> الموردون</a>
+<a href="customers.html" class="active"><i class="bi bi-people"></i> العملاء</a>
+<a href="requisitions.html"><i class="bi bi-clipboard-check"></i> طلبات الاحتياج</a>
+<a href="purchase_orders.html"><i class="bi bi-file-earmark-text"></i> أوامر الشراء</a>
+<a href="purchase_invoices.html"><i class="bi bi-receipt"></i> فواتير الشراء</a>
+<a href="sales_invoices.html"><i class="bi bi-cart-check"></i> فواتير البيع</a>
+<a href="purchase_returns.html"><i class="bi bi-arrow-return-left"></i> مرتجع شراء</a>
+<a href="sales_returns.html"><i class="bi bi-arrow-return-right"></i> مرتجع بيع</a>
+<a href="payments.html"><i class="bi bi-cash-coin"></i> مدفوعات الموردين</a>
+<a href="customer_receipts.html"><i class="bi bi-cash-stack"></i> تحصيلات العملاء</a>
+<a href="receipts.html"><i class="bi bi-arrow-down-circle"></i> الاستلام</a>
+<a href="material_requests.html"><i class="bi bi-clipboard-plus"></i> طلبات الصرف</a>
+<a href="issues.html"><i class="bi bi-arrow-up-circle"></i> الصرف</a>
+<a href="transfers.html"><i class="bi bi-arrow-left-right"></i> التحويلات</a>
+<a href="counts.html"><i class="bi bi-clipboard-check"></i> الجرد</a>
+<a href="clearing.html"><i class="bi bi-shuffle"></i> الحسابات الوسيطة</a>
+<a href="financial_reports.html"><i class="bi bi-graph-up"></i> التقارير المالية</a>
+<a href="reports.html"><i class="bi bi-file-earmark-bar-graph"></i> التقارير</a>
+<a href="journal.html"><i class="bi bi-journal-text"></i> القيود</a>
+</nav></div>
+<div class="col-md-10 p-4">
+<div class="d-flex justify-content-between mb-4">
+<h2><i class="bi bi-people"></i> العملاء</h2>
+<button class="btn btn-primary" onclick="openAdd()"><i class="bi bi-plus-circle"></i> عميل جديد</button>
+</div>
+<div class="card p-3">
+<table class="table table-hover">
+<thead><tr>
+<th>الكود</th><th>الاسم</th><th>الهاتف</th><th>البريد</th>
+<th>حد الائتمان</th><th>حساب العميل</th><th>إجراءات</th>
+</tr></thead>
+<tbody id="tbl"><tr><td colspan="7" class="text-center">جاري التحميل...</td></tr></tbody>
+</table></div></div></div></div>
+
+<div class="modal fade" id="custModal" tabindex="-1">
+<div class="modal-dialog modal-lg">
+<div class="modal-content">
+<div class="modal-header bg-primary text-white"><h5 class="modal-title" id="modal-title"><i class="bi bi-plus-circle"></i> عميل جديد</h5><button class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
+<div class="modal-body">
+<div class="row g-3">
+<div class="col-md-4"><label class="form-label">الكود *</label><input class="form-control" id="f-code"></div>
+<div class="col-md-4"><label class="form-label">الاسم بالعربي *</label><input class="form-control" id="f-name_ar"></div>
+<div class="col-md-4"><label class="form-label">الاسم بالإنجليزي</label><input class="form-control" id="f-name_en"></div>
+<div class="col-md-4"><label class="form-label">الهاتف</label><input class="form-control" id="f-phone"></div>
+<div class="col-md-4"><label class="form-label">البريد الإلكتروني</label><input type="email" class="form-control" id="f-email"></div>
+<div class="col-md-4"><label class="form-label">الرقم الضريبي</label><input class="form-control" id="f-tax_number"></div>
+<div class="col-md-8"><label class="form-label">العنوان</label><input class="form-control" id="f-address"></div>
+<div class="col-md-4"><label class="form-label">حساب العميل</label><input class="form-control" id="f-account_code" value="1221"></div>
+<div class="col-md-4"><label class="form-label">حد الائتمان</label><input type="number" class="form-control" id="f-credit_limit" value="0"></div>
+<div class="col-md-4"><label class="form-label">مدة السداد (يوم)</label><input type="number" class="form-control" id="f-payment_terms" value="30"></div>
+<div class="col-md-4"><label class="form-label">الحالة</label>
+<select class="form-select" id="f-is_active"><option value="1">نشط</option><option value="0">موقوف</option></select>
+</div>
+<div class="col-md-12"><label class="form-label">ملاحظات</label><input class="form-control" id="f-notes"></div>
+</div>
+</div>
+<div class="modal-footer">
+<button class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+<button class="btn btn-primary" onclick="save()"><i class="bi bi-check-circle"></i> حفظ</button>
+</div>
+</div></div></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+const API='http://localhost:5000/api/v1';
+const modal = new bootstrap.Modal(document.getElementById('custModal'));
+let editId = null;
+
+async function load(){
+ const r = await fetch(`${API}/customers/`).then(x=>x.json());
+ const rows = r.data||[];
+ document.getElementById('tbl').innerHTML = rows.length ? rows.map(c=>`
+  <tr>
+   <td><code>${c.code}</code></td>
+   <td><strong>${c.name_ar}</strong>${c.name_en?'<br><small class="text-muted">'+c.name_en+'</small>':''}</td>
+   <td>${c.phone||'-'}</td>
+   <td>${c.email||'-'}</td>
+   <td>${parseFloat(c.credit_limit||0).toFixed(2)}</td>
+   <td><code>${c.account_code||'-'}</code></td>
+   <td>
+    <button class="btn btn-sm btn-outline-warning" onclick="openEdit(${c.id})" title="تعديل"><i class="bi bi-pencil"></i></button>
+    <button class="btn btn-sm btn-outline-danger" onclick="del(${c.id},'${c.name_ar}')" title="حذف"><i class="bi bi-trash"></i></button>
+   </td>
+  </tr>`).join('') : '<tr><td colspan="7" class="text-center text-muted">لا يوجد عملاء</td></tr>';
+}
+
+function clearForm(){
+ ['f-code','f-name_ar','f-name_en','f-phone','f-email','f-tax_number','f-address','f-notes'].forEach(id=>document.getElementById(id).value='');
+ document.getElementById('f-account_code').value = '1221';
+ document.getElementById('f-credit_limit').value = 0;
+ document.getElementById('f-payment_terms').value = 30;
+ document.getElementById('f-is_active').value = '1';
+ document.getElementById('f-code').disabled = false;
+}
+
+function openAdd(){
+ editId = null; clearForm();
+ document.getElementById('modal-title').innerHTML = '<i class="bi bi-plus-circle"></i> عميل جديد';
+ modal.show();
+}
+
+async function openEdit(id){
+ editId = id;
+ const r = await fetch(`${API}/customers/${id}`).then(x=>x.json());
+ if (!r.success) return;
+ const c = r.data;
+ document.getElementById('f-code').value = c.code;
+ document.getElementById('f-code').disabled = true;
+ document.getElementById('f-name_ar').value = c.name_ar;
+ document.getElementById('f-name_en').value = c.name_en||'';
+ document.getElementById('f-phone').value = c.phone||'';
+ document.getElementById('f-email').value = c.email||'';
+ document.getElementById('f-tax_number').value = c.tax_number||'';
+ document.getElementById('f-address').value = c.address||'';
+ document.getElementById('f-account_code').value = c.account_code||'1221';
+ document.getElementById('f-credit_limit').value = c.credit_limit||0;
+ document.getElementById('f-payment_terms').value = c.payment_terms||30;
+ document.getElementById('f-is_active').value = c.is_active ? '1' : '0';
+ document.getElementById('f-notes').value = c.notes||'';
+ document.getElementById('modal-title').innerHTML = '<i class="bi bi-pencil"></i> تعديل العميل';
+ modal.show();
+}
+
+async function save(){
+ const data = {
+  name_ar: document.getElementById('f-name_ar').value.trim(),
+  name_en: document.getElementById('f-name_en').value.trim(),
+  phone: document.getElementById('f-phone').value.trim(),
+  email: document.getElementById('f-email').value.trim(),
+  tax_number: document.getElementById('f-tax_number').value.trim(),
+  address: document.getElementById('f-address').value.trim(),
+  account_code: document.getElementById('f-account_code').value.trim(),
+  credit_limit: parseFloat(document.getElementById('f-credit_limit').value)||0,
+  payment_terms: parseInt(document.getElementById('f-payment_terms').value)||30,
+  is_active: parseInt(document.getElementById('f-is_active').value),
+  notes: document.getElementById('f-notes').value.trim()
+ };
+ if (!data.name_ar) { alert('الاسم مطلوب'); return; }
+ 
+ if (editId) {
+  const r = await fetch(`${API}/customers/${editId}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)}).then(x=>x.json());
+  if (r.success) { modal.hide(); load(); }
+  else alert(r.message||'خطأ');
+ } else {
+  data.code = document.getElementById('f-code').value.trim();
+  if (!data.code) { alert('الكود مطلوب'); return; }
+  const r = await fetch(`${API}/customers/`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)}).then(x=>x.json());
+  if (r.success) { modal.hide(); load(); }
+  else alert(r.message||'خطأ');
+ }
+}
+
+async function del(id,name){
+ if (!confirm(`حذف العميل "${name}"؟`)) return;
+ const r = await fetch(`${API}/customers/${id}`,{method:'DELETE'}).then(x=>x.json());
+ if (r.success) load();
+ else alert(r.message||'خطأ');
+}
+
+load();
+</script></body></html>

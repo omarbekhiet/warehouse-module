@@ -1,0 +1,302 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head><meta charset="UTF-8"><title>الأصناف</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+<link href="style.css" rel="stylesheet"></head>
+<body><div class="container-fluid"><div class="row">
+<div class="col-md-2 sidebar p-0">
+<div class="brand"><i class="bi bi-box-seam" style="font-size:2rem;"></i><h5 class="mt-2 mb-0">موديول المخازن</h5></div>
+<nav class="mt-3">
+<a href="index.html"><i class="bi bi-speedometer2"></i> لوحة التحكم</a>
+<a href="notifications.html"><i class="bi bi-bell"></i> الإشعارات</a>
+<a href="accounts.html"><i class="bi bi-book"></i> الدليل المحاسبي</a>
+<a href="warehouses.html"><i class="bi bi-building"></i> المستودعات</a>
+<a href="item_groups.html"><i class="bi bi-diagram-3"></i> مجموعات الأصناف</a>
+<a href="items.html" class="active"><i class="bi bi-box"></i> الأصناف</a>
+<a href="uom.html"><i class="bi bi-rulers"></i> وحدات القياس</a>
+<a href="suppliers.html"><i class="bi bi-truck"></i> الموردون</a>
+<a href="customers.html"><i class="bi bi-people"></i> العملاء</a>
+<a href="requisitions.html"><i class="bi bi-clipboard-check"></i> طلبات الاحتياج</a>
+<a href="purchase_orders.html"><i class="bi bi-file-earmark-text"></i> أوامر الشراء</a>
+<a href="purchase_invoices.html"><i class="bi bi-receipt"></i> فواتير الشراء</a>
+<a href="sales_invoices.html"><i class="bi bi-cart-check"></i> فواتير البيع</a>
+<a href="purchase_returns.html"><i class="bi bi-arrow-return-left"></i> مرتجع شراء</a>
+<a href="sales_returns.html"><i class="bi bi-arrow-return-right"></i> مرتجع بيع</a>
+<a href="payments.html"><i class="bi bi-cash-coin"></i> مدفوعات الموردين</a>
+<a href="customer_receipts.html"><i class="bi bi-cash-stack"></i> تحصيلات العملاء</a>
+<a href="receipts.html"><i class="bi bi-arrow-down-circle"></i> الاستلام</a>
+<a href="material_requests.html"><i class="bi bi-clipboard-plus"></i> طلبات الصرف</a>
+<a href="issues.html"><i class="bi bi-arrow-up-circle"></i> الصرف</a>
+<a href="transfers.html"><i class="bi bi-arrow-left-right"></i> التحويلات</a>
+<a href="counts.html"><i class="bi bi-clipboard-check"></i> الجرد</a>
+<a href="clearing.html"><i class="bi bi-shuffle"></i> الحسابات الوسيطة</a>
+<a href="financial_reports.html"><i class="bi bi-graph-up"></i> التقارير المالية</a>
+<a href="reports.html"><i class="bi bi-file-earmark-bar-graph"></i> التقارير</a>
+<a href="journal.html"><i class="bi bi-journal-text"></i> القيود</a>
+</nav></div>
+<div class="col-md-10 p-4">
+<div class="d-flex justify-content-between mb-4">
+<h2><i class="bi bi-box"></i> الأصناف</h2>
+<button class="btn btn-primary" onclick="openAdd()"><i class="bi bi-plus-circle"></i> صنف جديد</button>
+</div>
+<div class="card p-3">
+<table class="table table-hover">
+<thead><tr>
+<th>الكود</th><th>الاسم</th><th>المجموعة</th><th>النوع</th>
+<th>الوحدات</th><th>حساب المخزون</th><th>إجراءات</th>
+</tr></thead>
+<tbody id="tbl"><tr><td colspan="7" class="text-center">جاري التحميل...</td></tr></tbody>
+</table></div></div></div></div>
+
+<div class="modal fade" id="itemModal" tabindex="-1">
+<div class="modal-dialog modal-xl">
+<div class="modal-content">
+<div class="modal-header bg-primary text-white"><h5 class="modal-title" id="modal-title"><i class="bi bi-plus-circle"></i> صنف جديد</h5><button class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
+<div class="modal-body">
+
+<h6 class="text-primary mb-3">📋 بيانات الصنف</h6>
+<div class="row g-3 mb-4">
+<div class="col-md-4"><label class="form-label">الكود *</label><input class="form-control" id="f-code"></div>
+<div class="col-md-4"><label class="form-label">الاسم بالعربي *</label><input class="form-control" id="f-name_ar"></div>
+<div class="col-md-4"><label class="form-label">الاسم بالإنجليزي</label><input class="form-control" id="f-name_en"></div>
+<div class="col-md-4"><label class="form-label">المجموعة *</label><select class="form-select" id="f-group_id" onchange="onGroupChange()"></select></div>
+<div class="col-md-4"><label class="form-label">النوع *</label>
+<select class="form-select" id="f-item_type">
+<option value="RAW_MATERIAL">مادة خام</option>
+<option value="FINISHED_GOODS">منتج تام</option>
+<option value="MERCHANDISE">بضاعة تجارية</option>
+<option value="SUPPLIES">مستلزمات</option>
+</select></div>
+<div class="col-md-4"><label class="form-label">طريقة التكلفة *</label>
+<select class="form-select" id="f-cost_method">
+<option value="WEIGHTED_AVERAGE">المتوسط المرجح</option>
+<option value="FIFO">FIFO</option>
+<option value="LIFO">LIFO</option>
+</select></div>
+</div>
+
+<h6 class="text-primary mb-3">💰 الحسابات المحاسبية (من الدليل)</h6>
+<div class="alert alert-info small py-2"><i class="bi bi-info-circle"></i> الحسابات من <a href="accounts.html" target="_blank">الدليل المحاسبي</a> — فقط الحسابات القابلة للترحيل.</div>
+<div class="row g-3 mb-4">
+<div class="col-md-3"><label class="form-label">حساب المخزون *</label><select class="form-select" id="f-inventory_account"></select></div>
+<div class="col-md-3"><label class="form-label">حساب التكلفة *</label><select class="form-select" id="f-cost_account"></select></div>
+<div class="col-md-3"><label class="form-label">حساب الإيراد</label><select class="form-select" id="f-revenue_account"><option value="">— بدون —</option></select></div>
+<div class="col-md-3"><label class="form-label">حساب الوسيط</label><select class="form-select" id="f-clearing_account"><option value="">— بدون —</option></select></div>
+<div class="col-md-3"><label class="form-label">الحد الأدنى</label><input type="number" class="form-control" id="f-reorder_level" value="0"></div>
+</div>
+
+<h6 class="text-primary mb-3">🔢 وحدات الصنف (كبرى / متوسطة / صغرى)</h6>
+<div class="row g-3">
+<div class="col-md-4"><div class="card border-success p-3"><h6 class="text-success">🟢 الصغرى (أساسية) *</h6>
+<select class="form-select" id="f-base_uom_id"></select><small class="text-muted">وحدة المخزون</small></div></div>
+<div class="col-md-4"><div class="card border-warning p-3"><h6 class="text-warning">🟡 المتوسطة</h6>
+<select class="form-select mb-2" id="f-medium_uom_id"><option value="">— بدون —</option></select>
+<input type="number" class="form-control" id="f-medium_to_minor_factor" placeholder="1 متوسطة = ؟ صغرى" step="0.0001"></div></div>
+<div class="col-md-4"><div class="card border-danger p-3"><h6 class="text-danger">🔵 الكبرى</h6>
+<select class="form-select mb-2" id="f-major_uom_id"><option value="">— بدون —</option></select>
+<input type="number" class="form-control" id="f-major_to_medium_factor" placeholder="1 كبرى = ؟ متوسطة" step="0.0001"></div></div>
+</div>
+
+</div>
+<div class="modal-footer">
+<button class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+<button class="btn btn-primary" onclick="saveItem()"><i class="bi bi-check-circle"></i> حفظ</button>
+</div>
+</div></div></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+const API='http://localhost:5000/api/v1';
+const itemModal = new bootstrap.Modal(document.getElementById('itemModal'));
+let uomList=[], itemsList=[], groupsList=[], leafAccounts=[];
+let editId = null;
+
+async function loadAll(){
+ const [u,i,g,a] = await Promise.all([
+  fetch(`${API}/uom/`).then(r=>r.json()),
+  fetch(`${API}/items/`).then(r=>r.json()),
+  fetch(`${API}/groups/`).then(r=>r.json()),
+  fetch(`${API}/accounts/leaf`).then(r=>r.json())]);
+ 
+ uomList = u.data||[];
+ itemsList = i.data||[];
+ groupsList = g.data||[];
+ leafAccounts = a.data||[];
+
+ const uomOpts = uomList.map(u=>`<option value="${u.id}">${u.name_ar} (${u.code})</option>`).join('');
+ document.getElementById('f-base_uom_id').innerHTML = uomOpts;
+ document.getElementById('f-medium_uom_id').innerHTML = '<option value="">— بدون —</option>'+uomOpts;
+ document.getElementById('f-major_uom_id').innerHTML = '<option value="">— بدون —</option>'+uomOpts;
+
+ // Group options
+ const gOpts = ['<option value="">— اختر مجموعة —</option>'];
+ groupsList.forEach(g=>{
+  const indent = '　'.repeat((g.level||1)-1);
+  gOpts.push(`<option value="${g.id}">${indent}${g.code} - ${g.name_ar}</option>`);
+ });
+ document.getElementById('f-group_id').innerHTML = gOpts.join('');
+
+ // Account options from DIREKTORY
+ const accOpts = leafAccounts.map(a=>`<option value="${a.code}">${a.code} - ${a.name_ar}</option>`).join('');
+ document.getElementById('f-inventory_account').innerHTML = '<option value="">— اختر —</option>'+accOpts;
+ document.getElementById('f-cost_account').innerHTML = '<option value="">— اختر —</option>'+accOpts;
+ document.getElementById('f-revenue_account').innerHTML = '<option value="">— بدون —</option>'+accOpts;
+ document.getElementById('f-clearing_account').innerHTML = '<option value="">— بدون —</option>'+accOpts;
+
+ renderTable();
+}
+
+function renderTable(){
+ const uoms = {}; uomList.forEach(u=>uoms[u.id]=u.name_ar);
+ document.getElementById('tbl').innerHTML = itemsList.map(i=>{
+  const parts = [];
+  if (i.major_uom_name) parts.push(`<span class="badge bg-danger">${i.major_uom_name}</span>`);
+  if (i.medium_uom_name) parts.push(`<span class="badge bg-warning text-dark">${i.medium_uom_name}</span>`);
+  parts.push(`<span class="badge bg-success">${i.base_uom_name||uoms[i.base_uom_id]||'-'}</span>`);
+  const uomChain = parts.join(' <i class="bi bi-arrow-left"></i> ');
+  const groupBadge = i.group_name ? `<span class="badge bg-info">${i.group_name}</span>` : '-';
+  return `<tr>
+   <td><code>${i.code}</code></td>
+   <td><strong>${i.name_ar}</strong></td>
+   <td>${groupBadge}</td>
+   <td><span class="badge bg-secondary">${i.item_type}</span></td>
+   <td>${uomChain}</td>
+   <td><code>${i.inventory_account||'-'}</code></td>
+   <td>
+    <button class="btn btn-sm btn-outline-warning" onclick="openEdit(${i.id})" title="تعديل"><i class="bi bi-pencil"></i></button>
+    <button class="btn btn-sm btn-outline-info" onclick="viewTiers(${i.id})" title="الوحدات"><i class="bi bi-rulers"></i></button>
+    <button class="btn btn-sm btn-outline-primary" onclick="showStock(${i.id},'${i.name_ar}')" title="الرصيد"><i class="bi bi-box"></i></button>
+    <button class="btn btn-sm btn-outline-danger" onclick="delItem(${i.id},'${i.name_ar}')" title="حذف"><i class="bi bi-trash"></i></button>
+   </td></tr>`;
+ }).join('');
+}
+
+function onGroupChange(){
+ const gid = document.getElementById('f-group_id').value;
+ if (!gid) return;
+ const g = groupsList.find(x=>x.id===parseInt(gid));
+ if (!g) return;
+ if (g.inventory_account) document.getElementById('f-inventory_account').value = g.inventory_account;
+ if (g.cost_account) document.getElementById('f-cost_account').value = g.cost_account;
+ if (g.revenue_account) document.getElementById('f-revenue_account').value = g.revenue_account;
+ if (g.clearing_account) document.getElementById('f-clearing_account').value = g.clearing_account;
+ if (g.default_cost_method) document.getElementById('f-cost_method').value = g.default_cost_method;
+}
+
+function openAdd(){
+ editId = null;
+ ['f-code','f-name_ar','f-name_en'].forEach(id=>document.getElementById(id).value='');
+ document.getElementById('f-reorder_level').value = 0;
+ ['f-medium_uom_id','f-major_uom_id','f-medium_to_minor_factor','f-major_to_medium_factor'].forEach(id=>document.getElementById(id).value='');
+ document.getElementById('f-group_id').value = '';
+ document.getElementById('f-code').disabled = false;
+ document.getElementById('modal-title').innerHTML = '<i class="bi bi-plus-circle"></i> صنف جديد';
+ itemModal.show();
+}
+
+async function openEdit(id){
+ editId = id;
+ const r = await fetch(`${API}/items/${id}`).then(x=>x.json());
+ if (!r.success) return;
+ const i = r.data;
+ document.getElementById('f-code').value = i.code;
+ document.getElementById('f-code').disabled = true;
+ document.getElementById('f-name_ar').value = i.name_ar;
+ document.getElementById('f-name_en').value = i.name_en||'';
+ document.getElementById('f-group_id').value = i.group_id||'';
+ document.getElementById('f-item_type').value = i.item_type;
+ document.getElementById('f-cost_method').value = i.cost_method;
+ document.getElementById('f-inventory_account').value = i.inventory_account||'';
+ document.getElementById('f-cost_account').value = i.cost_account||'';
+ document.getElementById('f-revenue_account').value = i.revenue_account||'';
+ document.getElementById('f-clearing_account').value = i.clearing_account||'';
+ document.getElementById('f-reorder_level').value = i.reorder_level||0;
+ document.getElementById('f-base_uom_id').value = i.base_uom_id;
+ document.getElementById('f-medium_uom_id').value = i.medium_uom_id||'';
+ document.getElementById('f-major_uom_id').value = i.major_uom_id||'';
+ document.getElementById('f-medium_to_minor_factor').value = i.medium_to_minor_factor||'';
+ document.getElementById('f-major_to_medium_factor').value = i.major_to_medium_factor||'';
+ document.getElementById('modal-title').innerHTML = '<i class="bi bi-pencil"></i> تعديل الصنف';
+ itemModal.show();
+}
+
+async function saveItem(){
+ const base = parseInt(document.getElementById('f-base_uom_id').value);
+ const medium = document.getElementById('f-medium_uom_id').value;
+ const major = document.getElementById('f-major_uom_id').value;
+ const midF = parseFloat(document.getElementById('f-medium_to_minor_factor').value)||0;
+ const majF = parseFloat(document.getElementById('f-major_to_medium_factor').value)||0;
+ const group_id = document.getElementById('f-group_id').value;
+
+ if (!group_id) { alert('اختر المجموعة'); return; }
+ if (!document.getElementById('f-inventory_account').value) { alert('اختر حساب المخزون من الدليل'); return; }
+ if (!document.getElementById('f-cost_account').value) { alert('اختر حساب التكلفة من الدليل'); return; }
+ if (medium && medium == base) { alert('الوحدة المتوسطة يجب أن تختلف'); return; }
+ if (major && (major == base || major == medium)) { alert('الوحدة الكبرى يجب أن تختلف'); return; }
+ if (medium && !midF) { alert('أدخل معامل المتوسطة'); return; }
+ if (major && !majF) { alert('أدخل معامل الكبرى'); return; }
+ if (major && !medium) { alert('لا يمكن إضافة كبرى بدون متوسطة'); return; }
+
+ const data = {
+  name_ar: document.getElementById('f-name_ar').value.trim(),
+  name_en: document.getElementById('f-name_en').value.trim(),
+  category_id: 1,
+  group_id: parseInt(group_id),
+  item_type: document.getElementById('f-item_type').value,
+  cost_method: document.getElementById('f-cost_method').value,
+  inventory_account: document.getElementById('f-inventory_account').value,
+  cost_account: document.getElementById('f-cost_account').value,
+  revenue_account: document.getElementById('f-revenue_account').value || null,
+  clearing_account: document.getElementById('f-clearing_account').value || null,
+  reorder_level: parseFloat(document.getElementById('f-reorder_level').value)||0,
+  base_uom_id: base,
+  medium_uom_id: medium ? parseInt(medium) : null,
+  medium_to_minor_factor: midF || null,
+  major_uom_id: major ? parseInt(major) : null,
+  major_to_medium_factor: majF || null
+ };
+
+ if (editId) {
+  const res = await fetch(`${API}/items/${editId}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)}).then(r=>r.json());
+  if (!res.success) { alert(res.message||'خطأ'); return; }
+ } else {
+  data.code = document.getElementById('f-code').value.trim();
+  if (!data.code) { alert('الكود مطلوب'); return; }
+  const res = await fetch(`${API}/items/`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)}).then(r=>r.json());
+  if (!res.success) { alert(res.message||'خطأ'); return; }
+ }
+ itemModal.hide();
+ loadAll();
+}
+
+async function viewTiers(id){
+ const r = await fetch(`${API}/tiers/item/${id}`).then(x=>x.json());
+ if (!r.success) { alert('خطأ'); return; }
+ const d = r.data;
+ let txt = `وحدات الصنف: ${d.item_name}\n\n`;
+ const order = {MAJOR:1, MEDIUM:2, MINOR:3};
+ d.tiers.sort((a,b)=>order[a.tier]-order[b.tier]);
+ d.tiers.forEach(t=>{
+  const labels = {MAJOR:'🔵 كبرى', MEDIUM:'🟡 متوسطة', MINOR:'🟢 صغرى'};
+  txt += `${labels[t.tier]}: ${t.uom_name} — معامل: ${t.to_base_factor}\n`;
+ });
+ alert(txt);
+}
+
+async function showStock(id,name){
+ const res = await fetch(`${API}/items/${id}/stock`).then(r=>r.json());
+ const rows = res.data||[];
+ if (!rows.length) { alert(`لا يوجد رصيد للصنف ${name}`); return; }
+ alert(`رصيد ${name}:\n\n` + rows.map(r=>`${r.warehouse_name}: ${r.quantity} (${r.total_value})`).join('\n'));
+}
+
+async function delItem(id,name){
+ if (!confirm(`حذف الصنف "${name}"؟`)) return;
+ const res = await fetch(`${API}/items/${id}`,{method:'DELETE'}).then(r=>r.json());
+ if (res.success) loadAll();
+ else alert(res.message||'خطأ');
+}
+
+loadAll();
+</script></body></html>
