@@ -1,0 +1,751 @@
+﻿﻿<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>الميزانية العمومية - IFRS 18</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="style.css" rel="stylesheet">
+<script src="permissions.js"></script>
+<style>
+* { font-family: 'IBM Plex Sans Arabic', 'Cairo', 'Segoe UI', Tahoma, sans-serif; box-sizing: border-box; }
+body { background: #f0f2f5; padding: 6px; font-size: 13px; margin: 0; }
+.container-fluid { padding: 0 !important; }
+.col-md-10 { padding: 6px 10px !important; }
+
+h2 { font-size: 1.05rem; margin: 0 !important; font-weight: 700; }
+.bs-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px; margin-bottom: 6px; }
+
+.card { border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); border: none; margin-bottom: 6px; }
+.card.p-3 { padding: 8px !important; }
+
+/* Filters */
+.filters-row { display: flex; flex-wrap: nowrap; gap: 6px; align-items: flex-start; width: 100%; }
+.date-field { display: flex; flex-direction: column; min-width: 0; }
+.filter-field-date { flex: 0 0 200px; min-width: 160px; }
+
+.date-field .form-label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    font-size: 0.72rem;
+    font-weight: 800;
+    margin-bottom: 3px;
+    height: 18px;
+}
+.date-field input {
+    height: 30px;
+    width: 100%;
+    font-size: 0.76rem;
+    padding: 3px 6px;
+    text-align: center;
+    border-width: 2px !important;
+    font-family: 'Consolas', monospace;
+    font-weight: 700;
+    border-radius: 5px;
+}
+.date-asof .form-label { color: #d97706; }
+.date-asof input { border-color: #fcd34d !important; background: #fffbeb !important; }
+
+.filter-buttons {
+    flex: 0 0 auto;
+    display: flex;
+    gap: 4px;
+    margin-top: 21px;
+}
+.filter-buttons .btn { height: 30px; font-size: 0.74rem; padding: 3px 10px; font-weight: 700; }
+
+/* KPI Cards */
+.kpi-cards {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+    margin-bottom: 8px;
+}
+.kpi-card {
+    background: white;
+    border-radius: 8px;
+    padding: 8px 10px;
+    text-align: center;
+    border-right: 4px solid;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+.kpi-label { font-size: 0.65rem; color: #64748b; font-weight: 700; margin-bottom: 3px; }
+.kpi-value { font-size: 1rem; font-weight: 900; font-family: 'Consolas', monospace; }
+.kpi-card.assets { border-color: #2563eb; }
+.kpi-card.assets .kpi-value { color: #2563eb; }
+.kpi-card.liabilities { border-color: #dc2626; }
+.kpi-card.liabilities .kpi-value { color: #dc2626; }
+.kpi-card.equity { border-color: #7c3aed; }
+.kpi-card.equity .kpi-value { color: #7c3aed; }
+.kpi-card.status { border-color: #10b981; }
+.kpi-card.status.unbalanced { border-color: #ef4444; }
+.kpi-card.status.balanced .kpi-value { color: #059669; }
+.kpi-card.status.unbalanced .kpi-value { color: #dc2626; }
+
+/* Layout */
+.bs-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+}
+
+.bs-section {
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+.bs-section-header {
+    background: linear-gradient(135deg, #1e3c72, #2a5298);
+    color: white;
+    padding: 8px 12px;
+    font-weight: 800;
+    font-size: 0.82rem;
+}
+.bs-section-header.assets { background: linear-gradient(135deg, #1e3c72, #2563eb); }
+.bs-section-header.liabilities { background: linear-gradient(135deg, #991b1b, #dc2626); }
+.bs-section-header.equity { background: linear-gradient(135deg, #5b21b6, #7c3aed); }
+
+.bs-subsection {
+    background: #f8fafc;
+    padding: 6px 12px;
+    font-weight: 800;
+    font-size: 0.75rem;
+    color: #475569;
+    border-bottom: 1px solid #e2e8f0;
+    border-top: 1px solid #e2e8f0;
+}
+.bs-subsection i { color: #64748b; margin-left: 4px; }
+
+.bs-row {
+    display: grid;
+    grid-template-columns: 100px 1fr 130px;
+    padding: 5px 12px;
+    border-bottom: 1px solid #f1f5f9;
+    align-items: center;
+    font-size: 0.78rem;
+    transition: background 0.12s;
+}
+.bs-row:hover { background: #fef9c3; }
+.bs-row .bs-code {
+    font-family: 'Consolas', monospace;
+    font-size: 0.7rem;
+    color: #475467;
+    text-align: center;
+}
+.bs-row .bs-name {
+    color: #1e293b;
+    font-weight: 600;
+    text-align: right;
+    padding-right: 8px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.bs-row .bs-amount {
+    text-align: center;
+    font-family: 'Consolas', monospace;
+    font-weight: 700;
+    font-size: 0.78rem;
+    color: #059669;
+}
+.bs-row .bs-amount.negative { color: #dc2626; }
+.bs-row .bs-amount.empty { color: #cbd5e1; }
+
+.bs-subtotal {
+    display: grid;
+    grid-template-columns: 100px 1fr 130px;
+    padding: 6px 12px;
+    background: #f8fafc;
+    border-top: 2px solid #e2e8f0;
+    border-bottom: 1px solid #e2e8f0;
+    font-weight: 800;
+    font-size: 0.8rem;
+    align-items: center;
+}
+.bs-subtotal .bs-name { text-align: right; padding-right: 8px; color: #334155; }
+.bs-subtotal .bs-amount { text-align: center; font-family: 'Consolas', monospace; color: #059669; }
+.bs-subtotal .bs-amount.negative { color: #dc2626; }
+
+.bs-total {
+    display: grid;
+    grid-template-columns: 100px 1fr 130px;
+    padding: 10px 12px;
+    color: white;
+    font-weight: 900;
+    font-size: 0.85rem;
+    align-items: center;
+}
+.bs-total.assets { background: linear-gradient(135deg, #1e3c72, #2563eb); }
+.bs-total.liabilities { background: linear-gradient(135deg, #991b1b, #dc2626); }
+.bs-total.equity { background: linear-gradient(135deg, #5b21b6, #7c3aed); }
+.bs-total.liab_eq { background: linear-gradient(135deg, #0f766e, #14b8a6); }
+.bs-total .bs-name { text-align: right; padding-right: 8px; }
+.bs-total .bs-amount { text-align: center; font-family: 'Consolas', monospace; font-size: 0.95rem; }
+
+/* Balance check */
+.balance-check {
+    margin-top: 8px;
+    padding: 12px;
+    border-radius: 8px;
+    text-align: center;
+    font-weight: 800;
+    font-size: 0.9rem;
+}
+.balance-check.ok { background: #d1fae5; color: #065f46; border: 2px solid #10b981; }
+.balance-check.bad { background: #fee2e2; color: #991b1b; border: 2px solid #dc2626; }
+.balance-check .diff { font-family: 'Consolas', monospace; font-size: 1.1rem; margin-top: 6px; }
+
+/* Empty */
+.empty-state {
+    padding: 12px;
+    text-align: center;
+    color: #94a3b8;
+    font-style: italic;
+    font-size: 0.75rem;
+}
+
+@media print {
+    body { background: white; }
+    .sidebar, .no-print, .filter-bar, .kpi-cards, .bs-header .btn { display: none !important; }
+    .col-md-10 { width: 100% !important; padding: 0 !important; }
+    .bs-section { box-shadow: none !important; page-break-inside: avoid; }
+    @page { size: A4 landscape; margin: 8mm; }
+}
+
+/* ============================================
+   إلغاء أسهم input[type=number]
+   ============================================ */
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none !important;
+    margin: 0 !important;
+}
+input[type=number] {
+    -moz-appearance: textfield !important;
+    appearance: textfield !important;
+}
+input[type="number"] {
+    -moz-appearance: textfield !important;
+}
+
+</style>
+
+
+
+<style id="compact-spacing-global">
+/* ============================================
+   توحيد المسافات المضغوطة
+   ============================================ */
+
+.table td, .table th {
+    padding: 3px 6px !important;
+    font-size: 0.75rem !important;
+    vertical-align: middle !important;
+    line-height: 1.2 !important;
+}
+
+.table tbody tr {
+    height: auto !important;
+}
+
+.form-control, .form-select {
+    font-size: 0.75rem !important;
+    line-height: 1.2 !important;
+}
+
+.form-control-sm, .form-select-sm {
+    height: 26px !important;
+    padding: 2px 6px !important;
+    font-size: 0.72rem !important;
+    line-height: 1 !important;
+}
+
+.btn {
+    padding: 3px 8px !important;
+    font-size: 0.72rem !important;
+    line-height: 1.2 !important;
+}
+
+.btn-sm {
+    padding: 2px 6px !important;
+    font-size: 0.7rem !important;
+}
+
+.card {
+    margin-bottom: 6px !important;
+}
+
+.card-body, .card.p-2, .card.p-3, .card.p-4 {
+    padding: 6px 8px !important;
+}
+
+.modal-header {
+    padding: 6px 12px !important;
+}
+
+.modal-title {
+    font-size: 0.9rem !important;
+}
+
+.modal-body {
+    padding: 8px 12px !important;
+}
+
+.modal-footer {
+    padding: 6px 12px !important;
+}
+
+.modal-footer .btn {
+    padding: 4px 10px !important;
+    font-size: 0.75rem !important;
+}
+
+.mb-1, .mb-2, .mb-3, .mb-4 {
+    margin-bottom: 4px !important;
+}
+
+.mt-1, .mt-2, .mt-3, .mt-4 {
+    margin-top: 4px !important;
+}
+
+.ms-1, .ms-2, .ms-3 {
+    margin-right: 4px !important;
+}
+
+.me-1, .me-2, .me-3 {
+    margin-left: 4px !important;
+}
+
+.p-1, .p-2, .p-3, .p-4 {
+    padding: 4px !important;
+}
+
+.g-1, .g-2, .g-3 {
+    gap: 4px !important;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    line-height: 1.3 !important;
+}
+
+h1 { font-size: 1.2rem !important; margin-bottom: 6px !important; }
+h2 { font-size: 1.05rem !important; margin-bottom: 6px !important; }
+h3 { font-size: 0.95rem !important; margin-bottom: 4px !important; }
+h4 { font-size: 0.9rem !important; margin-bottom: 4px !important; }
+h5 { font-size: 0.85rem !important; margin-bottom: 4px !important; }
+h6 { font-size: 0.8rem !important; margin-bottom: 4px !important; }
+
+.alert {
+    padding: 6px 10px !important;
+    margin-bottom: 6px !important;
+    font-size: 0.78rem !important;
+}
+
+.badge {
+    padding: 2px 6px !important;
+    font-size: 0.68rem !important;
+}
+
+.nav-tabs .nav-link {
+    padding: 5px 12px !important;
+    font-size: 0.78rem !important;
+}
+
+hr {
+    margin: 6px 0 !important;
+}
+
+/* بطاقات الأعمار (aging) */
+.aging-card, .bucket-card, .stat-card {
+    padding: 6px 8px !important;
+    margin-bottom: 4px !important;
+}
+
+.aging-card .h4, .aging-card .h5,
+.bucket-card .h4, .bucket-card .h5 {
+    font-size: 1rem !important;
+    margin: 2px 0 !important;
+}
+
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none !important;
+    margin: 0 !important;
+}
+input[type=number] {
+    -moz-appearance: textfield !important;
+}
+</style>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 16 16%22><text y=%2214%22 font-size=%2214%22>📒</text></svg>">
+</head>
+<body>
+
+<div class="container-fluid">
+<div class="row">
+
+<!-- Sidebar -->
+<div class="col-md-2 sidebar p-0">
+<div class="brand"><i class="bi bi-box-seam" style="font-size:2rem;"></i><h5 class="mt-2 mb-0">موديول المخازن</h5></div>
+<nav class="mt-3">
+<a href="index.html#reports"><i class="bi bi-house-fill"></i> التقارير الختامية</a>
+<a href="accounts.html"><i class="bi bi-book"></i> الدليل المحاسبي</a>
+<a href="items.html"><i class="bi bi-box"></i> الأصناف</a>
+<a href="purchase_invoices.html"><i class="bi bi-receipt"></i> فواتير الشراء</a>
+<a href="sales_invoices.html"><i class="bi bi-cart-check"></i> فواتير البيع</a>
+<a href="journal.html"><i class="bi bi-journal-text"></i> القيود</a>
+<a href="financial_reports.html"><i class="bi bi-graph-up"></i> التقارير المالية</a>
+<a href="trial_balance.html"><i class="bi bi-list-check"></i> ميزان المراجعة</a>
+<a href="income_statement.html"><i class="bi bi-graph-up-arrow"></i> قائمة الدخل</a>
+<a href="balance_sheet.html" class="active"><i class="bi bi-file-earmark-bar-graph"></i> الميزانية</a>
+<a href="reports.html"><i class="bi bi-file-earmark-bar-graph"></i> التقارير</a>
+</nav>
+</div>
+
+<div class="col-md-10">
+
+<div class="bs-header">
+<div>
+<div style="margin-bottom:10px;"><a href="index.html#reports" class="btn btn-sm btn-outline-secondary"><i class="bi bi-house"></i> التقارير الختامية</a></div>
+<h2><i class="bi bi-file-earmark-bar-graph"></i> الميزانية العمومية</h2>
+<small class="text-muted" style="font-size: 0.7rem;">
+<i class="bi bi-patch-check-fill" style="color: #10b981;"></i>
+معيار IFRS 18 + IAS 1 — عرض الأصول والالتزامات
+</small>
+</div>
+<div class="d-flex gap-1 no-print">
+<button class="btn btn-sm btn-outline-success" onclick="exportExcel()"><i class="bi bi-file-earmark-excel"></i> Excel</button>
+<button class="btn btn-sm btn-success" onclick="window.print()"><i class="bi bi-printer-fill"></i> طباعة A4</button>
+<a href="index.html#reports" class="btn btn-sm btn-outline-secondary"><i class="bi bi-house"></i> التقارير الختامية</a>
+<button class="btn btn-sm btn-outline-primary" onclick="load()"><i class="bi bi-arrow-clockwise"></i> تحديث</button>
+</div>
+</div>
+
+<!-- Filters -->
+<div class="card p-3 filter-bar no-print">
+<div class="filters-row">
+<div class="date-field filter-field-date date-asof">
+<label class="form-label"><i class="bi bi-bullseye"></i><span>حتى تاريخ</span></label>
+<input type="text" class="form-control form-control-sm" id="f-asof" placeholder="يوم/شهر/سنة" maxlength="10" dir="ltr">
+</div>
+<div style="flex: 1;"></div>
+<div class="filter-buttons">
+<button class="btn btn-primary btn-sm" onclick="load()"><i class="bi bi-search"></i> تطبيق</button>
+<button class="btn btn-outline-secondary btn-sm" onclick="clearFilters()" title="مسح"><i class="bi bi-x-circle"></i></button>
+</div>
+</div>
+</div>
+
+<!-- KPI Cards -->
+<div class="kpi-cards no-print" id="kpi-cards">
+<div class="kpi-card assets">
+<div class="kpi-label">إجمالي الأصول</div>
+<div class="kpi-value" id="kpi-assets">—</div>
+</div>
+<div class="kpi-card liabilities">
+<div class="kpi-label">إجمالي الالتزامات</div>
+<div class="kpi-value" id="kpi-liabilities">—</div>
+</div>
+<div class="kpi-card equity">
+<div class="kpi-label">حقوق الملكية</div>
+<div class="kpi-value" id="kpi-equity">—</div>
+</div>
+<div class="kpi-card status" id="kpi-status-card">
+<div class="kpi-label">حالة الميزانية</div>
+<div class="kpi-value" id="kpi-status">—</div>
+</div>
+</div>
+
+<!-- Content -->
+<div id="bs-content">
+<div class="text-center py-4"><i class="bi bi-arrow-clockwise"></i> جاري التحميل...</div>
+</div>
+
+</div>
+</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+const API = '/api/v1';
+
+function escapeHtml(s) {
+    return String(s ?? '').replace(/[&<>"']/g, c => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+    }[c]));
+}
+
+function fmtMoney(v) {
+    const n = Number(v) || 0;
+    return n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function parseDateDMY(dmy) {
+    if (!dmy) return '';
+    const p = String(dmy).trim().split('/');
+    if (p.length !== 3) return dmy;
+    return p[2] + '-' + p[1].padStart(2, '0') + '-' + p[0].padStart(2, '0');
+}
+
+function isValidDateDMY(dmy) {
+    if (!dmy) return true;
+    const p = String(dmy).trim().split('/');
+    if (p.length !== 3) return false;
+    const d = parseInt(p[0]), m = parseInt(p[1]), y = parseInt(p[2]);
+    if (isNaN(d) || isNaN(m) || isNaN(y)) return false;
+    if (d < 1 || d > 31 || m < 1 || m > 12 || y < 1900 || y > 2100) return false;
+    return true;
+}
+
+function setupDateField(id) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.addEventListener('input', function() {
+        let v = this.value.replace(/[^0-9]/g, '');
+        if (v.length >= 3) v = v.slice(0, 2) + '/' + v.slice(2);
+        if (v.length >= 6) v = v.slice(0, 5) + '/' + v.slice(5);
+        this.value = v.slice(0, 10);
+    });
+    el.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') { e.preventDefault(); load(); }
+    });
+}
+
+function getFilters() {
+    const f = {};
+    const asof = parseDateDMY(document.getElementById('f-asof').value);
+    if (asof) f.as_of = asof;
+    return f;
+}
+
+function buildQS(filters) {
+    const p = new URLSearchParams();
+    for (const k in filters) p.append(k, filters[k]);
+    const s = p.toString();
+    return s ? '?' + s : '';
+}
+
+function clearFilters() {
+    document.getElementById('f-asof').value = '';
+    load();
+}
+
+// ============================================================
+// بناء صف
+// ============================================================
+function bsRow(code, name, amount) {
+    const isEmpty = Math.abs(amount) < 0.005;
+    const isNeg = amount < 0;
+    return `
+        <div class="bs-row">
+            <div class="bs-code">${escapeHtml(code)}</div>
+            <div class="bs-name" title="${escapeHtml(name)}">${escapeHtml(name)}</div>
+            <div class="bs-amount ${isEmpty ? 'empty' : (isNeg ? 'negative' : '')}">
+                ${isEmpty ? '—' : fmtMoney(amount)}
+            </div>
+        </div>
+    `;
+}
+
+// ============================================================
+// تحميل الميزانية
+// ============================================================
+async function load() {
+    const content = document.getElementById('bs-content');
+    content.innerHTML = '<div class="text-center py-4"><i class="bi bi-arrow-clockwise"></i> جاري التحميل...</div>';
+
+    try {
+        const r = await fetch(`${API}/financial-reports/balance-sheet${buildQS(getFilters())}`).then(x => x.json());
+        const d = r.data || {};
+        const t = d.totals || {};
+
+        // KPI
+        document.getElementById('kpi-assets').textContent = fmtMoney(t.assets);
+        document.getElementById('kpi-liabilities').textContent = fmtMoney(t.liabilities);
+        document.getElementById('kpi-equity').textContent = fmtMoney(t.equity);
+
+        const balanced = t.balanced;
+        const statusCard = document.getElementById('kpi-status-card');
+        statusCard.classList.remove('balanced', 'unbalanced');
+        statusCard.classList.add(balanced ? 'balanced' : 'unbalanced');
+        document.getElementById('kpi-status').textContent = balanced ? '✅ متوازنة' : '⚠️ غير متوازنة';
+
+        // تصنيف الأصول حسب الكود
+        const assets = d.assets || [];
+        const liabilities = d.liabilities || [];
+        const equity = d.equity || [];
+
+        // الأصول: 11xx (غير متداولة) و 12xx (متداولة)
+        const nonCurrentAssets = assets.filter(a => String(a.code).startsWith('11'));
+        const currentAssets = assets.filter(a => String(a.code).startsWith('12'));
+
+        // الالتزامات: 21xx (غير متداولة) و 22xx (متداولة)
+        const nonCurrentLiab = liabilities.filter(a => String(a.code).startsWith('21'));
+        const currentLiab = liabilities.filter(a => String(a.code).startsWith('22'));
+
+        let html = '<div class="bs-grid">';
+
+        // ============================================================
+        // العمود الأيمن: الأصول
+        // ============================================================
+        html += '<div>';
+
+        // الأصول غير المتداولة
+        html += `<div class="bs-section">
+            <div class="bs-section-header assets">
+                <i class="bi bi-building"></i> الأصول غير المتداولة
+                <span style="font-size:0.7rem;font-weight:600;opacity:0.85;">(${nonCurrentAssets.length} حساب)</span>
+            </div>`;
+        if (nonCurrentAssets.length) {
+            nonCurrentAssets.forEach(a => {
+                html += bsRow(a.code, a.name_ar, a.balance);
+            });
+        } else {
+            html += '<div class="empty-state">لا توجد أصول غير متداولة</div>';
+        }
+        html += `<div class="bs-subtotal">
+            <div class="bs-code"></div>
+            <div class="bs-name">إجمالي الأصول غير المتداولة</div>
+            <div class="bs-amount">${fmtMoney(nonCurrentAssets.reduce((s, a) => s + (a.balance || 0), 0))}</div>
+        </div></div>`;
+
+        // الأصول المتداولة
+        html += `<div class="bs-section" style="margin-top:8px;">
+            <div class="bs-section-header assets">
+                <i class="bi bi-cash-stack"></i> الأصول المتداولة
+                <span style="font-size:0.7rem;font-weight:600;opacity:0.85;">(${currentAssets.length} حساب)</span>
+            </div>`;
+        if (currentAssets.length) {
+            currentAssets.forEach(a => {
+                html += bsRow(a.code, a.name_ar, a.balance);
+            });
+        } else {
+            html += '<div class="empty-state">لا توجد أصول متداولة</div>';
+        }
+        html += `<div class="bs-subtotal">
+            <div class="bs-code"></div>
+            <div class="bs-name">إجمالي الأصول المتداولة</div>
+            <div class="bs-amount">${fmtMoney(currentAssets.reduce((s, a) => s + (a.balance || 0), 0))}</div>
+        </div></div>`;
+
+        // إجمالي الأصول
+        html += `<div class="bs-total assets" style="margin-top:8px;">
+            <div class="bs-name" style="grid-column: span 2;"><i class="bi bi-trophy"></i> إجمالي الأصول</div>
+            <div class="bs-amount">${fmtMoney(t.assets)}</div>
+        </div>`;
+
+        html += '</div>';
+
+        // ============================================================
+        // العمود الأيسر: الالتزامات + حقوق الملكية
+        // ============================================================
+        html += '<div>';
+
+        // الالتزامات غير المتداولة
+        html += `<div class="bs-section">
+            <div class="bs-section-header liabilities">
+                <i class="bi bi-bank"></i> الالتزامات غير المتداولة
+                <span style="font-size:0.7rem;font-weight:600;opacity:0.85;">(${nonCurrentLiab.length} حساب)</span>
+            </div>`;
+        if (nonCurrentLiab.length) {
+            nonCurrentLiab.forEach(a => {
+                html += bsRow(a.code, a.name_ar, a.balance);
+            });
+        } else {
+            html += '<div class="empty-state">لا توجد التزامات غير متداولة</div>';
+        }
+        html += `<div class="bs-subtotal">
+            <div class="bs-code"></div>
+            <div class="bs-name">إجمالي الالتزامات غير المتداولة</div>
+            <div class="bs-amount">${fmtMoney(nonCurrentLiab.reduce((s, a) => s + (a.balance || 0), 0))}</div>
+        </div></div>`;
+
+        // الالتزامات المتداولة
+        html += `<div class="bs-section" style="margin-top:8px;">
+            <div class="bs-section-header liabilities">
+                <i class="bi bi-truck"></i> الالتزامات المتداولة
+                <span style="font-size:0.7rem;font-weight:600;opacity:0.85;">(${currentLiab.length} حساب)</span>
+            </div>`;
+        if (currentLiab.length) {
+            currentLiab.forEach(a => {
+                html += bsRow(a.code, a.name_ar, a.balance);
+            });
+        } else {
+            html += '<div class="empty-state">لا توجد التزامات متداولة</div>';
+        }
+        html += `<div class="bs-subtotal">
+            <div class="bs-code"></div>
+            <div class="bs-name">إجمالي الالتزامات المتداولة</div>
+            <div class="bs-amount">${fmtMoney(currentLiab.reduce((s, a) => s + (a.balance || 0), 0))}</div>
+        </div></div>`;
+
+        // إجمالي الالتزامات
+        html += `<div class="bs-total liabilities" style="margin-top:8px;">
+            <div class="bs-name" style="grid-column: span 2;"><i class="bi bi-exclamation-triangle"></i> إجمالي الالتزامات</div>
+            <div class="bs-amount">${fmtMoney(t.liabilities)}</div>
+        </div>`;
+
+        // حقوق الملكية
+        html += `<div class="bs-section" style="margin-top:8px;">
+            <div class="bs-section-header equity">
+                <i class="bi bi-people"></i> حقوق الملكية
+                <span style="font-size:0.7rem;font-weight:600;opacity:0.85;">(${equity.length} حساب)</span>
+            </div>`;
+        if (equity.length) {
+            equity.forEach(a => {
+                html += bsRow(a.code, a.name_ar, a.balance);
+            });
+        } else {
+            html += '<div class="empty-state">لا توجد حقوق ملكية</div>';
+        }
+        html += `<div class="bs-subtotal">
+            <div class="bs-code"></div>
+            <div class="bs-name">إجمالي حقوق الملكية</div>
+            <div class="bs-amount">${fmtMoney(t.equity)}</div>
+        </div></div>`;
+
+        // الالتزامات + حقوق الملكية
+        html += `<div class="bs-total liab_eq" style="margin-top:8px;">
+            <div class="bs-name" style="grid-column: span 2;"><i class="bi bi-calculator"></i> الالتزامات + حقوق الملكية</div>
+            <div class="bs-amount">${fmtMoney(t.liab_plus_equity)}</div>
+        </div>`;
+
+        html += '</div>';
+
+        html += '</div>'; // bs-grid
+
+        // Balance check
+        if (balanced) {
+            html += `<div class="balance-check ok">
+                <i class="bi bi-check-circle-fill"></i> الميزانية متوازنة
+                <div class="diff">الأصول: ${fmtMoney(t.assets)} = الالتزامات + حقوق الملكية: ${fmtMoney(t.liab_plus_equity)}</div>
+            </div>`;
+        } else {
+            html += `<div class="balance-check bad">
+                <i class="bi bi-exclamation-triangle-fill"></i> الميزانية غير متوازنة
+                <div class="diff">الفرق: ${fmtMoney(Math.abs(t.assets - t.liab_plus_equity))}</div>
+            </div>`;
+        }
+
+        content.innerHTML = html;
+
+    } catch (e) {
+        console.error(e);
+        content.innerHTML = '<div class="alert alert-danger">فشل تحميل البيانات</div>';
+    }
+}
+
+function exportExcel() {
+    const qs = buildQS(getFilters());
+    window.location.href = '/api/v1/export/excel/export/balance_sheet' + qs;
+}
+
+setupDateField('f-asof');
+load();
+</script>
+</body>
+</html>

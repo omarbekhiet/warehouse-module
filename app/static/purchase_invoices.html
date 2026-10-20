@@ -1,44 +1,247 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head><meta charset="UTF-8"><title>فواتير الشراء</title>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
-<link href="style.css" rel="stylesheet"></head>
+<link href="style.css" rel="stylesheet"><script src="permissions.js"></script>
+
+<style>
+/* ============================================
+   إلغاء أسهم input[type=number]
+   ============================================ */
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none !important;
+    margin: 0 !important;
+}
+input[type=number] {
+    -moz-appearance: textfield !important;
+    appearance: textfield !important;
+}
+
+/* ============================================
+   ضغط جدول البنود والمجاميع
+   ============================================ */
+#inv-lines tr { height: auto !important; }
+#inv-lines td {
+    padding: 2px 4px !important;
+    font-size: 0.75rem !important;
+    vertical-align: middle !important;
+    line-height: 1.2 !important;
+    height: 28px !important;
+}
+#inv-lines .form-control-sm,
+#inv-lines .form-select-sm {
+    height: 26px !important;
+    padding: 1px 4px !important;
+    font-size: 0.72rem !important;
+    line-height: 1 !important;
+}
+#inv-lines .line-tax-cell {
+    padding: 2px 3px !important;
+    line-height: 1.1 !important;
+}
+#inv-lines .line-tax-badge {
+    font-size: 0.7rem !important;
+    padding: 2px 5px !important;
+    border-radius: 3px !important;
+}
+#inv-lines .line-tax-rate {
+    font-size: 0.55rem !important;
+    margin-top: 1px !important;
+}
+#invModal table thead th {
+    padding: 3px 5px !important;
+    font-size: 0.72rem !important;
+    line-height: 1.2 !important;
+    height: 26px !important;
+}
+#sum-sub, #sum-tax, #sum-total {
+    font-size: 0.8rem !important;
+    line-height: 1.2 !important;
+}
+#invModal .modal-footer { padding: 6px 12px !important; }
+#invModal .modal-footer .btn {
+    padding: 4px 10px !important;
+    font-size: 0.75rem !important;
+}
+#invModal .modal-body { padding: 8px 12px !important; }
+#invModal h6 {
+    font-size: 0.82rem !important;
+    margin-top: 4px !important;
+    margin-bottom: 4px !important;
+}
+#invModal .mb-1 { margin-bottom: 4px !important; }
+#invModal .mt-3 { margin-top: 4px !important; }
+
+#inv-lines td {
+    padding: 1px 3px !important;
+    height: 24px !important;
+    font-size: 0.72rem !important;
+    line-height: 1 !important;
+}
+#inv-lines .form-control-sm,
+#inv-lines .form-select-sm {
+    height: 22px !important;
+    padding: 0 3px !important;
+    font-size: 0.7rem !important;
+    line-height: 1 !important;
+}
+#inv-lines .form-select-sm {
+    background-position: left 0.25rem center !important;
+    background-size: 10px !important;
+}
+#invModal table thead th {
+    padding: 2px 4px !important;
+    font-size: 0.68rem !important;
+    height: 22px !important;
+}
+#invModal .modal-footer {
+    padding: 4px 10px !important;
+    border-top: 1px solid #dee2e6 !important;
+}
+#invModal .modal-footer .btn {
+    padding: 3px 8px !important;
+    font-size: 0.72rem !important;
+}
+#invModal .modal-header { padding: 6px 12px !important; }
+#invModal .modal-title { font-size: 0.9rem !important; }
+#invModal .modal-body { padding: 6px 10px !important; }
+#invModal hr { margin: 4px 0 !important; }
+</style>
+
+<style id="compact-spacing-global">
+/* ============================================
+   توحيد المسافات المضغوطة
+   ============================================ */
+.table td, .table th {
+    padding: 3px 6px !important;
+    font-size: 0.75rem !important;
+    vertical-align: middle !important;
+    line-height: 1.2 !important;
+}
+.table tbody tr { height: auto !important; }
+
+.form-control, .form-select {
+    font-size: 0.75rem !important;
+    line-height: 1.2 !important;
+}
+.form-control-sm, .form-select-sm {
+    height: 26px !important;
+    padding: 2px 6px !important;
+    font-size: 0.72rem !important;
+    line-height: 1 !important;
+}
+.btn {
+    padding: 3px 8px !important;
+    font-size: 0.72rem !important;
+    line-height: 1.2 !important;
+}
+.btn-sm {
+    padding: 2px 6px !important;
+    font-size: 0.7rem !important;
+}
+.card { margin-bottom: 6px !important; }
+.card-body, .card.p-2, .card.p-3, .card.p-4 {
+    padding: 6px 8px !important;
+}
+.modal-header { padding: 6px 12px !important; }
+.modal-title { font-size: 0.9rem !important; }
+.modal-body { padding: 8px 12px !important; }
+.modal-footer { padding: 6px 12px !important; }
+.modal-footer .btn {
+    padding: 4px 10px !important;
+    font-size: 0.75rem !important;
+}
+.mb-1, .mb-2, .mb-3, .mb-4 { margin-bottom: 4px !important; }
+.mt-1, .mt-2, .mt-3, .mt-4 { margin-top: 4px !important; }
+.ms-1, .ms-2, .ms-3 { margin-right: 4px !important; }
+.me-1, .me-2, .me-3 { margin-left: 4px !important; }
+.p-1, .p-2, .p-3, .p-4 { padding: 4px !important; }
+.g-1, .g-2, .g-3 { gap: 4px !important; }
+h1, h2, h3, h4, h5, h6 { line-height: 1.3 !important; }
+h1 { font-size: 1.2rem !important; margin-bottom: 6px !important; }
+h2 { font-size: 1.05rem !important; margin-bottom: 6px !important; }
+h3 { font-size: 0.95rem !important; margin-bottom: 4px !important; }
+h4 { font-size: 0.9rem !important; margin-bottom: 4px !important; }
+h5 { font-size: 0.85rem !important; margin-bottom: 4px !important; }
+h6 { font-size: 0.8rem !important; margin-bottom: 4px !important; }
+.alert {
+    padding: 6px 10px !important;
+    margin-bottom: 6px !important;
+    font-size: 0.78rem !important;
+}
+.badge {
+    padding: 2px 6px !important;
+    font-size: 0.68rem !important;
+}
+hr { margin: 6px 0 !important; }
+</style>
+
+<style>
+/* ============================================
+   مستطيل بيانات إذن الاستلام
+   ============================================ */
+.receipt-info {
+    background: linear-gradient(135deg, #eff6ff, #dbeafe);
+    border-radius: 6px;
+    padding: 6px 10px;
+    margin-bottom: 6px;
+    border-right: 3px solid #2563eb;
+    font-size: 0.72rem;
+}
+.receipt-info .info-item {
+    display: inline-block;
+    margin-left: 14px;
+    margin-bottom: 2px;
+}
+.receipt-info .label { color: #475569; margin-left: 4px; font-weight: 600; }
+.receipt-info .value { color: #1e40af; font-weight: 800; }
+</style>
+
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 16 16%22><text y=%2214%22 font-size=%2214%22>📒</text></svg>">
+</head>
 <body><div class="container-fluid"><div class="row">
+
+<!-- ============ Sidebar ============ -->
 <div class="col-md-2 sidebar p-0">
-<div class="brand"><i class="bi bi-box-seam" style="font-size:2rem;"></i><h5 class="mt-2 mb-0">موديول المخازن</h5></div>
+<div class="brand">
+    <i class="bi bi-box-seam" style="font-size:2rem;"></i>
+    <h5 class="mt-2 mb-0">موديول المخازن</h5>
+</div>
 <nav class="mt-3">
-<a href="index.html"><i class="bi bi-speedometer2"></i> لوحة التحكم</a>
+<a href="index.html#purchases"><i class="bi bi-house-fill"></i> المشتريات</a>
 <a href="notifications.html"><i class="bi bi-bell"></i> الإشعارات</a>
 <a href="accounts.html"><i class="bi bi-book"></i> الدليل المحاسبي</a>
 <a href="warehouses.html"><i class="bi bi-building"></i> المستودعات</a>
 <a href="item_groups.html"><i class="bi bi-diagram-3"></i> مجموعات الأصناف</a>
 <a href="items.html"><i class="bi bi-box"></i> الأصناف</a>
 <a href="uom.html"><i class="bi bi-rulers"></i> وحدات القياس</a>
+<a href="stock_movements.html"><i class="bi bi-arrow-left-right"></i> أنواع الحركات</a>
 <a href="suppliers.html"><i class="bi bi-truck"></i> الموردون</a>
 <a href="customers.html"><i class="bi bi-people"></i> العملاء</a>
-<a href="requisitions.html"><i class="bi bi-clipboard-check"></i> طلبات الاحتياج</a>
 <a href="purchase_orders.html"><i class="bi bi-file-earmark-text"></i> أوامر الشراء</a>
 <a href="purchase_invoices.html" class="active"><i class="bi bi-receipt"></i> فواتير الشراء</a>
 <a href="sales_invoices.html"><i class="bi bi-cart-check"></i> فواتير البيع</a>
-<a href="purchase_returns.html"><i class="bi bi-arrow-return-left"></i> مرتجع شراء</a>
-<a href="sales_returns.html"><i class="bi bi-arrow-return-right"></i> مرتجع بيع</a>
-<a href="payments.html"><i class="bi bi-cash-coin"></i> مدفوعات الموردين</a>
-<a href="customer_receipts.html"><i class="bi bi-cash-stack"></i> تحصيلات العملاء</a>
 <a href="receipts.html"><i class="bi bi-arrow-down-circle"></i> الاستلام</a>
-<a href="material_requests.html"><i class="bi bi-clipboard-plus"></i> طلبات الصرف</a>
 <a href="issues.html"><i class="bi bi-arrow-up-circle"></i> الصرف</a>
-<a href="transfers.html"><i class="bi bi-arrow-left-right"></i> التحويلات</a>
-<a href="counts.html"><i class="bi bi-clipboard-check"></i> الجرد</a>
-<a href="clearing.html"><i class="bi bi-shuffle"></i> الحسابات الوسيطة</a>
-<a href="financial_reports.html"><i class="bi bi-graph-up"></i> التقارير المالية</a>
-<a href="reports.html"><i class="bi bi-file-earmark-bar-graph"></i> التقارير</a>
 <a href="journal.html"><i class="bi bi-journal-text"></i> القيود</a>
-</nav></div>
+</nav>
+</div>
+
+<!-- ============ Main ============ -->
 <div class="col-md-10 p-4">
-<div class="d-flex justify-content-between mb-4">
+
+<div class="d-flex justify-content-between mb-4 flex-wrap gap-2">
 <h2><i class="bi bi-receipt"></i> فواتير الشراء</h2>
-<button class="btn btn-primary" onclick="openAdd()"><i class="bi bi-plus-circle"></i> فاتورة جديدة</button>
+<div class="d-flex gap-2">
+<a href="index.html#purchases" class="btn btn-outline-secondary">
+    <i class="bi bi-house-fill"></i> الرئيسية
+</a>
+<button class="btn btn-primary" onclick="openAdd()">
+    <i class="bi bi-plus-circle"></i> فاتورة جديدة
+</button>
+</div>
 </div>
 
 <div class="card p-3 mb-3">
@@ -48,51 +251,114 @@
 <option value="">كل الحالات</option>
 <option value="DRAFT">مسودة</option>
 <option value="POSTED">مرحّلة</option>
-<option value="REJECTED">مرفوضة</option>
 </select>
 </div>
 <div class="col-md-3">
-<button class="btn btn-outline-primary w-100" onclick="load()"><i class="bi bi-arrow-clockwise"></i> تحديث</button>
+<button class="btn btn-outline-primary w-100" onclick="load()">
+    <i class="bi bi-arrow-clockwise"></i> تحديث
+</button>
 </div>
 </div>
 </div>
 
 <div class="card p-3">
 <table class="table table-hover">
-<thead><tr>
-<th>رقم الفاتورة</th><th>التاريخ</th><th>المورد</th><th>المستودع</th>
-<th>الإجمالي</th><th>الحالة</th><th>إجراءات</th>
-</tr></thead>
+<thead>
+<tr>
+<th>رقم الفاتورة</th>
+<th>التاريخ</th>
+<th>المورد</th>
+<th>المستودع</th>
+<th>الإجمالي</th>
+<th>الحالة</th>
+<th>إجراءات</th>
+</tr>
+</thead>
 <tbody id="tbl"><tr><td colspan="7" class="text-center">جاري التحميل...</td></tr></tbody>
-</table></div></div></div></div>
+</table>
+</div>
 
-<!-- Invoice Modal (Create/Edit) -->
+</div>
+</div>
+</div>
+
+<!-- ============ Modal: فاتورة شراء ============ -->
 <div class="modal fade" id="invModal" tabindex="-1">
 <div class="modal-dialog modal-xl">
 <div class="modal-content">
-<div class="modal-header bg-primary text-white"><h5 class="modal-title" id="modal-title"><i class="bi bi-receipt"></i> فاتورة شراء</h5><button class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
+<div class="modal-header bg-primary text-white">
+<h5 class="modal-title" id="modal-title">
+    <i class="bi bi-receipt"></i> فاتورة شراء جديدة
+</h5>
+<button class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+</div>
 <div class="modal-body">
-<div class="row g-3 mb-3">
-<div class="col-md-3"><label class="form-label">التاريخ *</label><input type="date" class="form-control" id="f-date"></div>
-<div class="col-md-3"><label class="form-label">المورد *</label><select class="form-select" id="f-supplier"></select></div>
-<div class="col-md-3"><label class="form-label">المستودع *</label><select class="form-select" id="f-warehouse"></select></div>
-<div class="col-md-3"><label class="form-label">رقم فاتورة المورد</label><input class="form-control" id="f-sup_inv_no"></div>
-<div class="col-md-2"><label class="form-label">ضريبة %</label><input type="number" class="form-control" id="f-tax_rate" value="14" step="0.01"></div>
-<div class="col-md-10"><label class="form-label">ملاحظات</label><input class="form-control" id="f-notes"></div>
+
+<!-- اختيار إذن الاستلام -->
+<div class="mb-2">
+<label class="form-label" style="font-size:0.72rem;margin-bottom:2px;"><strong>📋 اختر إذن الاستلام *</strong></label>
+<select class="form-select form-select-sm" id="f-receipt_id" onchange="onReceiptChange()">
+    <option value="">— اختر إذن استلام —</option>
+</select>
+<small class="text-muted" style="font-size:0.65rem;">الأذون المتاحة = اللي لسه مفيش فاتورة ليها</small>
 </div>
 
-<h6>البنود</h6>
+<!-- مستطيل بيانات الإذن -->
+<div id="receipt-info" class="receipt-info" style="display:none;">
+    <div class="info-item">
+        <span class="label">🏭 المستودع:</span>
+        <span class="value" id="info-warehouse">-</span>
+    </div>
+    <div class="info-item">
+        <span class="label">📅 التاريخ:</span>
+        <span class="value" id="info-date">-</span>
+    </div>
+    <div class="info-item">
+        <span class="label">💰 إجمالي الإذن:</span>
+        <span class="value" id="info-total">-</span>
+    </div>
+    <div class="info-item">
+        <span class="label">📄 المرجع:</span>
+        <span class="value" id="info-ref">-</span>
+    </div>
+</div>
+
+<!-- حقول الفاتورة -->
+<div class="row g-2 mb-2">
+    <div class="col-md-3">
+        <label class="form-label" style="font-size:0.72rem;margin-bottom:2px;">📅 تاريخ الفاتورة *</label>
+        <input type="date" class="form-control form-control-sm" id="f-date">
+    </div>
+    <div class="col-md-4">
+        <label class="form-label" style="font-size:0.72rem;margin-bottom:2px;">🏢 المورد *</label>
+        <select class="form-select form-select-sm" id="f-supplier">
+            <option value="">— جاري التحميل —</option>
+        </select>
+    </div>
+    <div class="col-md-3">
+        <label class="form-label" style="font-size:0.72rem;margin-bottom:2px;">📄 رقم فاتورة المورد</label>
+        <input class="form-control form-control-sm" id="f-ref" placeholder="مثال: 12345">
+    </div>
+    <div class="col-md-2">
+        <label class="form-label" style="font-size:0.72rem;margin-bottom:2px;">📝 ملاحظات</label>
+        <input class="form-control form-control-sm" id="f-notes">
+    </div>
+</div>
+
+<h6>البنود (تلقائياً من إذن الاستلام)</h6>
 <table class="table table-bordered">
 <thead class="table-light">
 <tr>
-<th style="width:22%">الصنف</th><th style="width:18%">الوحدة</th>
-<th style="width:10%">الكمية</th><th style="width:12%">سعر</th>
-<th style="width:10%">خصم %</th><th style="width:12%">الإجمالي</th><th style="width:6%"></th>
+<th style="width:26%">الصنف</th>
+<th style="width:10%">الكمية</th>
+<th style="width:13%">سعر الوحدة</th>
+<th style="width:13%">الإجمالي</th>
+<th style="width:13%">الضريبة</th>
+<th style="width:15%">إجمالي + ضريبة</th>
 </tr>
 </thead>
 <tbody id="inv-lines"></tbody>
 </table>
-<button class="btn btn-outline-primary btn-sm" onclick="addLine()"><i class="bi bi-plus"></i> إضافة بند</button>
 
 <hr>
 <div class="row">
@@ -108,262 +374,487 @@
 </div>
 <div class="modal-footer">
 <button class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
-<button class="btn btn-primary" onclick="save(true)"><i class="bi bi-check-circle"></i> حفظ وترحيل</button>
-<button class="btn btn-outline-primary" onclick="save(false)">حفظ كمسودة</button>
+<button class="btn btn-primary" onclick="saveInv(true)"><i class="bi bi-check-circle"></i> حفظ وترحيل</button>
+<button class="btn btn-outline-primary" onclick="saveInv(false)">حفظ كمسودة</button>
 </div>
 </div></div></div>
 
-<!-- View Modal -->
+<!-- ============ Modal: عرض ============ -->
 <div class="modal fade" id="viewModal" tabindex="-1">
 <div class="modal-dialog modal-lg">
 <div class="modal-content">
-<div class="modal-header bg-info text-white"><h5 class="modal-title"><i class="bi bi-eye"></i> تفاصيل الفاتورة</h5><button class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
+<div class="modal-header bg-info text-white">
+<h5 class="modal-title"><i class="bi bi-eye"></i> تفاصيل الفاتورة</h5>
+<button class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+</div>
 <div class="modal-body" id="viewBody"></div>
 </div></div></div>
 
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
 <script>
-const API='http://localhost:5000/api/v1';
-const invModal = new bootstrap.Modal(document.getElementById('invModal'));
-const viewModal = new bootstrap.Modal(document.getElementById('viewModal'));
-let itemsList=[], suppliersList=[], warehousesList=[], itemTiersMap={};
-let editId = null;
+const API = 'http://localhost:5000/api/v1';
+let availableReceipts = [];
+let itemsTaxMap = {};   // { item_id: { is_taxable, default_tax_rate } }
+let invModal, viewModal;
 
-async function loadLists(){
- const [i,s,w] = await Promise.all([
-  fetch(`${API}/items/`).then(r=>r.json()),
-  fetch(`${API}/suppliers/`).then(r=>r.json()),
-  fetch(`${API}/warehouses/`).then(r=>r.json())]);
- itemsList = i.data||[];
- suppliersList = s.data||[];
- warehousesList = w.data||[];
+document.addEventListener('DOMContentLoaded', function() {
+    invModal = new bootstrap.Modal(document.getElementById('invModal'));
+    viewModal = new bootstrap.Modal(document.getElementById('viewModal'));
+    loadItemsTaxData();   // نجهز بيانات الضريبة للأصناف الأول
+    loadSuppliers();      // نجهز الموردين
+    loadReceipts();
+    load();
+});
 
- document.getElementById('f-supplier').innerHTML = suppliersList.length 
-  ? suppliersList.map(s=>`<option value="${s.id}">${s.code} - ${s.name_ar}</option>`).join('')
-  : '<option value="">— لا يوجد موردون —</option>';
- document.getElementById('f-warehouse').innerHTML = warehousesList.map(w=>`<option value="${w.id}">${w.code} - ${w.name_ar}</option>`).join('');
-
- itemTiersMap = {};
- for (const it of itemsList) {
-  const r = await fetch(`${API}/tiers/item/${it.id}`).then(x=>x.json());
-  if (r.success) itemTiersMap[it.id] = r.data.tiers||[];
- }
+// ============================================================
+// تحميل الموردين
+// ============================================================
+async function loadSuppliers() {
+    try {
+        const r = await fetch(`${API}/suppliers/`).then(x => x.json());
+        const suppliers = r.data || [];
+        const opts = ['<option value="">— اختر مورد —</option>'];
+        suppliers.forEach(s => {
+            opts.push(`<option value="${s.id}">${s.code} - ${s.name_ar}</option>`);
+        });
+        document.getElementById('f-supplier').innerHTML = opts.join('');
+    } catch(e) { console.error('loadSuppliers:', e); }
 }
 
-async function load(){
- const status = document.getElementById('flt-status').value;
- const url = status ? `${API}/purchase-invoices/?status=${status}` : `${API}/purchase-invoices/`;
- const r = await fetch(url).then(x=>x.json());
- const rows = r.data||[];
- 
- document.getElementById('tbl').innerHTML = rows.length ? rows.map(inv=>{
-  const isDraft = inv.status === 'DRAFT';
-  const isRejected = inv.status === 'REJECTED';
-  const isPosted = inv.status === 'POSTED';
-  return `<tr>
-   <td><code>${inv.invoice_no}</code></td>
-   <td>${inv.invoice_date}</td>
-   <td>${inv.supplier_name||'-'}</td>
-   <td>${inv.warehouse_name||'-'}</td>
-   <td><strong>${parseFloat(inv.total_amount||0).toFixed(2)}</strong></td>
-   <td><span class="badge-status badge-${inv.status}">${inv.status}</span></td>
-   <td>
-    <button class="btn btn-sm btn-outline-info" onclick="viewInv(${inv.id})" title="عرض"><i class="bi bi-eye"></i></button>
-    ${isDraft ? `
-     <button class="btn btn-sm btn-outline-warning" onclick="editInv(${inv.id})" title="تعديل"><i class="bi bi-pencil"></i></button>
-     <button class="btn btn-sm btn-outline-danger" onclick="rejectInv(${inv.id})" title="رفض"><i class="bi bi-x-circle"></i></button>
-     <button class="btn btn-sm btn-success" onclick="postInv(${inv.id})" title="ترحيل"><i class="bi bi-check-circle"></i></button>
-     <button class="btn btn-sm btn-outline-danger" onclick="delInv(${inv.id})" title="حذف"><i class="bi bi-trash"></i></button>
-    ` : ''}
-    ${isRejected ? `
-     <button class="btn btn-sm btn-outline-warning" onclick="editInv(${inv.id})" title="تعديل"><i class="bi bi-pencil"></i></button>
-     <button class="btn btn-sm btn-outline-success" onclick="restoreInv(${inv.id})" title="استعادة"><i class="bi bi-arrow-counterclockwise"></i></button>
-     <button class="btn btn-sm btn-outline-danger" onclick="delInv(${inv.id})" title="حذف"><i class="bi bi-trash"></i></button>
-    ` : ''}
-    ${isPosted ? `<button class="btn btn-sm btn-outline-secondary" disabled title="مرحّلة"><i class="bi bi-lock"></i></button>` : ''}
-   </td></tr>`;
- }).join('') : '<tr><td colspan="7" class="text-center text-muted">لا توجد فواتير</td></tr>';
+// ============================================================
+// تحميل بيانات الضريبة لكل الأصناف (is_taxable + default_tax_rate)
+// ============================================================
+async function loadItemsTaxData() {
+    try {
+        const r = await fetch(`${API}/items/`).then(x => x.json());
+        const items = r.data || [];
+        itemsTaxMap = {};
+        items.forEach(it => {
+            itemsTaxMap[it.id] = {
+                is_taxable: parseInt(it.is_taxable) || 0,
+                default_tax_rate: parseFloat(it.default_tax_rate) || 0,
+                name_ar: it.name_ar,
+                code: it.code
+            };
+        });
+    } catch(e) { console.error('loadItemsTaxData:', e); }
 }
 
-function openAdd(){
- if (!suppliersList.length) { alert('أضف مورداً أولاً'); return; }
- editId = null;
- document.getElementById('f-date').value = new Date().toISOString().split('T')[0];
- document.getElementById('f-sup_inv_no').value = '';
- document.getElementById('f-notes').value = '';
- document.getElementById('f-tax_rate').value = 14;
- document.getElementById('inv-lines').innerHTML = '';
- document.getElementById('modal-title').innerHTML = '<i class="bi bi-receipt"></i> فاتورة شراء جديدة';
- addLine();
- calcTotals();
- invModal.show();
+// ============================================================
+// تحميل أذون الاستلام المتاحة
+// ============================================================
+async function loadReceipts() {
+    try {
+        const r = await fetch(`${API}/purchase-invoices/available-receipts`).then(x => x.json());
+        availableReceipts = r.data || [];
+        
+        const opts = ['<option value="">— اختر إذن استلام —</option>'];
+        availableReceipts.forEach(rec => {
+            const supplier = rec.supplier_name ? ` - ${rec.supplier_name}` : '';
+            opts.push(`<option value="${rec.id}">${rec.transaction_no}${supplier} — ${rec.total_value}</option>`);
+        });
+        document.getElementById('f-receipt_id').innerHTML = opts.join('');
+    } catch(e) { console.error(e); }
 }
 
-async function editInv(id){
- editId = id;
- const r = await fetch(`${API}/purchase-invoices/${id}`).then(x=>x.json());
- if (!r.success) return;
- const inv = r.data;
- document.getElementById('f-date').value = inv.invoice_date;
- document.getElementById('f-supplier').value = inv.supplier_id;
- document.getElementById('f-warehouse').value = inv.warehouse_id;
- document.getElementById('f-sup_inv_no').value = inv.supplier_invoice_no||'';
- document.getElementById('f-notes').value = inv.notes||'';
- document.getElementById('f-tax_rate').value = inv.tax_rate||14;
- document.getElementById('inv-lines').innerHTML = '';
- inv.lines.forEach(l=>addLine(l));
- calcTotals();
- document.getElementById('modal-title').innerHTML = '<i class="bi bi-pencil"></i> تعديل الفاتورة';
- invModal.show();
+// ============================================================
+// عند تغيير إذن الاستلام — تحميل البنود
+// ============================================================
+async function onReceiptChange() {
+    const receipt_id = document.getElementById('f-receipt_id').value;
+    if (!receipt_id) {
+        document.getElementById('receipt-info').style.display = 'none';
+        document.getElementById('inv-lines').innerHTML = '';
+        calcTotals();
+        return;
+    }
+    
+    const rec = availableReceipts.find(r => r.id == receipt_id);
+    if (!rec) return;
+    
+    document.getElementById('info-warehouse').textContent = rec.warehouse_name || '-';
+    document.getElementById('info-date').textContent = rec.transaction_date;
+    document.getElementById('info-total').textContent = parseFloat(rec.total_value || 0).toFixed(2);
+    document.getElementById('info-ref').textContent = rec.reference_no || '-';
+    document.getElementById('receipt-info').style.display = 'block';
+    
+    try {
+        const r = await fetch(`${API}/txn/${receipt_id}`).then(x => x.json());
+        if (!r.success) { alert('خطأ في تحميل بنود الإذن'); return; }
+        
+        const txn = r.data;
+        const tbody = document.getElementById('inv-lines');
+        tbody.innerHTML = '';
+        
+        txn.lines.forEach(line => {
+            // بيانات الضريبة من الأصناف
+            const taxInfo = itemsTaxMap[line.item_id] || { is_taxable: 0, default_tax_rate: 0 };
+            
+            const tr = document.createElement('tr');
+            tr.dataset.isTaxable = taxInfo.is_taxable;
+            tr.dataset.taxRate = taxInfo.default_tax_rate;
+            
+            tr.innerHTML = `
+                <td>
+                    <strong>${line.item_name}</strong>
+                    <br><small class="text-muted">${line.item_code}</small>
+                    <input type="hidden" class="item-id" value="${line.item_id}">
+                    <input type="hidden" class="uom-id" value="${line.uom_id}">
+                </td>
+                <td><input type="number" class="form-control form-control-sm qty-in" value="${line.quantity}" step="0.0001"></td>
+                <td><input type="number" class="form-control form-control-sm cost-in" value="${line.unit_cost || 0}" step="0.0001" min="0"></td>
+                <td class="line-total text-end"><strong>0.00</strong></td>
+                <td class="line-tax-cell text-end">
+                    <span class="line-tax-badge" style="background:#d1fae5;color:#065f46;">0.00</span>
+                    <div class="line-tax-rate" style="color:#94a3b8;text-align:center;">0%</div>
+                </td>
+                <td class="line-total-tax text-end"><strong>0.00</strong></td>`;
+            tbody.appendChild(tr);
+        });
+        
+        tbody.querySelectorAll('.qty-in, .cost-in').forEach(inp => 
+            inp.addEventListener('input', calcTotals)
+        );
+        
+        calcTotals();
+    } catch(e) { alert('خطأ: ' + e.message); }
 }
 
-function addLine(data={}){
- const tr = document.createElement('tr');
- const itemOpts = itemsList.map(i=>`<option value="${i.id}" ${data.item_id==i.id?'selected':''}>${i.code} - ${i.name_ar}</option>`).join('');
- tr.innerHTML = `
-  <td><select class="form-select form-select-sm item-sel">${itemOpts}</select></td>
-  <td><select class="form-select form-select-sm uom-sel"></select></td>
-  <td><input type="number" class="form-control form-control-sm qty-in" value="${data.quantity||1}" step="0.0001" min="0.0001"></td>
-  <td><input type="number" class="form-control form-control-sm price-in" value="${data.unit_price||0}" step="0.0001" min="0"></td>
-  <td><input type="number" class="form-control form-control-sm disc-in" value="${data.discount_pct||0}" step="0.01" min="0" max="100"></td>
-  <td class="line-total">0.00</td>
-  <td><button class="btn btn-sm btn-danger" onclick="this.closest('tr').remove(); calcTotals()"><i class="bi bi-trash"></i></button></td>`;
- document.getElementById('inv-lines').appendChild(tr);
- 
- const itemSel = tr.querySelector('.item-sel');
- const uomSel = tr.querySelector('.uom-sel');
- 
- const refreshUoms = ()=>{
-  const itemId = parseInt(itemSel.value);
-  const tiers = itemTiersMap[itemId] || [];
-  const order = {MAJOR:1, MEDIUM:2, MINOR:3};
-  const sorted = [...tiers].sort((a,b)=>order[a.tier]-order[b.tier]);
-  const labels = {MAJOR:'🔵', MEDIUM:'🟡', MINOR:'🟢'};
-  uomSel.innerHTML = sorted.map(t=>`<option value="${t.uom_id}" ${data.uom_id==t.uom_id?'selected':''}>${labels[t.tier]} ${t.uom_name} (${t.uom_code})</option>`).join('');
-  calcTotals();
- };
- itemSel.addEventListener('change', refreshUoms);
- refreshUoms();
- 
- tr.querySelectorAll('.qty-in,.price-in,.disc-in').forEach(inp=>inp.addEventListener('input',calcTotals));
+// ============================================================
+// حساب الإجماليات (مع ضريبة الأصناف)
+// ============================================================
+function calcTotals() {
+    let subtotal = 0;
+    let taxTotal = 0;
+    
+    document.querySelectorAll('#inv-lines tr').forEach(tr => {
+        const q = parseFloat(tr.querySelector('.qty-in').value) || 0;
+        const c = parseFloat(tr.querySelector('.cost-in').value) || 0;
+        const lineTotal = q * c;
+        
+        // الضريبة من بيانات الصنف
+        const isTaxable = parseInt(tr.dataset.isTaxable) || 0;
+        const taxRate = parseFloat(tr.dataset.taxRate) || 0;
+        const lineTax = isTaxable === 1 ? (lineTotal * taxRate / 100) : 0;
+        const lineGrand = lineTotal + lineTax;
+        
+        // نحدّث العرض
+        const totalEl = tr.querySelector('.line-total');
+        if (totalEl) totalEl.innerHTML = `<strong>${lineTotal.toFixed(2)}</strong>`;
+        
+        const taxEl = tr.querySelector('.line-tax-badge');
+        if (taxEl) {
+            taxEl.textContent = lineTax.toFixed(2);
+            if (isTaxable === 1) {
+                taxEl.style.background = '#fee2e2';
+                taxEl.style.color = '#991b1b';
+            } else {
+                taxEl.style.background = '#d1fae5';
+                taxEl.style.color = '#065f46';
+            }
+        }
+        
+        const rateEl = tr.querySelector('.line-tax-rate');
+        if (rateEl) {
+            rateEl.textContent = isTaxable === 1 ? `${taxRate}%` : 'معفى';
+            rateEl.style.color = isTaxable === 1 ? '#dc2626' : '#059669';
+        }
+        
+        const grandEl = tr.querySelector('.line-total-tax');
+        if (grandEl) grandEl.innerHTML = `<strong>${lineGrand.toFixed(2)}</strong>`;
+        
+        subtotal += lineTotal;
+        taxTotal += lineTax;
+    });
+    
+    document.getElementById('sum-sub').textContent = subtotal.toFixed(2);
+    document.getElementById('sum-tax').textContent = taxTotal.toFixed(2);
+    document.getElementById('sum-total').textContent = (subtotal + taxTotal).toFixed(2);
 }
 
-function calcTotals(){
- const taxRate = parseFloat(document.getElementById('f-tax_rate').value) || 14;
- let subtotal = 0;
- document.querySelectorAll('#inv-lines tr').forEach(tr=>{
-  const q = parseFloat(tr.querySelector('.qty-in').value)||0;
-  const p = parseFloat(tr.querySelector('.price-in').value)||0;
-  const d = parseFloat(tr.querySelector('.disc-in').value)||0;
-  const lineSub = q * p * (1 - d/100);
-  tr.querySelector('.line-total').textContent = lineSub.toFixed(2);
-  subtotal += lineSub;
- });
- const tax = subtotal * taxRate / 100;
- document.getElementById('sum-sub').textContent = subtotal.toFixed(2);
- document.getElementById('sum-tax').textContent = tax.toFixed(2);
- document.getElementById('sum-total').textContent = (subtotal+tax).toFixed(2);
+// ============================================================
+// فتح نموذج إضافة فاتورة
+// ============================================================
+function openAdd() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const preselectedReceiptId = urlParams.get('receipt_id');
+    
+    document.getElementById('f-date').value = new Date().toISOString().split('T')[0];
+    document.getElementById('f-supplier').value = '';
+    document.getElementById('f-ref').value = '';
+    document.getElementById('f-notes').value = '';
+    document.getElementById('inv-lines').innerHTML = '';
+    document.getElementById('receipt-info').style.display = 'none';
+    document.getElementById('modal-title').innerHTML = '<i class="bi bi-plus-circle"></i> فاتورة شراء جديدة';
+    
+    loadSuppliers().then(() => {
+        return loadReceipts();
+    }).then(() => {
+        if (preselectedReceiptId) {
+            setTimeout(() => {
+                document.getElementById('f-receipt_id').value = preselectedReceiptId;
+                onReceiptChange();
+            }, 300);
+        }
+    });
+    
+    calcTotals();
+    invModal.show();
 }
 
-document.getElementById('f-tax_rate').addEventListener('input', calcTotals);
-
-async function save(postNow){
- const lines = [];
- document.querySelectorAll('#inv-lines tr').forEach(tr=>{
-  const item_id = parseInt(tr.querySelector('.item-sel').value);
-  const uom_id = parseInt(tr.querySelector('.uom-sel').value);
-  const quantity = parseFloat(tr.querySelector('.qty-in').value);
-  const unit_price = parseFloat(tr.querySelector('.price-in').value);
-  const discount_pct = parseFloat(tr.querySelector('.disc-in').value)||0;
-  if (quantity>0 && uom_id) lines.push({item_id,uom_id,quantity,unit_price,discount_pct});
- });
- if (!lines.length) { alert('أضف بنداً'); return; }
- 
- const body = {
-  invoice_date: document.getElementById('f-date').value,
-  supplier_id: parseInt(document.getElementById('f-supplier').value),
-  supplier_invoice_no: document.getElementById('f-sup_inv_no').value,
-  warehouse_id: parseInt(document.getElementById('f-warehouse').value),
-  tax_rate: parseFloat(document.getElementById('f-tax_rate').value)||14,
-  notes: document.getElementById('f-notes').value,
-  lines
- };
- 
- if (editId) {
-  const r = await fetch(`${API}/purchase-invoices/${editId}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}).then(x=>x.json());
-  if (!r.success) { alert(r.message||'خطأ'); return; }
-  if (postNow) {
-   const pr = await fetch(`${API}/purchase-invoices/${editId}/post`,{method:'POST'}).then(x=>x.json());
-   if (!pr.success) { alert(pr.message); return; }
-  }
-  invModal.hide(); load(); return;
- }
- 
- const r = await fetch(`${API}/purchase-invoices/`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}).then(x=>x.json());
- if (!r.success) { alert(r.message||'خطأ'); return; }
- if (postNow) {
-  const pr = await fetch(`${API}/purchase-invoices/${r.data.id}/post`,{method:'POST'}).then(x=>x.json());
-  if (!pr.success) { alert(pr.message); return; }
- }
- invModal.hide(); load();
+// ============================================================
+// حفظ الفاتورة
+// ============================================================
+async function saveInv(postNow) {
+    const receipt_id = document.getElementById('f-receipt_id').value;
+    if (!receipt_id) { alert('اختر إذن استلام'); return; }
+    
+    const supplier_id = document.getElementById('f-supplier').value;
+    if (!supplier_id) { alert('اختر المورد'); return; }
+    
+    const lines = [];
+    let hasError = false;
+    
+    document.querySelectorAll('#inv-lines tr').forEach(tr => {
+        const item_id = parseInt(tr.querySelector('.item-id').value);
+        const uom_id = parseInt(tr.querySelector('.uom-id').value);
+        const quantity = parseFloat(tr.querySelector('.qty-in').value);
+        const unit_cost = parseFloat(tr.querySelector('.cost-in').value);
+        
+        if (!item_id || quantity <= 0) { hasError = true; return; }
+        const isTaxable = parseInt(tr.dataset.isTaxable) || 0;
+        const taxRate = parseFloat(tr.dataset.taxRate) || 0;
+        lines.push({ 
+            item_id, 
+            uom_id, 
+            quantity, 
+            unit_cost,
+            tax_rate: isTaxable === 1 ? taxRate : 0
+        });
+    });
+    
+    if (hasError || !lines.length) { alert('تأكد من صحة البنود'); return; }
+    
+    const data = {
+        receipt_id: parseInt(receipt_id),
+        supplier_id: parseInt(supplier_id),
+        invoice_date: document.getElementById('f-date').value,
+        reference_no: document.getElementById('f-ref').value,
+        tax_rate: (function(){ let maxRate = 0; lines.forEach(l => { if (l.tax_rate > maxRate) maxRate = l.tax_rate; }); return maxRate; })(),
+        notes: document.getElementById('f-notes').value,
+        lines
+    };
+    
+    try {
+        const r = await fetch(`${API}/purchase-invoices/`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(data)
+        }).then(x => x.json());
+        
+        if (!r.success) { alert(r.message || 'خطأ'); return; }
+        
+        if (postNow) {
+            const pr = await fetch(`${API}/purchase-invoices/${r.data.id}/post`, {
+                method: 'POST'
+            }).then(x => x.json());
+            if (!pr.success) { alert(pr.message || 'خطأ في الترحيل'); return; }
+        }
+        
+        invModal.hide();
+        window.editId = null;
+        load();
+        loadReceipts();
+    } catch(e) { alert('خطأ: ' + e.message); }
 }
 
-async function viewInv(id){
- const r = await fetch(`${API}/purchase-invoices/${id}`).then(x=>x.json());
- if (!r.success) return;
- const inv = r.data;
- let html = `
- <div class="row mb-3">
-  <div class="col-md-6"><strong>رقم الفاتورة:</strong> ${inv.invoice_no}</div>
-  <div class="col-md-6"><strong>التاريخ:</strong> ${inv.invoice_date}</div>
-  <div class="col-md-6"><strong>المورد:</strong> ${inv.supplier_name}</div>
-  <div class="col-md-6"><strong>المستودع:</strong> ${inv.warehouse_name}</div>
-  <div class="col-md-6"><strong>رقم فاتورة المورد:</strong> ${inv.supplier_invoice_no||'-'}</div>
-  <div class="col-md-6"><strong>الحالة:</strong> <span class="badge-status badge-${inv.status}">${inv.status}</span></div>
- </div>
- <h6>البنود:</h6>
- <table class="table table-sm table-bordered">
-  <thead><tr><th>#</th><th>الصنف</th><th>الوحدة</th><th>الكمية</th><th>السعر</th><th>الإجمالي</th></tr></thead><tbody>`;
- inv.lines.forEach((l,i)=>{
-  html += `<tr><td>${i+1}</td><td>${l.item_name}</td><td>${l.uom_name||'-'}</td><td>${l.quantity}</td><td>${l.unit_price}</td><td>${parseFloat(l.line_total).toFixed(2)}</td></tr>`;
- });
- html += `</tbody></table>
- <div class="row"><div class="col-md-6 offset-md-6"><table class="table table-sm">
-  <tr><td>المجموع:</td><td class="text-end">${parseFloat(inv.subtotal).toFixed(2)}</td></tr>
-  <tr><td>الضريبة:</td><td class="text-end">${parseFloat(inv.tax_amount).toFixed(2)}</td></tr>
-  <tr class="table-primary"><td><strong>الإجمالي:</strong></td><td class="text-end"><strong>${parseFloat(inv.total_amount).toFixed(2)}</strong></td></tr>
- </table></div></div>`;
- document.getElementById('viewBody').innerHTML = html;
- viewModal.show();
+// ============================================================
+// تحميل قائمة الفواتير
+// ============================================================
+async function load() {
+    try {
+        const status = document.getElementById('flt-status').value;
+        const url = status ? `${API}/purchase-invoices/?status=${status}` : `${API}/purchase-invoices/`;
+        const r = await fetch(url).then(x => x.json());
+        const rows = r.data || [];
+        const tbody = document.getElementById('tbl');
+        
+        if (!rows.length) {
+            tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted">لا توجد فواتير</td></tr>';
+            return;
+        }
+        
+        tbody.innerHTML = rows.map(inv => {
+            const isDraft = inv.status === 'DRAFT';
+            const statusClass = inv.status === 'POSTED' ? 'bg-success' : 'bg-warning text-dark';
+            return `<tr>
+                <td><code>${inv.invoice_no}</code></td>
+                <td>${inv.invoice_date}</td>
+                <td>${inv.supplier_name || '-'}</td>
+                <td>${inv.warehouse_name || '-'}</td>
+                <td><strong>${parseFloat(inv.total_amount || 0).toFixed(2)}</strong></td>
+                <td><span class="badge ${statusClass}">${inv.status}</span></td>
+                <td>
+                    <button class="btn btn-sm btn-outline-secondary" onclick="printInv(${inv.id})" title="طباعة">
+                        <i class="bi bi-printer"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-info" onclick="viewInv(${inv.id})" title="عرض">
+                        <i class="bi bi-eye"></i>
+                    </button>
+                    ${isDraft ? `
+                        <button class="btn btn-sm btn-outline-success" onclick="postInv(${inv.id})" title="ترحيل">
+                            <i class="bi bi-check-circle"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger" onclick="delInv(${inv.id})" title="حذف">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    ` : `<button class="btn btn-sm btn-outline-secondary" disabled><i class="bi bi-lock"></i></button>`}
+                </td>
+            </tr>`;
+        }).join('');
+    } catch(e) {
+        document.getElementById('tbl').innerHTML = 
+            '<tr><td colspan="7" class="text-center text-danger">خطأ: ' + e.message + '</td></tr>';
+    }
 }
 
-async function postInv(id){
- if (!confirm('ترحيل الفاتورة؟ سيتم إنشاء إذن استلام تلقائي.')) return;
- const r = await fetch(`${API}/purchase-invoices/${id}/post`,{method:'POST'}).then(x=>x.json());
- if (r.success) { alert('تم الترحيل'); load(); }
- else alert(r.message||'خطأ');
+// ============================================================
+// ترحيل / حذف
+// ============================================================
+// ============================================================
+// تعديل الفاتورة
+// ============================================================
+async function editInv(id) {
+    try {
+        const r = await fetch(`${API}/purchase-invoices/${id}`).then(x => x.json());
+        if (!r.success) { alert('خطأ في تحميل الفاتورة'); return; }
+        
+        const inv = r.data;
+        
+        document.getElementById('f-date').value = inv.invoice_date;
+        document.getElementById('f-ref').value = inv.reference_no || '';
+        document.getElementById('f-notes').value = inv.notes || '';
+        
+        if (inv.supplier_id) {
+            document.getElementById('f-supplier').value = inv.supplier_id;
+        }
+        if (inv.receipt_id) {
+            document.getElementById('f-receipt_id').value = inv.receipt_id;
+        }
+        
+        document.getElementById('receipt-info').style.display = 'block';
+        document.getElementById('info-warehouse').textContent = inv.warehouse_name || '-';
+        document.getElementById('info-date').textContent = inv.invoice_date;
+        document.getElementById('info-total').textContent = parseFloat(inv.subtotal || 0).toFixed(2);
+        document.getElementById('info-ref').textContent = inv.reference_no || '-';
+        
+        const tbody = document.getElementById('inv-lines');
+        tbody.innerHTML = '';
+        
+        inv.lines.forEach(line => {
+            const taxInfo = itemsTaxMap[line.item_id] || { is_taxable: 0, default_tax_rate: 0 };
+            const tr = document.createElement('tr');
+            tr.dataset.isTaxable = taxInfo.is_taxable;
+            tr.dataset.taxRate = taxInfo.default_tax_rate;
+            
+            tr.innerHTML = `
+                <td>
+                    <strong>${line.item_name || ''}</strong>
+                    <br><small class="text-muted">${line.item_code || ''}</small>
+                    <input type="hidden" class="item-id" value="${line.item_id}">
+                    <input type="hidden" class="uom-id" value="${line.uom_id}">
+                </td>
+                <td><input type="number" class="form-control form-control-sm qty-in" value="${line.quantity}" step="0.0001"></td>
+                <td><input type="number" class="form-control form-control-sm cost-in" value="${line.unit_price || 0}" step="0.0001" min="0"></td>
+                <td class="line-total text-end"><strong>0.00</strong></td>
+                <td class="line-tax-cell text-end">
+                    <span class="line-tax-badge" style="background:#d1fae5;color:#065f46;">0.00</span>
+                    <div class="line-tax-rate" style="color:#94a3b8;text-align:center;">0%</div>
+                </td>
+                <td class="line-total-tax text-end"><strong>0.00</strong></td>`;
+            tbody.appendChild(tr);
+        });
+        
+        tbody.querySelectorAll('.qty-in, .cost-in').forEach(inp => 
+            inp.addEventListener('input', calcTotals)
+        );
+        
+        calcTotals();
+        
+        document.getElementById('modal-title').innerHTML = '<i class="bi bi-pencil"></i> تعديل الفاتورة';
+        window.editId = id;
+        invModal.show();
+    } catch(e) { alert('خطأ: ' + e.message); }
+}
+async function postInv(id) {
+    if (!confirm('ترحيل الفاتورة؟ هيتم توليد القيد المحاسبي.')) return;
+    try {
+        const r = await fetch(`${API}/purchase-invoices/${id}/post`, { method: 'POST' }).then(x => x.json());
+        if (r.success) { alert('✅ تم الترحيل'); load(); }
+        else alert(r.message || 'خطأ');
+    } catch(e) { alert('خطأ: ' + e.message); }
 }
 
-async function rejectInv(id){
- if (!confirm('رفض الفاتورة؟')) return;
- const r = await fetch(`${API}/purchase-invoices/${id}/reject`,{method:'POST'}).then(x=>x.json());
- if (r.success) { alert('تم الرفض'); load(); }
- else alert(r.message||'خطأ');
+async function delInv(id) {
+    if (!confirm('حذف الفاتورة؟')) return;
+    try {
+        const r = await fetch(`${API}/purchase-invoices/${id}`, { method: 'DELETE' }).then(x => x.json());
+        if (r.success) { load(); loadReceipts(); }
+        else alert(r.message || 'خطأ');
+    } catch(e) { alert('خطأ: ' + e.message); }
 }
 
-async function restoreInv(id){
- if (!confirm('استعادة الفاتورة؟')) return;
- const r = await fetch(`${API}/purchase-invoices/${id}/restore`,{method:'POST'}).then(x=>x.json());
- if (r.success) { alert('تمت الاستعادة'); load(); }
- else alert(r.message||'خطأ');
+// ============================================================
+// عرض التفاصيل
+// ============================================================
+async function viewInv(id) {
+    try {
+        const r = await fetch(`${API}/purchase-invoices/${id}`).then(x => x.json());
+        if (!r.success) return;
+        
+        const inv = r.data;
+        let html = `
+            <div class="row mb-3">
+                <div class="col-md-6"><strong>رقم الفاتورة:</strong> ${inv.invoice_no}</div>
+                <div class="col-md-6"><strong>التاريخ:</strong> ${inv.invoice_date}</div>
+                <div class="col-md-6"><strong>الحالة:</strong> ${inv.status}</div>
+                <div class="col-md-6"><strong>رقم فاتورة المورد:</strong> ${inv.reference_no || '-'}</div>
+            </div>
+            <h6>البنود:</h6>
+            <table class="table table-sm table-bordered">
+                <thead><tr><th>#</th><th>الصنف</th><th>الكمية</th><th>السعر</th><th>الإجمالي</th></tr></thead>
+                <tbody>`;
+        
+        inv.lines.forEach((l, i) => {
+            html += `<tr>
+                <td>${i + 1}</td>
+                <td>${l.item_name || l.item_id}</td>
+                <td>${l.quantity}</td>
+                <td>${parseFloat(l.unit_cost).toFixed(2)}</td>
+                <td>${parseFloat(l.total_cost).toFixed(2)}</td>
+            </tr>`;
+        });
+        
+        html += `</tbody></table>
+            <table class="table table-sm">
+                <tr><td>المجموع:</td><td class="text-end">${parseFloat(inv.subtotal || 0).toFixed(2)}</td></tr>
+                <tr><td>الضريبة:</td><td class="text-end">${parseFloat(inv.tax_amount || 0).toFixed(2)}</td></tr>
+                <tr class="table-primary"><td><strong>الإجمالي:</strong></td><td class="text-end"><strong>${parseFloat(inv.total_amount || 0).toFixed(2)}</strong></td></tr>
+            </table>`;
+        
+        document.getElementById('viewBody').innerHTML = html;
+        viewModal.show();
+    } catch(e) { alert('خطأ: ' + e.message); }
 }
 
-async function delInv(id){
- if (!confirm('حذف الفاتورة؟')) return;
- const r = await fetch(`${API}/purchase-invoices/${id}`,{method:'DELETE'}).then(x=>x.json());
- if (r.success) { alert('تم الحذف'); load(); }
- else alert(r.message||'خطأ');
+// ============================================================
+// طباعة
+// ============================================================
+function printInv(id) {
+    window.open('print_purchase_invoice.html?id=' + id, '_blank');
 }
+</script>
 
-(async()=>{ await loadLists(); await load(); })();
-</script></body></html>
+</body></html>

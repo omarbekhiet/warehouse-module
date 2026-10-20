@@ -1,6 +1,6 @@
-﻿from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify
 from app.database import db
-from app.utils import json_safe
+from app.utils import json_safe, enrich_with_user
 
 customer_bp = Blueprint('customers', __name__)
 
@@ -14,6 +14,7 @@ def list_customers():
         values += [f'%{search}%', f'%{search}%']
     where = ' AND '.join(conditions)
     rows = db.query(f"SELECT * FROM customers WHERE {where} ORDER BY code", values)
+    rows = enrich_with_user(rows)
     return jsonify({'success': True, 'data': json_safe(rows)})
 
 
@@ -34,12 +35,17 @@ def create_customer():
         cid = db.execute(
             """INSERT INTO customers 
                (code, name_ar, name_en, phone, email, address, tax_number,
-                account_code, credit_limit, payment_terms, notes, is_active)
-               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)""",
+                commercial_register, company_type, legal_form, tax_office, national_id,
+                account_code, credit_limit, payment_terms, notes, group_id, credit_days, is_active)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)""",
             (d['code'], d['name_ar'], d.get('name_en'),
              d.get('phone'), d.get('email'), d.get('address'),
-             d.get('tax_number'), d.get('account_code', '1221'),
-             d.get('credit_limit', 0), d.get('payment_terms', 30), d.get('notes'))
+             d.get('tax_number'), d.get('commercial_register'),
+             d.get('company_type'), d.get('legal_form'), d.get('tax_office'), d.get('national_id'),
+             d.get('account_code', '1221001'),
+             d.get('credit_limit', 0),
+             d.get('payment_terms', 30), d.get('notes'),
+             d.get('group_id'), d.get('credit_days'))
         )
         return jsonify({'success': True, 'data': {'id': cid}}), 201
     except Exception as e:
@@ -51,8 +57,10 @@ def update_customer(cid):
     d = request.get_json() or {}
     fields, values = [], []
     for k in ['code', 'name_ar', 'name_en', 'phone', 'email', 'address',
-              'tax_number', 'account_code', 'credit_limit', 'payment_terms',
-              'notes', 'is_active']:
+              'tax_number', 'commercial_register', 'company_type', 'legal_form',
+              'tax_office', 'national_id',
+              'account_code', 'credit_limit', 'payment_terms', 'credit_days',
+              'notes', 'is_active', 'group_id']:
         if k in d:
             fields.append(f"{k}=?")
             values.append(d[k])

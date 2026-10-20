@@ -1,4 +1,4 @@
-﻿from flask import Blueprint, Response, request
+from flask import Blueprint, request, send_file, jsonify
 from app.database import db
 import csv
 import io
@@ -123,3 +123,101 @@ def export_trial_balance():
         [[r['code'], r['name_ar'], r['td'], r['tc']] for r in rows]
     )
     return _csv_response(content, f'trial_balance_{datetime.now().strftime("%Y%m%d")}.csv')
+
+
+
+
+# =========================================
+# EXCEL IMPORT/EXPORT
+# =========================================
+
+from app.services.excel_service import excel_service
+from flask import send_file, make_response
+
+
+@export_bp.route('/excel/templates', methods=['GET'])
+def list_excel_templates():
+    """قائمة قوالب Excel"""
+    return jsonify({
+        'success': True,
+        'data': excel_service.list_templates()
+    })
+
+
+@export_bp.route('/excel/export/<template_key>', methods=['GET'])
+def export_excel(template_key):
+    """تصدير البيانات لـ Excel"""
+    output, error = excel_service.export_to_excel(template_key)
+    
+    if error:
+        return jsonify({'success': False, 'message': error}), 400
+    
+    timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+    filename = f"{template_key}_{timestamp}.xlsx"
+    
+    return send_file(
+        output,
+        mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        as_attachment=True,
+        download_name=filename
+    )
+
+
+@export_bp.route('/excel/import-template/<template_key>', methods=['GET'])
+def download_import_template(template_key):
+    """تحميل قالب فارغ للاستيراد"""
+    output = excel_service.get_import_template(template_key)
+    
+    if not output:
+        return jsonify({'success': False, 'message': 'قالب غير موجود'}), 404
+    
+    filename = f"import_{template_key}_template.xlsx"
+    
+    return send_file(
+        output,
+        mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        as_attachment=True,
+        download_name=filename
+    )
+
+
+@export_bp.route('/excel/import/<template_key>', methods=['POST'])
+def import_excel(template_key):
+    """استيراد من Excel"""
+    if 'file' not in request.files:
+        return jsonify({'success': False, 'message': 'مافيش ملف'}), 400
+    
+    file = request.files['file']
+    if not file.filename:
+        return jsonify({'success': False, 'message': 'مافيش ملف'}), 400
+    
+    if not file.filename.endswith(('.xlsx', '.xls')):
+        return jsonify({'success': False, 'message': 'الملف يجب أن يكون Excel'}), 400
+    
+    try:
+        file_content = file.read()
+        result = excel_service.import_from_excel(template_key, file_content)
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+
+@export_bp.route('/excel/preview/<template_key>', methods=['POST'])
+def preview_excel_import(template_key):
+    """معاينة الاستيراد بدون حفظ (dry run)"""
+    if 'file' not in request.files:
+        return jsonify({'success': False, 'message': 'مافيش ملف'}), 400
+    
+    file = request.files['file']
+    if not file.filename:
+        return jsonify({'success': False, 'message': 'مافيش ملف'}), 400
+    
+    if not file.filename.endswith(('.xlsx', '.xls')):
+        return jsonify({'success': False, 'message': 'الملف يجب أن يكون Excel'}), 400
+    
+    try:
+        file_content = file.read()
+        result = excel_service.import_from_excel(template_key, file_content, dry_run=True)
+        return jsonify(result)
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500

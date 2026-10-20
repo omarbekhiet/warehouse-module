@@ -1,26 +1,968 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
-<head><meta charset="UTF-8"><title>الدليل المحاسبي</title>
+<head>
+<meta charset="UTF-8">
+<title>الدليل المحاسبي</title>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
 <link href="style.css" rel="stylesheet">
+
 <style>
-.tree-node { padding: 8px 12px; border-bottom: 1px solid #eee; }
-.tree-node:hover { background: #f8f9fa; }
-.level-L1 { font-weight: 700; background: #e8f5e9; }
-.level-L2 { padding-right: 30px; }
-.level-L3 { padding-right: 60px; }
-.level-L4 { padding-right: 90px; }
-.badge-nature-D { background: #d4edda; color: #155724; }
-.badge-nature-C { background: #f8d7da; color: #721c24; }
-.badge-nature-CC { background: #fff3cd; color: #856404; }
+/* ============================================
+   Tree Table — 5 مستويات احترافي
+   ============================================ */
+.tree-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.75rem;
+    margin: 0;
+    background: white;
+}
+
+.tree-table thead th {
+    background: linear-gradient(135deg, #1e3c72, #2a5298);
+    color: white;
+    font-weight: 700;
+    padding: 4px 6px;
+    text-align: right;
+    font-size: 0.70rem;
+    border-bottom: 2px solid #0f2555;
+    white-space: nowrap;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.tree-table tbody tr {
+    border-bottom: 1px solid #f1f5f9;
+    transition: background 0.15s;
+    position: relative;
+}
+.tree-table tbody tr:hover { background: #fef9c3 !important; }
+
+/* ============================================
+   شريط جانبي ملون حسب المستوى
+   ============================================ */
+.tree-table tbody tr.level-L1 { border-right: 5px solid #10b981; }
+.tree-table tbody tr.level-L2 { border-right: 5px solid #f59e0b; }
+.tree-table tbody tr.level-L3 { border-right: 5px solid #3b82f6; }
+.tree-table tbody tr.level-L4 { border-right: 5px solid #ec4899; }
+.tree-table tbody tr.level-L5 { border-right: 5px solid #8b5cf6; }
+
+/* خلفيات خفيفة */
+.tree-table tbody tr.level-L1 { background: #f0fdf4; font-weight: 700; }
+.tree-table tbody tr.level-L2 { background: #fffbeb; }
+.tree-table tbody tr.level-L3 { background: #eff6ff; }
+.tree-table tbody tr.level-L4 { background: #fdf2f8; }
+.tree-table tbody tr.level-L5 { background: #faf5ff; }
+
+.tree-table tbody td {
+    padding: 2px 6px;
+    font-size: 0.75rem;
+    line-height: 1.3;
+    vertical-align: middle;
+    border-left: 1px solid #f1f5f9;
+}
+
+/* ============================================
+   الأعمدة
+   ============================================ */
+.col-code { width: 120px; }
+.col-name { min-width: 250px; }
+.col-parent { width: 90px; text-align: center; }
+.col-nature { width: 80px; text-align: center; }
+.col-stmt { width: 80px; text-align: center; }
+.col-type { width: 110px; text-align: center; }
+.col-level { width: 70px; text-align: center; }
+.col-actions { width: 120px; text-align: center; }
+
+/* ============================================
+   الكود في badge
+   ============================================ */
+.code-badge {
+    display: inline-block;
+    padding: 1px 6px;
+    border-radius: 5px;
+    font-family: 'Consolas', 'Monaco', monospace;
+    font-weight: 700;
+    font-size: 0.68rem;
+    background: #f1f5f9;
+    color: #334155;
+    border: 1px solid #e2e8f0;
+}
+.level-L1 .code-badge { background: #10b981; color: white; border-color: #059669; }
+.level-L2 .code-badge { background: #f59e0b; color: white; border-color: #d97706; }
+.level-L3 .code-badge { background: #3b82f6; color: white; border-color: #2563eb; }
+.level-L4 .code-badge { background: #ec4899; color: white; border-color: #db2777; }
+.level-L5 .code-badge { background: #8b5cf6; color: white; border-color: #7c3aed; }
+
+/* ============================================
+   إزاحة الشجرة — 5 مستويات
+   ============================================ */
+.indent-1 { padding-right: 11px !important; }
+.indent-2 { padding-right: 35px !important; }
+.indent-3 { padding-right: 59px !important; }
+.indent-4 { padding-right: 83px !important; }
+.indent-5 { padding-right: 107px !important; }
+
+/* الخطوط العمودية للشجرة */
+.tree-line {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    border-right: 2px solid #cbd5e1;
+    border-bottom: 2px solid #cbd5e1;
+    margin-left: 4px;
+    vertical-align: middle;
+    margin-bottom: 4px;
+}
+.tree-line.last {
+    border-bottom-right-radius: 6px;
+    border-bottom: 2px solid #cbd5e1;
+    border-right: 2px solid #cbd5e1;
+}
+
+/* أيقونة العقدة */
+.node-icon {
+    display: inline-block;
+    width: 20px;
+    text-align: center;
+    font-size: 1rem;
+    vertical-align: middle;
+    margin-left: 4px;
+}
+.node-icon.folder { color: #f59e0b; }
+.node-icon.leaf { color: #10b981; }
+
+/* اسم الحساب */
+.node-name {
+    color: #1e293b;
+    font-weight: 600;
+    vertical-align: middle;
+}
+.level-L1 .node-name { font-size: 0.94rem; font-weight: 800; color: #15803d; }
+.level-L2 .node-name { font-size: 0.90rem; font-weight: 700; color: #b45309; }
+.level-L3 .node-name { font-size: 0.87rem; font-weight: 600; color: #1e40af; }
+.level-L4 .node-name { font-size: 0.75rem; color: #be185d; }
+.level-L5 .node-name { font-size: 0.83rem; color: #6b21a8; }
+
+.node-en {
+    color: #94a3b8;
+    font-size: 0.72rem;
+    margin-right: 6px;
+    font-style: italic;
+}
+
+/* ============================================
+   Badges
+   ============================================ */
+.badge {
+    font-weight: 700;
+    font-size: 0.72rem;
+    padding: 4px 10px;
+    border-radius: 12px;
+    display: inline-block;
+    border: 1px solid transparent;
+}
+
+.badge-nature-D {
+    background: #dbeafe;
+    color: #1e40af;
+    border-color: #bfdbfe;
+}
+.badge-nature-C {
+    background: #fce7f3;
+    color: #9d174d;
+    border-color: #fbcfe8;
+}
+.badge-nature-CC {
+    background: #fef3c7;
+    color: #92400e;
+    border-color: #fde68a;
+}
+
+.badge-stmt-BS { background: #e0f2fe; color: #0369a1; border-color: #bae6fd; }
+.badge-stmt-IS { background: #fef3c7; color: #92400e; border-color: #fde68a; }
+.badge-stmt-EQ { background: #ede9fe; color: #6d28d9; border-color: #ddd6fe; }
+
+.badge-type-LEAF {
+    background: #d1fae5;
+    color: #065f46;
+    border-color: #a7f3d0;
+}
+.badge-type-GROUP {
+    background: #f1f5f9;
+    color: #64748b;
+    border-color: #e2e8f0;
+}
+
+/* شارة المستوى */
+.badge-level {
+    display: inline-block;
+    padding: 1px 6px;
+    border-radius: 10px;
+    font-size: 0.70rem;
+    font-weight: 800;
+    color: white;
+    letter-spacing: 0.5px;
+}
+.badge-level.L1 { background: #10b981; }
+.badge-level.L2 { background: #f59e0b; }
+.badge-level.L3 { background: #3b82f6; }
+.badge-level.L4 { background: #ec4899; }
+.badge-level.L5 { background: #8b5cf6; }
+
+/* شارة الأب */
+.badge-parent {
+    display: inline-block;
+    padding: 2px 7px;
+    border-radius: 8px;
+    font-size: 0.72rem;
+    font-family: monospace;
+    background: #f1f5f9;
+    color: #475569;
+    border: 1px dashed #cbd5e1;
+    font-weight: 700;
+}
+
+/* ============================================
+   أزرار الإجراءات — أفقية
+   ============================================ */
+.action-btns {
+    display: flex;
+    gap: 4px;
+    justify-content: center;
+    align-items: center;
+}
+.btn-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    font-size: 0.68rem;
+    border-radius: 6px;
+    border: 1.5px solid;
+    background: white;
+    transition: all 0.15s;
+    cursor: pointer;
+    line-height: 1;
+}
+.btn-action:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 3px 8px rgba(0,0,0,0.12);
+}
+.btn-action.view { color: #06b6d4; border-color: #06b6d4; }
+.btn-action.view:hover { background: #06b6d4; color: white; }
+.btn-action.edit { color: #f59e0b; border-color: #f59e0b; }
+.btn-action.edit:hover { background: #f59e0b; color: white; }
+.btn-action.del { color: #ef4444; border-color: #ef4444; }
+.btn-action.del:hover { background: #ef4444; color: white; }
+
+/* ============================================
+   Tree container
+   ============================================ */
+.tree-container {
+    max-height: calc(100vh - 340px);
+    overflow-y: auto;
+    overflow-x: auto;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    background: white;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+}
+.tree-container::-webkit-scrollbar { width: 10px; height: 10px; }
+.tree-container::-webkit-scrollbar-track { background: #f1f5f9; }
+.tree-container::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 5px; }
+.tree-container::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+
+/* ============================================
+   Legend
+   ============================================ */
+.tree-legend {
+    background: #f8fafc;
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin-bottom: 10px;
+    font-size: 0.68rem;
+    display: flex;
+    gap: 18px;
+    flex-wrap: wrap;
+    align-items: center;
+    border: 1px solid #e2e8f0;
+}
+.tree-legend .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    color: #475569;
+    font-weight: 600;
+}
+.tree-legend .legend-dot {
+    width: 14px;
+    height: 14px;
+    border-radius: 4px;
+    display: inline-block;
+}
+
+/* Upload */
+.upload-area {
+    border: 2px dashed #cbd5e1;
+    border-radius: 12px;
+    padding: 30px 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: #f8fafc;
+}
+.upload-area:hover { border-color: #3b82f6; background: #eff6ff; }
+.upload-area.dragover { border-color: #10b981; background: #ecfdf5; transform: scale(1.02); }
+.upload-area i { font-size: 2.5rem; color: #94a3b8; margin-bottom: 8px; }
+.upload-area .title { font-size: 0.95rem; font-weight: 600; color: #475569; margin-bottom: 4px; }
+.upload-area .sub { font-size: 0.68rem; color: #94a3b8; }
+
+.import-stats { display: flex; gap: 10px; margin: 10px 0; }
+.import-stats .item {
+    flex: 1;
+    background: #f8fafc;
+    padding: 10px;
+    border-radius: 8px;
+    text-align: center;
+    border: 1px solid #e2e8f0;
+}
+.import-stats .num { font-size: 1.4rem; font-weight: 800; }
+.import-stats .lbl { font-size: 0.72rem; color: #64748b; }
+
+.preview-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.68rem;
+    margin-top: 8px;
+}
+.preview-table th {
+    background: #f1f5f9;
+    padding: 6px 8px;
+    text-align: right;
+    font-weight: 700;
+    color: #475569;
+    border-bottom: 1px solid #cbd5e1;
+}
+.preview-table td { padding: 5px 8px; border-bottom: 1px solid #f1f5f9; }
+
+@media print {
+    .col-actions, .btn-action { display: none; }
+    .tree-table { font-size: 9px; }
+}
+
+/* ============ Tree Toggle ============ */
+.tree-toggle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 16px;
+    height: 16px;
+    border-radius: 3px;
+    background: #cbd5e1;
+    color: #475569;
+    cursor: pointer;
+    margin-left: 3px;
+    font-size: 9px;
+    transition: 0.15s;
+    user-select: none;
+    flex-shrink: 0;
+    font-weight: 900;
+}
+.tree-toggle:hover {
+    background: #6366f1;
+    color: white;
+}
+.tree-toggle.expanded {
+    background: #6366f1;
+    color: white;
+}
+.tree-toggle.leaf {
+    background: transparent;
+    cursor: default;
+    color: #cbd5e1;
+    visibility: hidden;
+}
+.tree-toggle.leaf:hover {
+    background: transparent;
+    color: #cbd5e1;
+}
+
+.tree-name {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+}
+
+tr.child-hidden {
+    display: none !important;
+}
+
+/* عمود الاسم */
+.col-name {
+    min-width: 220px !important;
+}
+
+/* ============ Compact + Bold Typography ============ */
+body {
+    font-weight: 600 !important;
+    letter-spacing: -0.1px;
+}
+
+/* الأزرار — أصغر */
+.btn {
+    font-weight: 700 !important;
+    font-size: 0.75rem !important;
+    padding: 3px 10px !important;
+    line-height: 1.2 !important;
+}
+.btn-sm {
+    font-size: 0.72rem !important;
+    padding: 2px 8px !important;
+}
+
+/* Header */
+h2, h4, h5 {
+    font-weight: 800 !important;
+}
+h2 { font-size: 1.1rem !important; }
+
+/* Stats Cards — أصغر */
+.stat-card,
+.stats-card,
+[class*="stat"] {
+    padding: 4px 8px !important;
+}
+.stat-card .value,
+[class*="stat"] .value {
+    font-weight: 900 !important;
+    font-size: 0.95rem !important;
+}
+
+/* الفلاتر — أصغر */
+.form-control, .form-select {
+    font-weight: 600 !important;
+    font-size: 0.76rem !important;
+    padding: 3px 8px !important;
+    height: 28px !important;
+}
+
+/* الجدول — مضغوط + خط تقيل */
+.tree-table thead th {
+    padding: 3px 4px !important;
+    font-size: 0.72rem !important;
+    font-weight: 900 !important;
+    line-height: 1.2 !important;
+    letter-spacing: -0.1px;
+}
+
+.tree-table tbody td {
+    padding: 1px 4px !important;
+    font-size: 0.74rem !important;
+    font-weight: 700 !important;
+    line-height: 1.2 !important;
+}
+
+.tree-table tbody tr {
+    height: 22px !important;
+}
+
+/* الكود */
+.code-badge {
+    padding: 1px 5px !important;
+    font-size: 0.68rem !important;
+    font-weight: 800 !important;
+}
+
+/* Badges */
+.badge {
+    font-weight: 800 !important;
+    font-size: 0.65rem !important;
+    padding: 1px 6px !important;
+}
+
+/* أيقونات */
+.node-icon {
+    font-size: 0.8rem !important;
+}
+
+/* زر الفتح/القفل */
+.tree-toggle {
+    width: 14px !important;
+    height: 14px !important;
+    font-size: 8px !important;
+}
+
+/* المسافات بين العناصر */
+.mb-2, .mb-3, .mb-4 { margin-bottom: 6px !important; }
+.mt-2, .mt-3, .mt-4 { margin-top: 6px !important; }
+.p-2, .p-3, .p-4 { padding: 6px !important; }
+.g-2, .g-3 { gap: 4px !important; }
+
+/* Header الرئيسي */
+.page-header, .d-flex.justify-content-between {
+    margin-bottom: 6px !important;
+}
+
+/* الأعمدة */
+.col-code { width: 95px !important; }
+.col-name { min-width: 200px !important; }
+.col-level { width: 45px !important; }
+.col-actions { width: 85px !important; }
+.col-nature, .col-stmt { width: 60px !important; }
+
+/* الـ container */
+.container-fluid {
+    padding: 4px 8px !important;
+}
+
+.col-ifrs { width: 80px; text-align: center; }
+.ifrs-badge { display: inline-block; padding: 1px 5px; border-radius: 4px; font-size: 0.62rem; font-weight: 700; }
+.ifrs-OPERATING { background: #dbeafe; color: #1e40af; }
+.ifrs-INVESTING { background: #fef3c7; color: #92400e; }
+.ifrs-FINANCING { background: #ede9fe; color: #5b21b6; }
+.ifrs-TAX { background: #f3f4f6; color: #374151; }
+.ifrs-OCI { background: #cffafe; color: #155e75; }
+.col-ifrs { width: 90px; text-align: center; }
+.col-ifrs-sub { width: 110px; text-align: center; font-size: 0.68rem; }
+.col-ifrs-stmt { width: 70px; text-align: center; }
+.ifrs-badge { 
+    display: inline-block; 
+    padding: 2px 6px; 
+    border-radius: 4px; 
+    font-size: 0.62rem; 
+    font-weight: 700; 
+}
+.ifrs-OPERATING { background: #dbeafe; color: #1e40af; }
+.ifrs-INVESTING { background: #fef3c7; color: #92400e; }
+.ifrs-FINANCING { background: #ede9fe; color: #5b21b6; }
+.ifrs-TAX { background: #f3f4f6; color: #374151; }
+.ifrs-OCI { background: #cffafe; color: #155e75; }
+.autofill-field {
+    background: #f8fafc !important;
+    border-color: #cbd5e1 !important;
+}
+.autofill-hint {
+    font-size: 0.6rem;
+    color: #94a3b8;
+    margin-top: 2px;
+}
+.col-entries { width: 70px; text-align: center; }
+.btn-action:disabled {
+    opacity: 0.35 !important;
+    cursor: not-allowed !important;
+}
+/* ============================================
+   ضغط قوي - الشاشة كلها فوق
+   ============================================ */
+body {
+    padding: 2px !important;
+    margin: 0 !important;
+    font-size: 12px !important;
+    line-height: 1.2 !important;
+}
+
+.container-fluid {
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+.row {
+    margin: 0 !important;
+}
+
+.col-md-10 {
+    padding: 4px 6px !important;
+}
+
+/* الـ Header */
+.page-header, 
+.d-flex.justify-content-between {
+    margin-bottom: 2px !important;
+    padding: 0 !important;
+}
+
+h5, h2, h4 {
+    margin: 0 !important;
+    padding: 0 !important;
+    font-size: 0.9rem !important;
+}
+
+/* بطاقات الإحصائيات */
+.row.g-1.mb-2 {
+    margin-bottom: 2px !important;
+    gap: 2px !important;
+}
+
+.row.g-1 > .col-2 {
+    padding: 0 2px !important;
+}
+
+.row.g-1 .card {
+    padding: 2px 4px !important;
+    margin: 0 !important;
+}
+
+.row.g-1 .card small {
+    font-size: 0.6rem !important;
+}
+
+.row.g-1 .card .fw-bold {
+    font-size: 0.85rem !important;
+    line-height: 1 !important;
+}
+
+/* الفلاتر */
+.card.p-1.mb-2 {
+    padding: 3px 6px !important;
+    margin-bottom: 2px !important;
+}
+
+.card.p-1.mb-2 .row {
+    gap: 2px !important;
+}
+
+.card.p-1.mb-2 .col-md-4,
+.card.p-1.mb-2 .col-md-2 {
+    padding: 0 2px !important;
+}
+
+.form-control, .form-select {
+    height: 24px !important;
+    padding: 1px 6px !important;
+    font-size: 0.72rem !important;
+    line-height: 1 !important;
+}
+
+.btn {
+    padding: 2px 6px !important;
+    font-size: 0.7rem !important;
+    line-height: 1 !important;
+}
+
+.btn-sm {
+    padding: 1px 5px !important;
+    font-size: 0.68rem !important;
+}
+
+/* Legend */
+.tree-legend {
+    padding: 2px 10px !important;
+    margin-bottom: 2px !important;
+    font-size: 0.62rem !important;
+    gap: 10px !important;
+    border-radius: 4px !important;
+}
+
+.tree-legend .legend-dot {
+    width: 10px !important;
+    height: 10px !important;
+}
+
+/* Tree Container */
+.card.p-1:last-child {
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+.tree-container {
+    max-height: calc(100vh - 155px) !important;
+    margin: 0 !important;
+    border-radius: 4px !important;
+}
+
+/* الجدول - مضغوط */
+.tree-table thead th {
+    padding: 2px 3px !important;
+    font-size: 0.68rem !important;
+    line-height: 1.1 !important;
+}
+
+.tree-table tbody td {
+    padding: 0px 3px !important;
+    font-size: 0.72rem !important;
+    line-height: 1.15 !important;
+}
+
+.tree-table tbody tr {
+    height: 20px !important;
+}
+
+/* Badges */
+.badge {
+    padding: 0px 5px !important;
+    font-size: 0.62rem !important;
+    line-height: 1.3 !important;
+}
+
+.code-badge {
+    padding: 0px 4px !important;
+    font-size: 0.65rem !important;
+}
+
+.badge-level {
+    padding: 0px 4px !important;
+    font-size: 0.62rem !important;
+}
+
+.badge-parent {
+    padding: 1px 5px !important;
+    font-size: 0.65rem !important;
+}
+
+/* أيقونات */
+.node-icon {
+    font-size: 0.75rem !important;
+}
+
+.tree-toggle {
+    width: 12px !important;
+    height: 12px !important;
+    font-size: 7px !important;
+}
+
+/* أزرار الإجراءات */
+.action-btns {
+    gap: 2px !important;
+}
+
+.btn-action {
+    width: 22px !important;
+    height: 22px !important;
+    font-size: 0.62rem !important;
+    border-radius: 4px !important;
+}
+
+/* المسافات */
+.mb-1, .mb-2, .mb-3, .mb-4 { 
+    margin-bottom: 2px !important; 
+}
+.mt-1, .mt-2, .mt-3, .mt-4 { 
+    margin-top: 0 !important; 
+}
+.p-1, .p-2, .p-3, .p-4 { 
+    padding: 3px !important; 
+}
+.g-1, .g-2, .g-3 { 
+    gap: 2px !important; 
+}
+
+/* الأعمدة */
+.col-code { width: 85px !important; }
+.col-name { min-width: 180px !important; }
+.col-parent { width: 70px !important; }
+.col-nature { width: 60px !important; }
+.col-stmt { width: 60px !important; }
+.col-type { width: 80px !important; }
+.col-level { width: 45px !important; }
+.col-ifrs { width: 80px !important; }
+.col-ifrs-sub { width: 90px !important; }
+.col-ifrs-stmt { width: 60px !important; }
+.col-entries { width: 60px !important; }
+.col-actions { width: 100px !important; }
+
+/* Sidebar */
+.sidebar {
+    padding: 4px !important;
+}
+
+.sidebar nav a {
+    padding: 4px 8px !important;
+    font-size: 0.75rem !important;
+}
+
+.sidebar .brand {
+    padding: 4px !important;
+}
+
+.sidebar .brand h5 {
+    font-size: 0.85rem !important;
+}
+
+
+/* ============================================
+   إلغاء أسهم input[type=number]
+   ============================================ */
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none !important;
+    margin: 0 !important;
+}
+input[type=number] {
+    -moz-appearance: textfield !important;
+    appearance: textfield !important;
+}
+input[type="number"] {
+    -moz-appearance: textfield !important;
+}
+
 </style>
+<script src="permissions.js"></script>
+
+
+
+<style id="compact-spacing-global">
+/* ============================================
+   توحيد المسافات المضغوطة
+   ============================================ */
+
+.table td, .table th {
+    padding: 3px 6px !important;
+    font-size: 0.75rem !important;
+    vertical-align: middle !important;
+    line-height: 1.2 !important;
+}
+
+.table tbody tr {
+    height: auto !important;
+}
+
+.form-control, .form-select {
+    font-size: 0.75rem !important;
+    line-height: 1.2 !important;
+}
+
+.form-control-sm, .form-select-sm {
+    height: 26px !important;
+    padding: 2px 6px !important;
+    font-size: 0.72rem !important;
+    line-height: 1 !important;
+}
+
+.btn {
+    padding: 3px 8px !important;
+    font-size: 0.72rem !important;
+    line-height: 1.2 !important;
+}
+
+.btn-sm {
+    padding: 2px 6px !important;
+    font-size: 0.7rem !important;
+}
+
+.card {
+    margin-bottom: 6px !important;
+}
+
+.card-body, .card.p-2, .card.p-3, .card.p-4 {
+    padding: 6px 8px !important;
+}
+
+.modal-header {
+    padding: 6px 12px !important;
+}
+
+.modal-title {
+    font-size: 0.9rem !important;
+}
+
+.modal-body {
+    padding: 8px 12px !important;
+}
+
+.modal-footer {
+    padding: 6px 12px !important;
+}
+
+.modal-footer .btn {
+    padding: 4px 10px !important;
+    font-size: 0.75rem !important;
+}
+
+.mb-1, .mb-2, .mb-3, .mb-4 {
+    margin-bottom: 4px !important;
+}
+
+.mt-1, .mt-2, .mt-3, .mt-4 {
+    margin-top: 4px !important;
+}
+
+.ms-1, .ms-2, .ms-3 {
+    margin-right: 4px !important;
+}
+
+.me-1, .me-2, .me-3 {
+    margin-left: 4px !important;
+}
+
+.p-1, .p-2, .p-3, .p-4 {
+    padding: 4px !important;
+}
+
+.g-1, .g-2, .g-3 {
+    gap: 4px !important;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    line-height: 1.3 !important;
+}
+
+h1 { font-size: 1.2rem !important; margin-bottom: 6px !important; }
+h2 { font-size: 1.05rem !important; margin-bottom: 6px !important; }
+h3 { font-size: 0.95rem !important; margin-bottom: 4px !important; }
+h4 { font-size: 0.9rem !important; margin-bottom: 4px !important; }
+h5 { font-size: 0.85rem !important; margin-bottom: 4px !important; }
+h6 { font-size: 0.8rem !important; margin-bottom: 4px !important; }
+
+.alert {
+    padding: 6px 10px !important;
+    margin-bottom: 6px !important;
+    font-size: 0.78rem !important;
+}
+
+.badge {
+    padding: 2px 6px !important;
+    font-size: 0.68rem !important;
+}
+
+.nav-tabs .nav-link {
+    padding: 5px 12px !important;
+    font-size: 0.78rem !important;
+}
+
+hr {
+    margin: 6px 0 !important;
+}
+
+/* بطاقات الأعمار (aging) */
+.aging-card, .bucket-card, .stat-card {
+    padding: 6px 8px !important;
+    margin-bottom: 4px !important;
+}
+
+.aging-card .h4, .aging-card .h5,
+.bucket-card .h4, .bucket-card .h5 {
+    font-size: 1rem !important;
+    margin: 2px 0 !important;
+}
+
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none !important;
+    margin: 0 !important;
+}
+input[type=number] {
+    -moz-appearance: textfield !important;
+}
+</style>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 16 16%22><text y=%2214%22 font-size=%2214%22>📒</text></svg>">
 </head>
-<body><div class="container-fluid"><div class="row">
+<body>
+<div class="container-fluid">
+<div class="row">
+
+<!-- Sidebar -->
 <div class="col-md-2 sidebar p-0">
-<div class="brand"><i class="bi bi-box-seam" style="font-size:2rem;"></i><h5 class="mt-2 mb-0">موديول المخازن</h5></div>
+<div class="brand">
+    <i class="bi bi-box-seam" style="font-size:2rem;"></i>
+    <h5 class="mt-2 mb-0">موديول المخازن</h5>
+</div>
 <nav class="mt-3">
-<a href="index.html"><i class="bi bi-speedometer2"></i> لوحة التحكم</a>
+<a href="index.html"><i class="bi bi-house-fill"></i> الرئيسية</a>
 <a href="notifications.html"><i class="bi bi-bell"></i> الإشعارات</a>
 <a href="accounts.html" class="active"><i class="bi bi-book"></i> الدليل المحاسبي</a>
 <a href="warehouses.html"><i class="bi bi-building"></i> المستودعات</a>
@@ -46,66 +988,123 @@
 <a href="financial_reports.html"><i class="bi bi-graph-up"></i> التقارير المالية</a>
 <a href="reports.html"><i class="bi bi-file-earmark-bar-graph"></i> التقارير</a>
 <a href="journal.html"><i class="bi bi-journal-text"></i> القيود</a>
-</nav></div>
-<div class="col-md-10 p-4">
-<div class="d-flex justify-content-between mb-4">
-<h2><i class="bi bi-book"></i> الدليل المحاسبي</h2>
-<div>
-<button class="btn btn-outline-secondary" onclick="load()"><i class="bi bi-arrow-clockwise"></i> تحديث</button>
-<button class="btn btn-primary" onclick="openAdd()"><i class="bi bi-plus-circle"></i> حساب جديد</button>
+</nav>
+</div>
+
+<!-- Main -->
+<div class="col-md-10 p-2">
+
+<div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-1">
+<h5 class="mb-0"><i class="bi bi-book"></i> الدليل المحاسبي</h5>
+<div class="d-flex gap-1 flex-wrap">
+<button class="btn btn-sm btn-outline-success" onclick="exportToExcel('accounts')">
+    <i class="bi bi-file-earmark-excel"></i> Excel
+</button>
+<button class="btn btn-sm btn-outline-primary" onclick="openImportModal('accounts')">
+    <i class="bi bi-file-earmark-arrow-up"></i> استيراد
+</button>
+<a href="index.html" class="btn btn-sm btn-outline-secondary"><i class="bi bi-house-fill"></i></a>
+<button class="btn btn-sm btn-outline-secondary" onclick="load()"><i class="bi bi-arrow-clockwise"></i></button>
+<button class="btn btn-sm btn-primary" onclick="openAdd()"><i class="bi bi-plus-circle"></i> حساب جديد</button>
 </div>
 </div>
 
-<div class="row g-3 mb-3">
-<div class="col-md-3"><div class="stat-card card p-3"><div class="label">إجمالي الحسابات</div><div class="value text-primary" id="s-total">-</div></div></div>
-<div class="col-md-3"><div class="stat-card card p-3"><div class="label">قابلة للترحيل</div><div class="value text-success" id="s-leaf">-</div></div></div>
-<div class="col-md-3"><div class="stat-card card p-3"><div class="label">تجميعية</div><div class="value text-warning" id="s-group">-</div></div></div>
-<div class="col-md-3"><div class="stat-card card p-3"><div class="label">أنواع الحسابات</div><div class="value text-info" id="s-types">-</div></div></div>
+<!-- Stats -->
+<div class="row g-1 mb-2">
+<div class="col-2"><div class="card p-1 text-center"><small class="text-muted" style="font-size:0.68rem;">الإجمالي</small><div class="text-primary fw-bold" id="s-total" style="font-size:0.95rem;">-</div></div></div>
+<div class="col-2"><div class="card p-1 text-center"><small class="text-muted" style="font-size:0.68rem;">L1</small><div class="text-success fw-bold" id="s-l1" style="font-size:0.95rem;">-</div></div></div>
+<div class="col-2"><div class="card p-1 text-center"><small class="text-muted" style="font-size:0.68rem;">L2</small><div class="text-warning fw-bold" id="s-l2" style="font-size:0.95rem;">-</div></div></div>
+<div class="col-2"><div class="card p-1 text-center"><small class="text-muted" style="font-size:0.68rem;">L3</small><div class="text-info fw-bold" id="s-l3" style="font-size:0.95rem;">-</div></div></div>
+<div class="col-2"><div class="card p-1 text-center"><small class="text-muted" style="font-size:0.68rem;">L4</small><div class="text-danger fw-bold" id="s-l4" style="font-size:0.95rem;">-</div></div></div>
+<div class="col-2"><div class="card p-1 text-center"><small class="text-muted" style="font-size:0.68rem;">L5</small><div class="text-secondary fw-bold" id="s-l5" style="font-size:0.95rem;">-</div></div></div>
 </div>
 
-<div class="card p-3 mb-3">
-<div class="row g-2">
-<div class="col-md-3"><input class="form-control" id="flt-search" placeholder="ابحث بالكود أو الاسم..." oninput="filterTree()"></div>
+<!-- Filters -->
+<div class="card p-1 mb-2">
+<div class="row g-1 align-items-center">
+<div class="col-md-4"><input class="form-control form-control-sm" id="flt-search" placeholder="🔍 ابحث بالكود أو الاسم..." oninput="filterTree()" style="font-size:0.78rem;padding:3px 8px;"></div>
 <div class="col-md-2">
-<select class="form-select" id="flt-level" onchange="filterTree()">
+<select class="form-select form-select-sm" id="flt-level" onchange="filterTree()" style="font-size:0.78rem;padding:3px 8px;">
 <option value="">كل المستويات</option>
 <option value="L1">L1 - رئيسي</option>
 <option value="L2">L2 - فئة</option>
 <option value="L3">L3 - مجموعة</option>
 <option value="L4">L4 - حساب</option>
+<option value="L5">L5 - تفصيلي</option>
 </select></div>
 <div class="col-md-2">
-<select class="form-select" id="flt-nature" onchange="filterTree()">
+<select class="form-select form-select-sm" id="flt-nature" onchange="filterTree()" style="font-size:0.78rem;padding:3px 8px;">
 <option value="">كل الطبائع</option>
-<option value="D">مدين (D)</option>
-<option value="C">دائن (C)</option>
-<option value="CC">دائن مقابل (CC)</option>
+<option value="D">مدين</option>
+<option value="C">دائن</option>
+<option value="CC">مقابل</option>
 </select></div>
 <div class="col-md-2">
-<select class="form-select" id="flt-stmt" onchange="filterTree()">
+<select class="form-select form-select-sm" id="flt-stmt" onchange="filterTree()" style="font-size:0.78rem;padding:3px 8px;">
 <option value="">كل القوائم</option>
-<option value="BS">الميزانية (BS)</option>
-<option value="IS">الدخل (IS)</option>
-<option value="EQ">حقوق الملكية (EQ)</option>
+<option value="BS">ميزانية</option>
+<option value="IS">دخل</option>
+<option value="EQ">حقوق ملكية</option>
 </select></div>
-<div class="col-md-3"><button class="btn btn-outline-secondary w-100" onclick="resetFilters()"><i class="bi bi-x-circle"></i> مسح الفلاتر</button></div>
+<div class="col-md-2"><button class="btn btn-outline-secondary btn-sm w-100" onclick="resetFilters()" style="font-size:0.78rem;padding:3px 8px;"><i class="bi bi-x-circle"></i> مسح</button></div>
 </div>
 </div>
 
-<div class="card p-3">
-<div id="tree" style="max-height:600px; overflow-y:auto;"><div class="text-center text-muted p-4">جاري التحميل...</div></div>
+<!-- Legend -->
+<div class="tree-legend">
+<span class="legend-item"><span class="legend-dot" style="background:#10b981;"></span> L1 - رئيسي</span>
+<span class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span> L2 - فئة</span>
+<span class="legend-item"><span class="legend-dot" style="background:#3b82f6;"></span> L3 - مجموعة</span>
+<span class="legend-item"><span class="legend-dot" style="background:#ec4899;"></span> L4 - حساب</span>
+<span class="legend-item"><span class="legend-dot" style="background:#8b5cf6;"></span> L5 - تفصيلي</span>
 </div>
 
-</div></div></div>
+<!-- Tree -->
+<div class="card p-1">
+<div class="tree-container">
+<table class="tree-table">
+<thead>
+<tr>
+    <th class="col-code">الكود</th>
+    <th class="col-name">اسم الحساب</th>
+    <th class="col-parent">الأب</th>
+    <th class="col-nature">الطبيعة</th>
+    <th class="col-stmt">القائمة</th>
+    <th class="col-type">النوع</th>
+    <th class="col-level">المستوى</th>
+    <th class="col-ifrs">IFRS 18</th>
+<th class="col-ifrs-sub">التصنيف الفرعي</th>
+<th class="col-ifrs-stmt">القائمة</th>
+<th class="col-entries">القيود</th>
+<th class="col-actions">إجراءات</th>
+</tr>
+</thead>
+<tbody id="tree-body">
+<tr><td colspan="8" class="text-center text-muted p-4">جاري التحميل...</td></tr>
+</tbody>
+</table>
+</div>
+</div>
 
-<!-- Add/Edit Modal -->
+</div>
+</div>
+</div>
+
+<!-- Modal Add/Edit -->
 <div class="modal fade" id="accModal" tabindex="-1">
 <div class="modal-dialog modal-lg">
 <div class="modal-content">
-<div class="modal-header bg-primary text-white"><h5 class="modal-title" id="modal-title"><i class="bi bi-plus-circle"></i> حساب جديد</h5><button class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
+<div class="modal-header bg-primary text-white">
+<h5 class="modal-title" id="modal-title"><i class="bi bi-plus-circle"></i> حساب جديد</h5>
+<button class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+</div>
 <div class="modal-body">
+<div class="alert alert-info py-2 mb-3" style="font-size:0.75rem;">
+    <i class="bi bi-magic"></i>
+    <strong>ملاحظة:</strong> بعد كتابة "الكود"، سيتم ملء باقي الحقول تلقائياً. يمكنك تعديلها يدوياً.
+</div>
 <div class="row g-3">
-<div class="col-md-4"><label class="form-label">الكود *</label><input class="form-control" id="f-code"></div>
+<div class="col-md-4"><label class="form-label">الكود *</label><input class="form-control" id="f-code" oninput="autoFillFromCode(this.value)" placeholder="مثال: 410101"></div>
 <div class="col-md-4"><label class="form-label">الاسم بالعربي *</label><input class="form-control" id="f-name_ar"></div>
 <div class="col-md-4"><label class="form-label">الاسم بالإنجليزي</label><input class="form-control" id="f-name_en"></div>
 <div class="col-md-3"><label class="form-label">المستوى *</label>
@@ -114,6 +1113,7 @@
 <option value="L2">L2 - فئة</option>
 <option value="L3">L3 - مجموعة</option>
 <option value="L4">L4 - حساب</option>
+<option value="L5">L5 - تفصيلي</option>
 </select></div>
 <div class="col-md-3"><label class="form-label">الطبيعة *</label>
 <select class="form-select" id="f-nature">
@@ -121,14 +1121,14 @@
 <option value="C">دائن (C)</option>
 <option value="CC">دائن مقابل (CC)</option>
 </select></div>
-<div class="col-md-3"><label class="form-label">القائمة المالية</label>
+<div class="col-md-3"><label class="form-label">القائمة</label>
 <select class="form-select" id="f-financial_statement">
 <option value="">— بدون —</option>
 <option value="BS">الميزانية (BS)</option>
 <option value="IS">قائمة الدخل (IS)</option>
 <option value="EQ">حقوق الملكية (EQ)</option>
 </select></div>
-<div class="col-md-3"><label class="form-label">الحساب الأب</label><select class="form-select" id="f-parent_code"><option value="">— بدون (مستوى أول) —</option></select></div>
+<div class="col-md-3"><label class="form-label">الحساب الأب</label><select class="form-select" id="f-parent_code" onchange="autoFillFromParent(this.value)"><option value="">— بدون —</option></select></div>
 <div class="col-md-4"><label class="form-label">BS Group</label><input class="form-control" id="f-bs_group"></div>
 <div class="col-md-4"><label class="form-label">P&L Group</label><input class="form-control" id="f-pl_group"></div>
 <div class="col-md-4"><label class="form-label">النوع</label>
@@ -136,11 +1136,95 @@
 <option value="0">حساب تفصيلي (قابل للترحيل)</option>
 <option value="1">حساب تجميعي</option>
 </select></div>
+
+<!-- حقول IFRS 18 -->
+<div class="col-md-4"><label class="form-label">الفئة IFRS 18</label>
+<select class="form-select" id="f-ifrs18_category">
+<option value="">— بدون —</option>
+<option value="OPERATING">OPERATING - تشغيلي</option>
+<option value="INVESTING">INVESTING - استثماري</option>
+<option value="FINANCING">FINANCING - تمويلي</option>
+<option value="TAX">TAX - ضريبي</option>
+<option value="OCI">OCI - دخل شامل آخر</option>
+</select></div>
+<div class="col-md-4"><label class="form-label">التصنيف الفرعي</label>
+<select class="form-select" id="f-ifrs18_subcategory">
+<option value="">— بدون —</option>
+<option value="REVENUE">REVENUE - إيرادات</option>
+<option value="COGS">COGS - تكلفة المبيعات</option>
+<option value="SELLING">SELLING - بيعية</option>
+<option value="ADMIN">ADMIN - إدارية</option>
+<option value="DEPRECIATION">DEPRECIATION - إهلاك</option>
+<option value="OTHER_OPEX">OTHER_OPEX - أخرى</option>
+<option value="INTEREST_INCOME">INTEREST_INCOME - فوائد دائنة</option>
+<option value="INTEREST_EXPENSE">INTEREST_EXPENSE - فوائد مدينة</option>
+<option value="GAIN_ON_SALE">GAIN_ON_SALE - أرباح بيع</option>
+<option value="LOSS_ON_SALE">LOSS_ON_SALE - خسائر بيع</option>
+<option value="CURRENT_TAX">CURRENT_TAX - ضريبة حالية</option>
+<option value="DEFERRED_TAX">DEFERRED_TAX - ضريبة مؤجلة</option>
+</select></div>
+<div class="col-md-4"><label class="form-label">القائمة IFRS 18</label>
+<select class="form-select" id="f-ifrs18_statement">
+<option value="">— بدون —</option>
+<option value="IS">IS - قائمة الدخل</option>
+<option value="BS">BS - الميزانية</option>
+<option value="TAX">TAX - الضرائب</option>
+<option value="OCI">OCI - الدخل الشامل</option>
+</select></div>
 </div>
 </div>
 <div class="modal-footer">
 <button class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
 <button class="btn btn-primary" onclick="save()"><i class="bi bi-check-circle"></i> حفظ</button>
+</div>
+</div></div></div>
+
+<!-- Import Modal -->
+<div class="modal fade" id="importExcelModal" tabindex="-1">
+<div class="modal-dialog modal-lg">
+<div class="modal-content">
+<div class="modal-header bg-primary text-white">
+<h5 class="modal-title"><i class="bi bi-file-earmark-arrow-up"></i> استيراد من Excel</h5>
+<button class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+</div>
+<div class="modal-body">
+<div id="import-step-1">
+<div class="alert alert-info">
+<i class="bi bi-info-circle"></i>
+<strong>الخطوات:</strong>
+<ol class="mb-0 mt-2" style="padding-right: 20px;">
+<li>حمّل القالب الفارغ</li>
+<li>املأ البيانات</li>
+<li>ارفع الملف</li>
+<li>اضغط "معاينة" للتأكد</li>
+<li>اضغط "استيراد" للحفظ</li>
+</ol>
+</div>
+<button class="btn btn-outline-primary w-100 mb-3" onclick="downloadImportTemplate()">
+<i class="bi bi-download"></i> تحميل القالب الفارغ
+</button>
+<div class="upload-area" id="import-upload-area" onclick="document.getElementById('import-file-input').click()">
+<i class="bi bi-cloud-upload"></i>
+<div class="title">اسحب الملف هنا أو اضغط للاختيار</div>
+<div class="sub">ملفات Excel فقط (.xlsx, .xls)</div>
+</div>
+<input type="file" id="import-file-input" accept=".xlsx,.xls" style="display:none" onchange="handleImportFile(this.files[0])">
+<div id="import-file-info" style="display:none;" class="mt-3">
+<div class="alert alert-success py-2 mb-0">
+<i class="bi bi-file-earmark-excel"></i>
+<span id="import-file-name"></span>
+<button class="btn btn-sm btn-outline-danger float-end" onclick="clearImportFile()"><i class="bi bi-x"></i></button>
+</div>
+<div class="d-flex gap-2 mt-2">
+<button class="btn btn-outline-info flex-fill" onclick="previewImport()"><i class="bi bi-eye"></i> معاينة</button>
+<button class="btn btn-primary flex-fill" onclick="confirmImport()"><i class="bi bi-upload"></i> استيراد</button>
+</div>
+</div>
+</div>
+<div id="import-step-2" style="display:none;"></div>
+</div>
+<div class="modal-footer">
+<button class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button>
 </div>
 </div></div></div>
 
@@ -152,196 +1236,677 @@ let allAccounts = [];
 let editId = null;
 
 async function load(){
- const r = await fetch(`${API}/accounts/`).then(x=>x.json());
- allAccounts = r.data||[];
- 
- document.getElementById('s-total').textContent = allAccounts.length;
- document.getElementById('s-leaf').textContent = allAccounts.filter(a=>a.is_leaf).length;
- document.getElementById('s-group').textContent = allAccounts.filter(a=>a.is_group).length;
- 
- // type counts
- try {
-  const t = await fetch(`${API}/accounts/types`).then(x=>x.json());
-  document.getElementById('s-types').textContent = (t.data||[]).length;
- } catch(e) { document.getElementById('s-types').textContent = '-'; }
- 
- refreshParentOptions();
- renderTree(allAccounts);
+    const r = await fetch(`${API}/accounts/`).then(x=>x.json());
+    allAccounts = r.data||[];
+    
+    document.getElementById('s-total').textContent = allAccounts.length;
+    document.getElementById('s-l1').textContent = allAccounts.filter(a=>a.level==='L1').length;
+    document.getElementById('s-l2').textContent = allAccounts.filter(a=>a.level==='L2').length;
+    document.getElementById('s-l3').textContent = allAccounts.filter(a=>a.level==='L3').length;
+    document.getElementById('s-l4').textContent = allAccounts.filter(a=>a.level==='L4').length;
+    document.getElementById('s-l5').textContent = allAccounts.filter(a=>a.level==='L5').length;
+    
+    refreshParentOptions();
+    renderTree(allAccounts);
 }
 
 function refreshParentOptions(){
- const opts = ['<option value="">— بدون (مستوى أول) —</option>'];
- allAccounts.filter(a=>a.is_group || a.level!=='L4').forEach(a=>{
-  const indent = '　'.repeat((parseInt(a.level.replace('L',''))||1)-1);
-  opts.push(`<option value="${a.code}">${indent}${a.code} - ${a.name_ar}</option>`);
- });
- document.getElementById('f-parent_code').innerHTML = opts.join('');
+    const opts = ['<option value="">— بدون (مستوى أول) —</option>'];
+    allAccounts.filter(a=>a.level!=='L5').forEach(a=>{
+        const lv = parseInt((a.level||'L1').replace('L',''))||1;
+        const indent = '　'.repeat(lv-1);
+        opts.push(`<option value="${a.code}">${indent}${a.code} - ${a.name_ar}</option>`);
+    });
+    document.getElementById('f-parent_code').innerHTML = opts.join('');
+}
+
+/* ============================================
+   Render Tree — 5 مستويات
+   ============================================ */
+function getIfrsBadge(cat) {
+    if (!cat) return '<span class="text-muted">—</span>';
+    const cls = 'ifrs-' + cat.toUpperCase();
+    return `<span class="ifrs-badge ${cls}">${cat}</span>`;
+}
+// ============================================================
+// Auto-fill تلقائي من الكود
+// ============================================================
+function autoFillFromCode(code) {
+    if (!code) return;
+    
+    code = code.trim();
+    if (code.length < 1) return;
+    
+    const first = code.charAt(0);
+    
+    // ========== الطبيعة (Nature) ==========
+    const natureMap = {
+        '1': 'D',   // أصول → مدين
+        '2': 'C',   // التزامات → دائن
+        '3': 'C',   // حقوق ملكية → دائن
+        '4': 'C',   // إيرادات → دائن
+        '5': 'D',   // مصروفات → مدين
+        '6': 'D',   // تكلفة النشاط → مدين
+        '7': 'D',   // تمويل → مدين
+        '8': 'D'    // ضرائب → مدين
+    };
+    
+    // ========== القائمة المالية ==========
+    const stmtMap = {
+        '1': 'BS',  // ميزانية
+        '2': 'BS',
+        '3': 'EQ',  // حقوق ملكية
+        '4': 'IS',  // قائمة الدخل
+        '5': 'IS',
+        '6': 'IS',
+        '7': 'IS',
+        '8': 'IS'   // ضرائب
+    };
+    
+    // ========== الفئة IFRS 18 ==========
+    let category = 'OPERATING';
+    if (code.startsWith('71')) category = 'FINANCING';
+    else if (code.startsWith('72') || code.startsWith('73')) category = 'INVESTING';
+    else if (code.startsWith('8')) category = 'TAX';
+    
+    // ========== القائمة IFRS 18 ==========
+    let ifrsStmt = 'IS';
+    if (first === '1' || first === '2' || first === '3') ifrsStmt = 'BS';
+    else if (first === '8') ifrsStmt = 'TAX';
+    
+    // ========== التصنيف الفرعي ==========
+    let subcategory = '';
+    
+    if (first === '4') {
+        subcategory = 'REVENUE';
+    } else if (code.startsWith('51')) {
+        subcategory = 'SELLING';
+    } else if (code.startsWith('52')) {
+        subcategory = 'ADMIN';
+    } else if (code.startsWith('53')) {
+        subcategory = 'DEPRECIATION';
+    } else if (first === '6') {
+        subcategory = 'COGS';
+    } else if (code.startsWith('7101') || code.startsWith('7102') || code.startsWith('7104')) {
+        subcategory = 'INTEREST_EXPENSE';
+    } else if (code.startsWith('7103')) {
+        subcategory = 'FX_LOSS';
+    } else if (code.startsWith('7201')) {
+        subcategory = 'INVESTMENT_INCOME';
+    } else if (code.startsWith('7202')) {
+        subcategory = 'GAIN_ON_SALE';
+    } else if (code.startsWith('7203')) {
+        subcategory = 'RENTAL_INCOME';
+    } else if (code.startsWith('7204')) {
+        subcategory = 'INTEREST_INCOME';
+    } else if (code.startsWith('7205')) {
+        subcategory = 'FX_GAIN';
+    } else if (code.startsWith('7206')) {
+        subcategory = 'ROYALTY_INCOME';
+    } else if (code.startsWith('7301')) {
+        subcategory = 'LOSS_ON_SALE';
+    } else if (code.startsWith('8101')) {
+        subcategory = 'CURRENT_TAX';
+    } else if (code.startsWith('8102')) {
+        subcategory = 'DEFERRED_TAX';
+    } else if (code.startsWith('8103')) {
+        subcategory = 'STAMP_TAX';
+    } else if (code.startsWith('8104')) {
+        subcategory = 'TAX_PROVISION';
+    }
+    
+    // ========== المستوى (Level) ==========
+    let level = 'L1';
+    const len = code.length;
+    if (len >= 1) level = 'L1';
+    if (len >= 2) level = 'L2';
+    if (len >= 4) level = 'L3';
+    if (len >= 6) level = 'L4';
+    if (len >= 8) level = 'L5';
+    
+    // ========== التطبيق ==========
+    const setVal = (id, val) => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.value = val || '';
+            // تأثير بصري
+            el.style.background = '#fef3c7';
+            setTimeout(() => { el.style.background = ''; }, 800);
+        }
+    };
+    
+    setVal('f-nature', natureMap[first] || 'D');
+    setVal('f-financial_statement', stmtMap[first] || '');
+    setVal('f-level', level);
+    setVal('f-ifrs18_category', category);
+    setVal('f-ifrs18_statement', ifrsStmt);
+    setVal('f-ifrs18_subcategory', subcategory);
+}
+
+// ============================================================
+// Auto-fill من الحساب الأب
+// ============================================================
+function autoFillFromParent(parentCode) {
+    if (!parentCode) return;
+    const parent = allAccounts.find(a => a.code === parentCode);
+    if (!parent) return;
+    
+    const setVal = (id, val) => {
+        const el = document.getElementById(id);
+        if (el && !el.value) {  // نملّي بس لو فاضي
+            el.value = val || '';
+            el.style.background = '#dcfce7';
+            setTimeout(() => { el.style.background = ''; }, 800);
+        }
+    };
+    
+    // نرث من الأب
+    setVal('f-nature', parent.nature);
+    setVal('f-financial_statement', parent.financial_statement);
+    setVal('f-ifrs18_category', parent.ifrs18_category);
+    setVal('f-ifrs18_subcategory', parent.ifrs18_subcategory);
+    setVal('f-ifrs18_statement', parent.ifrs18_statement);
+    
+    // نزود المستوى بـ 1
+    const parentLevel = parent.level || 'L1';
+    const levelNum = parseInt(parentLevel.replace('L', '')) + 1;
+    if (levelNum <= 5) {
+        setVal('f-level', 'L' + levelNum);
+    }
 }
 
 function renderTree(accounts){
- if (!accounts.length) {
-  document.getElementById('tree').innerHTML = '<div class="text-center text-muted p-4">لا توجد حسابات</div>';
-  return;
- }
- 
- // Build tree
- const byCode = {};
- accounts.forEach(a=>{ byCode[a.code] = {...a, children: []}; });
- const roots = [];
- accounts.forEach(a=>{
-  if (a.parent_code && byCode[a.parent_code]) {
-   byCode[a.parent_code].children.push(byCode[a.code]);
-  } else {
-   roots.push(byCode[a.code]);
-  }
- });
- 
- let html = '';
- function renderNode(n){
-  const natureClass = n.nature === 'D' ? 'badge-nature-D' : (n.nature === 'C' ? 'badge-nature-C' : 'badge-nature-CC');
-  const natureTxt = n.nature === 'D' ? 'مدين' : (n.nature === 'C' ? 'دائن' : 'مقابل');
-  const stmtBadge = n.financial_statement ? `<span class="badge bg-info">${n.financial_statement}</span>` : '';
-  const leafBadge = n.is_leaf ? '<span class="badge bg-success">قابل للترحيل</span>' : '<span class="badge bg-secondary">تجميعي</span>';
-  const icon = n.children && n.children.length ? 'folder-fill text-warning' : 'file-earmark text-secondary';
-  
-  html += `<div class="tree-node level-${n.level}">
-   <div class="d-flex justify-content-between align-items-center">
-    <div>
-     <i class="bi bi-${icon}"></i>
-     <code>${n.code}</code>
-     <strong class="ms-1">${n.name_ar}</strong>
-     <small class="text-muted ms-1">(${n.name_en||''})</small>
-     <span class="badge ${natureClass} ms-1">${natureTxt}</span>
-     ${stmtBadge}
-     ${leafBadge}
-     <span class="badge bg-dark ms-1">${n.level}</span>
-    </div>
-    <div>
-     <button class="btn btn-sm btn-outline-info" onclick="viewAccount(${n.id})" title="عرض"><i class="bi bi-eye"></i></button>
-     <button class="btn btn-sm btn-outline-warning" onclick="openEdit(${n.id})" title="تعديل"><i class="bi bi-pencil"></i></button>
-     <button class="btn btn-sm btn-outline-danger" onclick="del(${n.id},'${n.code}')" title="حذف"><i class="bi bi-trash"></i></button>
-    </div>
-   </div>
-  </div>`;
-  (n.children||[]).forEach(renderNode);
- }
- roots.forEach(renderNode);
- document.getElementById('tree').innerHTML = html;
+    if (!accounts.length) {
+        document.getElementById('tree-body').innerHTML = 
+            '<tr><td colspan="8" class="text-center text-muted p-4">لا توجد حسابات</td></tr>';
+        return;
+    }
+    
+    const byCode = {};
+    accounts.forEach(a=>{ byCode[a.code] = {...a, children: []}; });
+    const roots = [];
+    accounts.forEach(a=>{
+        if (a.parent_code && byCode[a.parent_code]) {
+            byCode[a.parent_code].children.push(byCode[a.code]);
+        } else {
+            roots.push(byCode[a.code]);
+        }
+    });
+    
+    let html = '';
+    
+    function renderNode(n, depth=1){
+        const levelNum = parseInt((n.level||'L1').replace('L','')) || 1;
+        const indentClass = 'indent-' + Math.min(levelNum, 5);
+        const isFolder = n.children && n.children.length > 0;
+        const icon = isFolder ? 'folder-fill' : 'file-earmark';
+        const iconClass = isFolder ? 'folder' : 'leaf';
+        
+        // Nature badge
+        const natureClass = n.nature === 'D' ? 'badge-nature-D' : 
+                           (n.nature === 'C' ? 'badge-nature-C' : 'badge-nature-CC');
+        const natureTxt = n.nature === 'D' ? 'مدين' : 
+                         (n.nature === 'C' ? 'دائن' : 'مقابل');
+        
+        // Statement
+        let stmtBadge = '<span class="text-muted">—</span>';
+        if (n.financial_statement) {
+            stmtBadge = `<span class="badge badge-stmt-${n.financial_statement}">${n.financial_statement}</span>`;
+        }
+        
+        // Type
+        const typeBadge = n.is_leaf 
+            ? '<span class="badge badge-type-LEAF">📄 للترحيل</span>'
+            : '<span class="badge badge-type-GROUP">📁 تجميعي</span>';
+        
+        // Parent
+        const parentBadge = n.parent_code 
+            ? `<span class="badge-parent">${n.parent_code}</span>` 
+            : '<span class="text-muted">—</span>';
+        
+        html += `
+            <tr class="level-${n.level}">
+                <td class="col-code"><span class="code-badge">${n.code}</span></td>
+                <td class="col-name ${indentClass}">
+                    <i class="bi bi-${icon} node-icon ${iconClass}"></i>
+                    <span class="node-name">${n.name_ar}</span>
+                    ${n.name_en ? `<span class="node-en">(${n.name_en})</span>` : ''}
+                </td>
+                <td class="col-parent">${parentBadge}</td>
+                <td class="col-nature"><span class="badge ${natureClass}">${natureTxt}</span></td>
+                <td class="col-stmt">${stmtBadge}</td>
+                <td class="col-type">${typeBadge}</td>
+                <td class="col-level"><span class="badge-level ${n.level}">${n.level}</span></td>
+                <td class="col-ifrs">${getIfrsBadge(n.ifrs18_category)}</td>
+                <td class="col-ifrs-sub"><small>${n.ifrs18_subcategory || '—'}</small></td>
+                <td class="col-ifrs-stmt">${n.ifrs18_statement ? `<span class="badge badge-stmt-${n.ifrs18_statement}">${n.ifrs18_statement}</span>` : '—'}</td>
+                <td class="col-entries text-center">${renderEntriesBadge(n)}</td>
+                <td class="col-actions">
+                    <div class="action-btns">
+                        <button class="btn-action view" onclick="viewAccount(${n.id})" title="عرض"><i class="bi bi-eye"></i></button>
+                        <button class="btn-action" 
+            onclick="addChild('${n.code}')" 
+            title="${n.has_entries ? 'لا يمكن إضافة فرع — الأب له ' + (n.entries_count || 0) + ' قيد' : 'إضافة حساب فرعي'}" 
+            style="${n.has_entries ? 'color:#94a3b8;border-color:#cbd5e1;cursor:not-allowed;opacity:0.5;' : 'color:#10b981;border-color:#10b981;'}">
+            <i class="bi bi-plus-circle"></i>
+        </button>
+                        <button class="btn-action edit" onclick="openEdit(${n.id})" title="تعديل"><i class="bi bi-pencil"></i></button>
+                        <button class="btn-action del" onclick="del(${n.id},'${n.code}')" title="حذف" ${n.has_entries ? 'disabled style="opacity:0.35;cursor:not-allowed;"' : ''}><i class="bi bi-trash"></i></button>
+                    </div>
+                </td>
+            </tr>
+        `;
+        
+        (n.children||[]).forEach(c => renderNode(c, depth+1));
+    }
+    
+    roots.forEach(r => renderNode(r, 1));
+    document.getElementById('tree-body').innerHTML = html;
 }
 
 function filterTree(){
- const search = document.getElementById('flt-search').value.toLowerCase();
- const level = document.getElementById('flt-level').value;
- const nature = document.getElementById('flt-nature').value;
- const stmt = document.getElementById('flt-stmt').value;
- 
- let filtered = allAccounts;
- if (search) {
-  filtered = filtered.filter(a => 
-   (a.code||'').toLowerCase().includes(search) ||
-   (a.name_ar||'').includes(search) ||
-   (a.name_en||'').toLowerCase().includes(search)
-  );
- }
- if (level) filtered = filtered.filter(a => a.level === level);
- if (nature) filtered = filtered.filter(a => a.nature === nature);
- if (stmt) filtered = filtered.filter(a => a.financial_statement === stmt);
- 
- renderTree(filtered);
+    const search = document.getElementById('flt-search').value.toLowerCase();
+    const level = document.getElementById('flt-level').value;
+    const nature = document.getElementById('flt-nature').value;
+    const stmt = document.getElementById('flt-stmt').value;
+    
+    let filtered = allAccounts;
+    if (search) {
+        filtered = filtered.filter(a => 
+            (a.code||'').toLowerCase().includes(search) ||
+            (a.name_ar||'').includes(search) ||
+            (a.name_en||'').toLowerCase().includes(search)
+        );
+    }
+    if (level) filtered = filtered.filter(a => a.level === level);
+    if (nature) filtered = filtered.filter(a => a.nature === nature);
+    if (stmt) filtered = filtered.filter(a => a.financial_statement === stmt);
+    
+    renderTree(filtered);
 }
 
 function resetFilters(){
- document.getElementById('flt-search').value = '';
- document.getElementById('flt-level').value = '';
- document.getElementById('flt-nature').value = '';
- document.getElementById('flt-stmt').value = '';
- renderTree(allAccounts);
+    document.getElementById('flt-search').value = '';
+    document.getElementById('flt-level').value = '';
+    document.getElementById('flt-nature').value = '';
+    document.getElementById('flt-stmt').value = '';
+    renderTree(allAccounts);
 }
 
 function openAdd(){
- editId = null;
- ['f-code','f-name_ar','f-name_en','f-bs_group','f-pl_group'].forEach(id=>document.getElementById(id).value='');
- document.getElementById('f-level').value = 'L4';
- document.getElementById('f-nature').value = 'D';
- document.getElementById('f-financial_statement').value = '';
- document.getElementById('f-parent_code').value = '';
- document.getElementById('f-account_type').value = '0';
- document.getElementById('f-code').disabled = false;
- document.getElementById('modal-title').innerHTML = '<i class="bi bi-plus-circle"></i> حساب جديد';
- refreshParentOptions();
- modal.show();
+    editId = null;
+    ['f-code','f-name_ar','f-name_en','f-bs_group','f-pl_group'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('f-level').value = 'L5';
+    document.getElementById('f-nature').value = 'D';
+    document.getElementById('f-financial_statement').value = '';
+    document.getElementById('f-parent_code').value = '';
+    document.getElementById('f-account_type').value = '0';
+    if (document.getElementById('f-ifrs18_category')) document.getElementById('f-ifrs18_category').value = '';
+    if (document.getElementById('f-ifrs18_subcategory')) document.getElementById('f-ifrs18_subcategory').value = '';
+    if (document.getElementById('f-ifrs18_statement')) document.getElementById('f-ifrs18_statement').value = '';
+    document.getElementById('f-code').disabled = false;
+    document.getElementById('modal-title').innerHTML = '<i class="bi bi-plus-circle"></i> حساب جديد';
+    refreshParentOptions();
+    modal.show();
 }
 
 async function openEdit(id){
- editId = id;
- const a = allAccounts.find(x=>x.id===id);
- if (!a) return;
- document.getElementById('f-code').value = a.code;
- document.getElementById('f-code').disabled = true;
- document.getElementById('f-name_ar').value = a.name_ar;
- document.getElementById('f-name_en').value = a.name_en||'';
- document.getElementById('f-level').value = a.level;
- document.getElementById('f-nature').value = a.nature;
- document.getElementById('f-financial_statement').value = a.financial_statement||'';
- document.getElementById('f-parent_code').value = a.parent_code||'';
- document.getElementById('f-bs_group').value = a.bs_group||'';
- document.getElementById('f-pl_group').value = a.pl_group||'';
- document.getElementById('f-account_type').value = a.is_group ? '1' : '0';
- document.getElementById('modal-title').innerHTML = '<i class="bi bi-pencil"></i> تعديل الحساب';
- refreshParentOptions();
- modal.show();
+    editId = id;
+    const a = allAccounts.find(x=>x.id===id);
+    if (!a) return;
+    document.getElementById('f-code').value = a.code;
+    document.getElementById('f-code').disabled = true;
+    document.getElementById('f-name_ar').value = a.name_ar;
+    document.getElementById('f-name_en').value = a.name_en||'';
+    document.getElementById('f-level').value = a.level;
+    document.getElementById('f-nature').value = a.nature;
+    document.getElementById('f-financial_statement').value = a.financial_statement||'';
+    document.getElementById('f-parent_code').value = a.parent_code||'';
+    document.getElementById('f-bs_group').value = a.bs_group||'';
+    document.getElementById('f-pl_group').value = a.pl_group||'';
+    document.getElementById('f-account_type').value = a.is_group ? '1' : '0';
+    if (document.getElementById('f-ifrs18_category')) document.getElementById('f-ifrs18_category').value = a.ifrs18_category || '';
+    if (document.getElementById('f-ifrs18_subcategory')) document.getElementById('f-ifrs18_subcategory').value = a.ifrs18_subcategory || '';
+    if (document.getElementById('f-ifrs18_statement')) document.getElementById('f-ifrs18_statement').value = a.ifrs18_statement || '';
+    document.getElementById('modal-title').innerHTML = '<i class="bi bi-pencil"></i> تعديل الحساب';
+    refreshParentOptions();
+    modal.show();
 }
 
 function viewAccount(id){
- const a = allAccounts.find(x=>x.id===id);
- if (!a) return;
- alert(
-  `الكود: ${a.code}\n` +
-  `الاسم: ${a.name_ar}\n` +
-  `الاسم EN: ${a.name_en||'-'}\n` +
-  `المستوى: ${a.level}\n` +
-  `الأب: ${a.parent_code||'-'}\n` +
-  `الطبيعة: ${a.nature}\n` +
-  `القائمة: ${a.financial_statement||'-'}\n` +
-  `BS Group: ${a.bs_group||'-'}\n` +
-  `P&L Group: ${a.pl_group||'-'}\n` +
-  `نوع: ${a.is_leaf ? 'قابل للترحيل' : 'تجميعي'}\n` +
-  `نشط: ${a.is_active ? 'نعم' : 'لا'}`
- );
+    const a = allAccounts.find(x=>x.id===id);
+    if (!a) return;
+    alert(
+        `الكود: ${a.code}\n` +
+        `الاسم: ${a.name_ar}\n` +
+        `الاسم EN: ${a.name_en||'-'}\n` +
+        `المستوى: ${a.level}\n` +
+        `الأب: ${a.parent_code||'-'}\n` +
+        `الطبيعة: ${a.nature}\n` +
+        `القائمة: ${a.financial_statement||'-'}\n` +
+        `BS Group: ${a.bs_group||'-'}\n` +
+        `P&L Group: ${a.pl_group||'-'}\n` +
+        `نوع: ${a.is_leaf ? 'قابل للترحيل' : 'تجميعي'}\n` +
+        `نشط: ${a.is_active ? 'نعم' : 'لا'}`
+    );
 }
 
 async function save(){
- const data = {
-  name_ar: document.getElementById('f-name_ar').value.trim(),
-  name_en: document.getElementById('f-name_en').value.trim(),
-  level: document.getElementById('f-level').value,
-  nature: document.getElementById('f-nature').value,
-  financial_statement: document.getElementById('f-financial_statement').value || null,
-  parent_code: document.getElementById('f-parent_code').value || null,
-  bs_group: document.getElementById('f-bs_group').value.trim() || null,
-  pl_group: document.getElementById('f-pl_group').value.trim() || null,
-  is_group: document.getElementById('f-account_type').value === '1' ? 1 : 0,
-  is_leaf: document.getElementById('f-account_type').value === '1' ? 0 : 1
- };
- if (!data.name_ar) { alert('الاسم مطلوب'); return; }
- 
- if (editId) {
-  const r = await fetch(`${API}/accounts/${editId}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)}).then(x=>x.json());
-  if (r.success) { modal.hide(); load(); } else alert(r.message||'خطأ');
- } else {
-  data.code = document.getElementById('f-code').value.trim();
-  if (!data.code) { alert('الكود مطلوب'); return; }
-  const r = await fetch(`${API}/accounts/`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)}).then(x=>x.json());
-  if (r.success) { modal.hide(); load(); } else alert(r.message||'خطأ');
- }
+    const data = {
+        name_ar: document.getElementById('f-name_ar').value.trim(),
+        name_en: document.getElementById('f-name_en').value.trim(),
+        level: document.getElementById('f-level').value,
+        nature: document.getElementById('f-nature').value,
+        financial_statement: document.getElementById('f-financial_statement').value || null,
+        parent_code: document.getElementById('f-parent_code').value || null,
+        bs_group: document.getElementById('f-bs_group').value.trim() || null,
+        pl_group: document.getElementById('f-pl_group').value.trim() || null,
+        is_group: document.getElementById('f-account_type').value === '1' ? 1 : 0,
+        is_leaf: document.getElementById('f-account_type').value === '1' ? 0 : 1,
+        ifrs18_category: document.getElementById('f-ifrs18_category') ? document.getElementById('f-ifrs18_category').value || null : null,
+        ifrs18_subcategory: document.getElementById('f-ifrs18_subcategory') ? document.getElementById('f-ifrs18_subcategory').value || null : null,
+        ifrs18_statement: document.getElementById('f-ifrs18_statement') ? document.getElementById('f-ifrs18_statement').value || null : null
+    };
+    if (!data.name_ar) { alert('الاسم مطلوب'); return; }
+    
+    if (editId) {
+        const r = await fetch(`${API}/accounts/${editId}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)}).then(x=>x.json());
+        if (r.success) { modal.hide(); 
+// ============================================================
+// عرض شارة القيود
+// ============================================================
+function renderEntriesBadge(n) {
+    if (n.has_entries) {
+        return `<span class="badge" style="background:#fee2e2;color:#991b1b;font-size:0.65rem;" title="${n.entries_count || 0} قيد">
+            <i class="bi bi-lock-fill"></i> ${n.entries_count || 0}
+        </span>`;
+    }
+    return '<span class="badge" style="background:#d1fae5;color:#065f46;font-size:0.65rem;"><i class="bi bi-check-circle"></i> متاح</span>';
+}
+
+// ============================================================
+// إضافة حساب فرعي (ابن)
+// ============================================================
+
+
+// ============================================================
+// توليد كود فرعي تلقائياً
+// ============================================================
+load(); } else alert(r.message||'خطأ');
+    } else {
+        data.code = document.getElementById('f-code').value.trim();
+        if (!data.code) { alert('الكود مطلوب'); return; }
+        const r = await fetch(`${API}/accounts/`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)}).then(x=>x.json());
+        if (r.success) { modal.hide(); load(); } else alert(r.message||'خطأ');
+    }
 }
 
 async function del(id,code){
- if (!confirm(`حذف الحساب "${code}"؟`)) return;
- const r = await fetch(`${API}/accounts/${id}`,{method:'DELETE'}).then(x=>x.json());
- if (r.success) load();
- else alert(r.message||'خطأ');
+    if (!confirm(`حذف الحساب "${code}"؟`)) return;
+    const r = await fetch(`${API}/accounts/${id}`,{method:'DELETE'}).then(x=>x.json());
+    if (r.success) load();
+    else alert(r.message||'خطأ');
 }
 
+function exportToExcel(templateKey) {
+    if (!templateKey) { alert('مفيش قالب تصدير'); return; }
+    window.location.href = '/api/v1/export/excel/export/' + templateKey;
+}
+
+// Import
+let currentImportFile = null;
+let currentImportTemplate = null;
+
+function openImportModal(templateKey) {
+    currentImportTemplate = templateKey;
+    currentImportFile = null;
+    document.getElementById('import-step-1').style.display = 'block';
+    document.getElementById('import-step-2').style.display = 'none';
+    document.getElementById('import-file-info').style.display = 'none';
+    document.getElementById('import-file-input').value = '';
+    const m = new bootstrap.Modal(document.getElementById('importExcelModal'));
+    m.show();
+}
+
+function downloadImportTemplate() {
+    if (!currentImportTemplate) return;
+    window.location.href = '/api/v1/export/excel/import-template/' + currentImportTemplate;
+}
+
+function handleImportFile(file) {
+    if (!file) return;
+    if (!file.name.match(/\.(xlsx|xls)$/i)) { alert('الملف يجب أن يكون Excel'); return; }
+    currentImportFile = file;
+    document.getElementById('import-file-name').textContent = file.name + ' (' + (file.size / 1024).toFixed(1) + ' KB)';
+    document.getElementById('import-file-info').style.display = 'block';
+}
+
+function clearImportFile() {
+    currentImportFile = null;
+    document.getElementById('import-file-input').value = '';
+    document.getElementById('import-file-info').style.display = 'none';
+}
+
+async function previewImport() {
+    if (!currentImportFile) { alert('اختر ملف'); return; }
+    const formData = new FormData();
+    formData.append('file', currentImportFile);
+    const resultEl = document.getElementById('import-step-2');
+    resultEl.innerHTML = '<div class="alert alert-info"><i class="bi bi-hourglass-split"></i> جاري المعاينة...</div>';
+    resultEl.style.display = 'block';
+    document.getElementById('import-step-1').style.display = 'none';
+    try {
+        const r = await fetch('/api/v1/export/excel/preview/' + currentImportTemplate, {
+            method: 'POST', body: formData
+        }).then(x => x.json());
+        if (r.success) {
+            const d = r.data;
+            let html = '<h6><i class="bi bi-eye text-info"></i> معاينة</h6>';
+            html += '<div class="import-stats">';
+            html += '<div class="item"><div class="num text-info">' + d.total_rows + '</div><div class="lbl">صفوف</div></div>';
+            html += '<div class="item"><div class="num text-danger">' + ((d.errors || []).length) + '</div><div class="lbl">أخطاء</div></div>';
+            html += '</div>';
+            if (d.preview && d.preview.length) {
+                html += '<div class="mt-3"><strong>عينة:</strong>';
+                html += '<table class="preview-table"><thead><tr>';
+                Object.keys(d.preview[0].data).forEach(k => html += '<th>' + k + '</th>');
+                html += '</tr></thead><tbody>';
+                d.preview.forEach(row => {
+                    html += '<tr>';
+                    Object.values(row.data).forEach(v => html += '<td>' + (v || '-') + '</td>');
+                    html += '</tr>';
+                });
+                html += '</tbody></table></div>';
+            }
+            if (d.errors && d.errors.length) {
+                html += '<div class="alert alert-warning mt-3 py-2 mb-0" style="font-size:0.82rem;">';
+                html += '<strong>أخطاء:</strong><ul class="mb-0">';
+                d.errors.forEach(e => html += '<li>' + e + '</li>');
+                html += '</ul></div>';
+            }
+            html += '<div class="d-flex gap-2 mt-3">';
+            html += '<button class="btn btn-secondary flex-fill" onclick="backToImport()"><i class="bi bi-arrow-right"></i> رجوع</button>';
+            html += '<button class="btn btn-primary flex-fill" onclick="confirmImport()"><i class="bi bi-upload"></i> تأكيد</button>';
+            html += '</div>';
+            resultEl.innerHTML = html;
+        } else {
+            resultEl.innerHTML = '<div class="alert alert-danger">' + r.message + '</div>' +
+                '<button class="btn btn-secondary" onclick="backToImport()"><i class="bi bi-arrow-right"></i> رجوع</button>';
+        }
+    } catch (e) {
+        resultEl.innerHTML = '<div class="alert alert-danger">خطأ: ' + e.message + '</div>' +
+            '<button class="btn btn-secondary" onclick="backToImport()"><i class="bi bi-arrow-right"></i> رجوع</button>';
+    }
+}
+
+function backToImport() {
+    document.getElementById('import-step-1').style.display = 'block';
+    document.getElementById('import-step-2').style.display = 'none';
+}
+
+async function confirmImport() {
+    if (!currentImportFile) { alert('اختر ملف'); return; }
+    const formData = new FormData();
+    formData.append('file', currentImportFile);
+    const resultEl = document.getElementById('import-step-2');
+    resultEl.innerHTML = '<div class="alert alert-info"><i class="bi bi-hourglass-split"></i> جاري الاستيراد...</div>';
+    resultEl.style.display = 'block';
+    document.getElementById('import-step-1').style.display = 'none';
+    try {
+        const r = await fetch('/api/v1/export/excel/import/' + currentImportTemplate, {
+            method: 'POST', body: formData
+        }).then(x => x.json());
+        if (r.success) {
+            const d = r.data;
+            let html = '<div class="alert alert-success"><h5><i class="bi bi-check-circle-fill"></i> تم الاستيراد</h5></div>';
+            html += '<div class="import-stats">';
+            html += '<div class="item"><div class="num text-success">' + (d.imported || 0) + '</div><div class="lbl">جديد</div></div>';
+            html += '<div class="item"><div class="num text-primary">' + (d.updated || 0) + '</div><div class="lbl">محدث</div></div>';
+            html += '<div class="item"><div class="num">' + (d.total || 0) + '</div><div class="lbl">الإجمالي</div></div>';
+            html += '</div>';
+            if (d.errors && d.errors.length) {
+                html += '<div class="alert alert-warning py-2 mt-3 mb-0" style="font-size:0.82rem;">';
+                html += '<strong>أخطاء (' + d.errors.length + '):</strong><ul class="mb-0">';
+                d.errors.forEach(e => html += '<li>' + e + '</li>');
+                html += '</ul></div>';
+            }
+            html += '<div class="d-flex gap-2 mt-3">';
+            html += '<button class="btn btn-success flex-fill" onclick="location.reload()"><i class="bi bi-arrow-clockwise"></i> تحديث</button>';
+            html += '</div>';
+            resultEl.innerHTML = html;
+        } else {
+            resultEl.innerHTML = '<div class="alert alert-danger">' + r.message + '</div>' +
+                '<button class="btn btn-secondary" onclick="backToImport()"><i class="bi bi-arrow-right"></i> رجوع</button>';
+        }
+    } catch (e) {
+        resultEl.innerHTML = '<div class="alert alert-danger">خطأ: ' + e.message + '</div>' +
+            '<button class="btn btn-secondary" onclick="backToImport()"><i class="bi bi-arrow-right"></i> رجوع</button>';
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const area = document.getElementById('import-upload-area');
+    if (!area) return;
+    area.addEventListener('dragover', e => { e.preventDefault(); area.classList.add('dragover'); });
+    area.addEventListener('dragleave', () => area.classList.remove('dragover'));
+    area.addEventListener('drop', e => {
+        e.preventDefault();
+        area.classList.remove('dragover');
+        if (e.dataTransfer.files.length) handleImportFile(e.dataTransfer.files[0]);
+    });
+});
+
 load();
-</script></body></html>
+// ============================================================
+// عرض شارة القيود
+// ============================================================
+function renderEntriesBadge(n) {
+    if (n.has_entries) {
+        return '<span class="badge" style="background:#fee2e2;color:#991b1b;font-size:0.65rem;">' +
+            '<i class="bi bi-lock-fill"></i> ' + (n.entries_count || 0) + '</span>';
+    }
+    return '<span class="badge" style="background:#d1fae5;color:#065f46;font-size:0.65rem;">' +
+        '<i class="bi bi-check-circle"></i> متاح</span>';
+}
+
+// ============================================================
+// إضافة حساب فرعي (ابن)
+// ============================================================
+function addChild(parentCode) {
+    const parent = allAccounts.find(a => a.code === parentCode);
+    if (!parent) { 
+        showToast('❌ الحساب الأب غير موجود', 'error'); 
+        return; 
+    }
+    
+    // التحقق من القيود
+    if (parent.has_entries) {
+        const count = parent.entries_count || 0;
+        const msg = '⚠️ لا يمكن إضافة حساب فرعي\n\n' +
+                    'الحساب الأب: ' + parent.code + ' - ' + parent.name_ar + '\n' +
+                    'عدد القيود: ' + count + ' قيد محاسبي\n\n' +
+                    'السبب: الحساب الأب مستخدم في قيود محاسبية، فهو حساب طرفي ولا يمكن أن يكون له أبناء.\n\n' +
+                    'الحل: استخدم حساب آخر كأب، أو احذف القيود المرتبطة أولاً.';
+        
+        alert(msg);
+        showToast('⚠️ الأب "' + parent.name_ar + '" له ' + count + ' قيد', 'error');
+        return;
+    }
+    
+    openAdd();
+    
+    setTimeout(() => {
+        document.getElementById('f-parent_code').value = parentCode;
+        const newCode = generateChildCode(parentCode);
+        document.getElementById('f-code').value = newCode;
+        
+        if (typeof autoFillFromParent === 'function') {
+            autoFillFromParent(parentCode);
+        }
+        if (typeof autoFillFromCode === 'function') {
+            autoFillFromCode(newCode);
+        }
+        
+        document.getElementById('f-name_ar').focus();
+    }, 300);
+}
+
+// ============================================================
+// عرض Toast
+// ============================================================
+function showToast(message, type) {
+    type = type || 'info';
+    
+    const old = document.getElementById('app-toast');
+    if (old) old.remove();
+    
+    const colors = {
+        'success': '#059669',
+        'error': '#dc2626',
+        'warning': '#d97706',
+        'info': '#2563eb'
+    };
+    
+    const toast = document.createElement('div');
+    toast.id = 'app-toast';
+    toast.style.cssText = 'position:fixed;bottom:20px;left:50%;transform:translateX(-50%);' +
+        'background:' + (colors[type] || colors.info) + ';color:white;padding:10px 20px;' +
+        'border-radius:8px;font-weight:700;font-size:0.85rem;' +
+        'box-shadow:0 4px 12px rgba(0,0,0,0.25);z-index:99999;opacity:0;' +
+        'transition:opacity 0.3s ease;max-width:90%;text-align:center;';
+    toast.textContent = message;
+    document.body.appendChild(toast);
+    
+    setTimeout(function() { toast.style.opacity = '1'; }, 10);
+    setTimeout(function() {
+        toast.style.opacity = '0';
+        setTimeout(function() { toast.remove(); }, 300);
+    }, 4000);
+}
+
+// ============================================================
+// توليد كود فرعي تلقائياً
+// ============================================================
+function generateChildCode(parentCode) {
+    const siblings = allAccounts.filter(a => 
+        a.parent_code === parentCode && a.code.startsWith(parentCode)
+    );
+    
+    if (siblings.length === 0) {
+        return parentCode + '01';
+    }
+    
+    let maxSuffix = 0;
+    siblings.forEach(s => {
+        const suffix = s.code.substring(parentCode.length);
+        const num = parseInt(suffix) || 0;
+        if (num > maxSuffix) maxSuffix = num;
+    });
+    
+    return parentCode + String(maxSuffix + 1).padStart(2, '0');
+}
+
+</script>
+
+</body>
+</html>

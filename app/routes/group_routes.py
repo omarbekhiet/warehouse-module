@@ -1,8 +1,29 @@
-﻿from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify
 from app.database import db
-from app.utils import json_safe
+from app.utils import json_safe, enrich_with_user
 
 group_bp = Blueprint('groups', __name__)
+
+
+# =========================================
+# الحقول
+# =========================================
+ACCOUNT_FIELDS = [
+    'inventory_account',
+    'cost_account',
+    'revenue_account',
+    'purchase_account',
+    'adjustment_account',
+    'waste_account',
+    'clearing_account',
+    'revenue_return_account',
+    'discount_account',
+]
+
+BASIC_FIELDS = [
+    'code', 'name_ar', 'name_en', 'parent_id',
+    'default_uom_id', 'default_cost_method', 'notes', 'is_active'
+]
 
 
 @group_bp.route('/', methods=['GET'])
@@ -17,6 +38,7 @@ def list_groups():
            WHERE g.is_active=1
            ORDER BY g.level, g.code"""
     )
+    rows = enrich_with_user(rows)
     return jsonify({'success': True, 'data': json_safe(rows)})
 
 
@@ -58,18 +80,31 @@ def create_group():
             parent = db.query("SELECT level FROM item_groups WHERE id=?", (parent_id,), one=True)
             if parent:
                 level = parent['level'] + 1
+
+        # بناء الأعمدة والقيم
+        columns = ['code', 'name_ar', 'name_en', 'parent_id', 'level']
+        values = [d['code'], d['name_ar'], d.get('name_en'), parent_id, level]
+
+        # الحسابات التسعة
+        for field in ACCOUNT_FIELDS:
+            columns.append(field)
+            values.append(d.get(field))
+
+        # الحقول الأساسية الإضافية
+        columns.extend(['default_cost_method', 'default_uom_id', 'notes', 'is_active'])
+        values.extend([
+            d.get('default_cost_method', 'WEIGHTED_AVERAGE'),
+            d.get('default_uom_id'),
+            d.get('notes'),
+            1
+        ])
+
+        placeholders = ', '.join(['?' for _ in values])
+        col_names = ', '.join(columns)
+
         gid = db.execute(
-            """INSERT INTO item_groups 
-               (code, name_ar, name_en, parent_id, level,
-                inventory_account, cost_account, revenue_account, clearing_account,
-                default_cost_method, default_uom_id, notes, is_active)
-               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1)""",
-            (d['code'], d['name_ar'], d.get('name_en'),
-             parent_id, level,
-             d.get('inventory_account'), d.get('cost_account'),
-             d.get('revenue_account'), d.get('clearing_account'),
-             d.get('default_cost_method', 'WEIGHTED_AVERAGE'),
-             d.get('default_uom_id'), d.get('notes'))
+            f"INSERT INTO item_groups ({col_names}) VALUES ({placeholders})",
+            values
         )
         return jsonify({'success': True, 'data': {'id': gid}}), 201
     except Exception as e:
@@ -80,14 +115,22 @@ def create_group():
 def update_group(gid):
     d = request.get_json() or {}
     fields, values = [], []
-    for k in ['code', 'name_ar', 'name_en', 'parent_id',
-              'inventory_account', 'cost_account', 'revenue_account', 'clearing_account',
-              'default_cost_method', 'default_uom_id', 'notes', 'is_active']:
+
+    # الحقول الأساسية
+    for k in BASIC_FIELDS:
         if k in d:
             fields.append(f"{k}=?")
             values.append(d[k])
+
+    # الحسابات التسعة
+    for k in ACCOUNT_FIELDS:
+        if k in d:
+            fields.append(f"{k}=?")
+            values.append(d[k])
+
     if not fields:
         return jsonify({'success': False, 'message': 'لا توجد بيانات'}), 400
+
     values.append(gid)
     db.execute(f"UPDATE item_groups SET {','.join(fields)} WHERE id=?", values)
     return jsonify({'success': True, 'message': 'تم التحديث'})
@@ -95,7 +138,6 @@ def update_group(gid):
 
 @group_bp.route('/<int:gid>', methods=['DELETE'])
 def delete_group(gid):
-    # Check if has children or items
     children = db.query("SELECT COUNT(*) as n FROM item_groups WHERE parent_id=?", (gid,), one=True)
     items = db.query("SELECT COUNT(*) as n FROM items WHERE group_id=?", (gid,), one=True)
     if children['n'] > 0 or items['n'] > 0:

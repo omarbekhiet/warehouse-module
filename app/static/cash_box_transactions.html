@@ -1,0 +1,696 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>حركات الخزائن</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+body { font-family: 'Cairo','Segoe UI',Tahoma,sans-serif; background: #f5f6fa; padding: 20px; font-size: 13px; }
+.container-box { max-width: 1500px; margin: 0 auto; }
+h2 { color: #1e3c72; font-weight: 700; }
+.card-box { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 1px 10px rgba(0,0,0,0.05); margin-bottom: 20px; }
+
+.badge-txn { padding: 4px 10px; border-radius: 12px; font-size: 0.72rem; font-weight: 600; }
+.badge-DEPOSIT { background: #e8f5e9; color: #2e7d32; }
+.badge-WITHDRAW { background: #ffebee; color: #c62828; }
+.badge-TRANSFER_IN { background: #e3f2fd; color: #1565c0; }
+.badge-TRANSFER_OUT { background: #fff3e0; color: #e65100; }
+
+.badge-box-CASH_BOX { background: #e8f5e9; color: #2e7d32; }
+.badge-box-BANK { background: #e3f2fd; color: #1565c0; }
+.badge-box-CARD { background: #f3e5f5; color: #6a1b9a; }
+
+.amount-in { color: #16a34a; font-weight: 700; }
+.amount-out { color: #dc2626; font-weight: 700; }
+
+.stat-card {
+    background: white; border-radius: 12px; padding: 15px 20px;
+    box-shadow: 0 1px 10px rgba(0,0,0,0.05);
+    display: flex; align-items: center; gap: 15px;
+    border-right: 4px solid;
+}
+.stat-card .icon { width: 50px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; color: white; }
+.stat-card .label { font-size: 0.78rem; color: #64748b; }
+.stat-card .value { font-size: 1.3rem; font-weight: 700; color: #1e3c72; }
+
+/* ============================================
+   إلغاء أسهم input[type=number]
+   ============================================ */
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none !important;
+    margin: 0 !important;
+}
+input[type=number] {
+    -moz-appearance: textfield !important;
+    appearance: textfield !important;
+}
+input[type="number"] {
+    -moz-appearance: textfield !important;
+}
+
+</style>
+<script src="permissions.js"></script>
+
+
+
+<style id="compact-spacing-global">
+/* ============================================
+   توحيد المسافات المضغوطة
+   ============================================ */
+
+.table td, .table th {
+    padding: 3px 6px !important;
+    font-size: 0.75rem !important;
+    vertical-align: middle !important;
+    line-height: 1.2 !important;
+}
+
+.table tbody tr {
+    height: auto !important;
+}
+
+.form-control, .form-select {
+    font-size: 0.75rem !important;
+    line-height: 1.2 !important;
+}
+
+.form-control-sm, .form-select-sm {
+    height: 26px !important;
+    padding: 2px 6px !important;
+    font-size: 0.72rem !important;
+    line-height: 1 !important;
+}
+
+.btn {
+    padding: 3px 8px !important;
+    font-size: 0.72rem !important;
+    line-height: 1.2 !important;
+}
+
+.btn-sm {
+    padding: 2px 6px !important;
+    font-size: 0.7rem !important;
+}
+
+.card {
+    margin-bottom: 6px !important;
+}
+
+.card-body, .card.p-2, .card.p-3, .card.p-4 {
+    padding: 6px 8px !important;
+}
+
+.modal-header {
+    padding: 6px 12px !important;
+}
+
+.modal-title {
+    font-size: 0.9rem !important;
+}
+
+.modal-body {
+    padding: 8px 12px !important;
+}
+
+.modal-footer {
+    padding: 6px 12px !important;
+}
+
+.modal-footer .btn {
+    padding: 4px 10px !important;
+    font-size: 0.75rem !important;
+}
+
+.mb-1, .mb-2, .mb-3, .mb-4 {
+    margin-bottom: 4px !important;
+}
+
+.mt-1, .mt-2, .mt-3, .mt-4 {
+    margin-top: 4px !important;
+}
+
+.ms-1, .ms-2, .ms-3 {
+    margin-right: 4px !important;
+}
+
+.me-1, .me-2, .me-3 {
+    margin-left: 4px !important;
+}
+
+.p-1, .p-2, .p-3, .p-4 {
+    padding: 4px !important;
+}
+
+.g-1, .g-2, .g-3 {
+    gap: 4px !important;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    line-height: 1.3 !important;
+}
+
+h1 { font-size: 1.2rem !important; margin-bottom: 6px !important; }
+h2 { font-size: 1.05rem !important; margin-bottom: 6px !important; }
+h3 { font-size: 0.95rem !important; margin-bottom: 4px !important; }
+h4 { font-size: 0.9rem !important; margin-bottom: 4px !important; }
+h5 { font-size: 0.85rem !important; margin-bottom: 4px !important; }
+h6 { font-size: 0.8rem !important; margin-bottom: 4px !important; }
+
+.alert {
+    padding: 6px 10px !important;
+    margin-bottom: 6px !important;
+    font-size: 0.78rem !important;
+}
+
+.badge {
+    padding: 2px 6px !important;
+    font-size: 0.68rem !important;
+}
+
+.nav-tabs .nav-link {
+    padding: 5px 12px !important;
+    font-size: 0.78rem !important;
+}
+
+hr {
+    margin: 6px 0 !important;
+}
+
+/* بطاقات الأعمار (aging) */
+.aging-card, .bucket-card, .stat-card {
+    padding: 6px 8px !important;
+    margin-bottom: 4px !important;
+}
+
+.aging-card .h4, .aging-card .h5,
+.bucket-card .h4, .bucket-card .h5 {
+    font-size: 1rem !important;
+    margin: 2px 0 !important;
+}
+
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none !important;
+    margin: 0 !important;
+}
+input[type=number] {
+    -moz-appearance: textfield !important;
+}
+</style>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 16 16%22><text y=%2214%22 font-size=%2214%22>📒</text></svg>">
+</head>
+<body>
+<div class="container-box">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="bi bi-arrow-left-right text-primary"></i> حركات الخزائن والبنوك</h2>
+        <div>
+            <button class="btn btn-sm btn-outline-success" onclick="exportToExcel('cash_box_transactions')" title="تصدير Excel">
+                <i class="bi bi-file-earmark-excel"></i> Excel
+            </button>
+            <a href="cash_boxes.html" class="btn btn-outline-info"><i class="bi bi-safe2-fill"></i> الخزائن</a>
+            <a href="index.html#accounting" class="btn btn-outline-secondary"><i class="bi bi-house"></i> الرئيسية</a>
+            <button class="btn btn-success" onclick="openDepositModal()"><i class="bi bi-arrow-down-circle"></i> إيداع</button>
+            <button class="btn btn-danger" onclick="openWithdrawModal()"><i class="bi bi-arrow-up-circle"></i> سحب</button>
+            <button class="btn btn-primary" onclick="openTransferModal()"><i class="bi bi-arrow-left-right"></i> تحويل</button>
+        </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="stat-card" style="border-right-color: #43e97b;">
+                <div class="icon" style="background: linear-gradient(135deg, #43e97b, #38f9d7);"><i class="bi bi-arrow-down-circle"></i></div>
+                <div>
+                    <div class="label">إجمالي الإيداعات</div>
+                    <div class="value" id="stat-deposit">0.00</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card" style="border-right-color: #fa709a;">
+                <div class="icon" style="background: linear-gradient(135deg, #fa709a, #fee140);"><i class="bi bi-arrow-up-circle"></i></div>
+                <div>
+                    <div class="label">إجمالي السحوبات</div>
+                    <div class="value" id="stat-withdraw">0.00</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card" style="border-right-color: #4facfe;">
+                <div class="icon" style="background: linear-gradient(135deg, #4facfe, #00f2fe);"><i class="bi bi-arrow-left-right"></i></div>
+                <div>
+                    <div class="label">عدد التحويلات</div>
+                    <div class="value" id="stat-transfers">0</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card" style="border-right-color: #a18cd1;">
+                <div class="icon" style="background: linear-gradient(135deg, #a18cd1, #fbc2eb);"><i class="bi bi-list-check"></i></div>
+                <div>
+                    <div class="label">إجمالي الحركات</div>
+                    <div class="value" id="stat-total">0</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="card-box">
+        <div class="row g-2 mb-3">
+            <div class="col-md-3">
+                <select class="form-select" id="flt-box-type" onchange="loadTransactions()">
+                    <option value="">كل الأنواع</option>
+                    <option value="CASH_BOX">خزائن</option>
+                    <option value="BANK">بنوك</option>
+                    <option value="CARD">بطاقات</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <select class="form-select" id="flt-txn-type" onchange="filterTable()">
+                    <option value="">كل الحركات</option>
+                    <option value="DEPOSIT">إيداع</option>
+                    <option value="WITHDRAW">سحب</option>
+                    <option value="TRANSFER_IN">تحويل وارد</option>
+                    <option value="TRANSFER_OUT">تحويل صادر</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <input type="date" class="form-control" id="flt-from" onchange="loadTransactions()" placeholder="من تاريخ">
+            </div>
+            <div class="col-md-2">
+                <input type="date" class="form-control" id="flt-to" onchange="loadTransactions()" placeholder="إلى تاريخ">
+            </div>
+            <div class="col-md-2">
+                <button class="btn btn-outline-secondary w-100" onclick="resetFilters()"><i class="bi bi-x-circle"></i> مسح</button>
+            </div>
+        </div>
+
+        <table class="table table-hover">
+            <thead class="table-light">
+                <tr>
+                    <th>التاريخ</th>
+                    <th>المرجع</th>
+                    <th>النوع</th>
+                    <th>الخزينة</th>
+                    <th class="text-end">المبلغ</th>
+                    <th class="text-end">الرصيد بعد</th>
+                    <th>البيان</th>
+                    <th>القيد</th>
+                </tr>
+            </thead>
+            <tbody id="tbl"><tr><td colspan="8" class="text-center text-muted">جاري التحميل...</td></tr></tbody>
+        </table>
+    </div>
+
+</div>
+
+<!-- Deposit Modal -->
+<div class="modal fade" id="depositModal" tabindex="-1">
+<div class="modal-dialog">
+<div class="modal-content">
+<div class="modal-header bg-success text-white">
+    <h5 class="modal-title"><i class="bi bi-arrow-down-circle"></i> إيداع في الخزينة</h5>
+    <button class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+</div>
+<div class="modal-body">
+    <div class="row g-3">
+        <div class="col-12">
+            <label class="form-label">الخزينة/البنك/البطاقة *</label>
+            <select class="form-select" id="d-box" onchange="showBoxBalance('d')"></select>
+            <small class="text-muted">الرصيد الحالي: <strong id="d-balance">-</strong></small>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">التاريخ *</label>
+            <input type="date" class="form-control" id="d-date">
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">المبلغ *</label>
+            <input type="number" class="form-control" id="d-amount" step="0.01" min="0.01">
+        </div>
+        <div class="col-12">
+            <label class="form-label">البيان</label>
+            <input class="form-control" id="d-description" placeholder="سبب الإيداع">
+        </div>
+        <div class="col-12">
+            <label class="form-label">المرجع (اختياري)</label>
+            <input class="form-control" id="d-reference">
+        </div>
+    </div>
+</div>
+<div class="modal-footer">
+    <button class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+    <button class="btn btn-success" onclick="saveTransaction('DEPOSIT')"><i class="bi bi-check-circle"></i> حفظ الإيداع</button>
+</div>
+</div></div></div>
+
+<!-- Withdraw Modal -->
+<div class="modal fade" id="withdrawModal" tabindex="-1">
+<div class="modal-dialog">
+<div class="modal-content">
+<div class="modal-header bg-danger text-white">
+    <h5 class="modal-title"><i class="bi bi-arrow-up-circle"></i> سحب من الخزينة</h5>
+    <button class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+</div>
+<div class="modal-body">
+    <div class="row g-3">
+        <div class="col-12">
+            <label class="form-label">الخزينة/البنك/البطاقة *</label>
+            <select class="form-select" id="w-box" onchange="showBoxBalance('w')"></select>
+            <small class="text-muted">الرصيد الحالي: <strong id="w-balance">-</strong></small>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">التاريخ *</label>
+            <input type="date" class="form-control" id="w-date">
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">المبلغ *</label>
+            <input type="number" class="form-control" id="w-amount" step="0.01" min="0.01">
+        </div>
+        <div class="col-12">
+            <label class="form-label">البيان</label>
+            <input class="form-control" id="w-description" placeholder="سبب السحب">
+        </div>
+        <div class="col-12">
+            <label class="form-label">المرجع (اختياري)</label>
+            <input class="form-control" id="w-reference">
+        </div>
+    </div>
+</div>
+<div class="modal-footer">
+    <button class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+    <button class="btn btn-danger" onclick="saveTransaction('WITHDRAW')"><i class="bi bi-check-circle"></i> حفظ السحب</button>
+</div>
+</div></div></div>
+
+<!-- Transfer Modal -->
+<div class="modal fade" id="transferModal" tabindex="-1">
+<div class="modal-dialog modal-lg">
+<div class="modal-content">
+<div class="modal-header bg-primary text-white">
+    <h5 class="modal-title"><i class="bi bi-arrow-left-right"></i> تحويل بين الخزائن</h5>
+    <button class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+</div>
+<div class="modal-body">
+    <div class="row g-3">
+        <div class="col-md-6">
+            <label class="form-label">من (المصدر) *</label>
+            <select class="form-select" id="t-from" onchange="showBoxBalance('tf')"></select>
+            <small class="text-muted">الرصيد: <strong id="tf-balance">-</strong></small>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">إلى (الوجهة) *</label>
+            <select class="form-select" id="t-to" onchange="showBoxBalance('tt')"></select>
+            <small class="text-muted">الرصيد: <strong id="tt-balance">-</strong></small>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">التاريخ *</label>
+            <input type="date" class="form-control" id="t-date">
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">المبلغ *</label>
+            <input type="number" class="form-control" id="t-amount" step="0.01" min="0.01">
+        </div>
+        <div class="col-12">
+            <label class="form-label">البيان</label>
+            <input class="form-control" id="t-description" placeholder="سبب التحويل">
+        </div>
+    </div>
+</div>
+<div class="modal-footer">
+    <button class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+    <button class="btn btn-primary" onclick="saveTransfer()"><i class="bi bi-check-circle"></i> تنفيذ التحويل</button>
+</div>
+</div></div></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+const API = '/api/v1';
+const depositModal = new bootstrap.Modal(document.getElementById('depositModal'));
+const withdrawModal = new bootstrap.Modal(document.getElementById('withdrawModal'));
+const transferModal = new bootstrap.Modal(document.getElementById('transferModal'));
+
+let allTxn = [];
+let allBoxes = [];
+
+// ============================================
+// Load
+// ============================================
+async function loadAllBoxes() {
+    try {
+        const r = await fetch(`${API}/cash-boxes/all-active/`).then(x => x.json());
+        allBoxes = r.data || [];
+        
+        // Fill deposit/withdraw selects
+        const options = allBoxes.map(b => 
+            `<option value="${b.box_type}|${b.id}" data-balance="${b.balance}">
+                [${b.box_type === 'CASH_BOX' ? 'خزينة' : b.box_type === 'BANK' ? 'بنك' : 'بطاقة'}] ${b.code} - ${b.name} (${b.balance.toFixed(2)})
+            </option>`
+        ).join('');
+        
+        ['d-box', 'w-box', 't-from', 't-to'].forEach(id => {
+            document.getElementById(id).innerHTML = '<option value="">— اختر —</option>' + options;
+        });
+    } catch(e) { console.error(e); }
+}
+
+async function loadTransactions() {
+    const boxType = document.getElementById('flt-box-type').value;
+    const from = document.getElementById('flt-from').value;
+    const to = document.getElementById('flt-to').value;
+    
+    let url = `${API}/cash-boxes/transactions/?limit=500`;
+    if (boxType) url += `&box_type=${boxType}`;
+    if (from) url += `&date_from=${from}`;
+    if (to) url += `&date_to=${to}`;
+    
+    try {
+        const r = await fetch(url).then(x => x.json());
+        allTxn = r.data || [];
+        renderTable(allTxn);
+        await loadSummary();
+    } catch(e) { console.error(e); }
+}
+
+async function loadSummary() {
+    const from = document.getElementById('flt-from').value;
+    const to = document.getElementById('flt-to').value;
+    let url = `${API}/cash-boxes/transactions/summary?`;
+    if (from) url += `date_from=${from}&`;
+    if (to) url += `date_to=${to}`;
+    
+    try {
+        const r = await fetch(url).then(x => x.json());
+        if (r.success) {
+            const d = r.data;
+            document.getElementById('stat-deposit').textContent = (d.DEPOSIT?.total || 0).toFixed(2);
+            document.getElementById('stat-withdraw').textContent = (d.WITHDRAW?.total || 0).toFixed(2);
+            document.getElementById('stat-transfers').textContent = (d.TRANSFER_IN?.count || 0);
+            document.getElementById('stat-total').textContent = 
+                (d.DEPOSIT?.count || 0) + (d.WITHDRAW?.count || 0) + 
+                (d.TRANSFER_IN?.count || 0) + (d.TRANSFER_OUT?.count || 0);
+        }
+    } catch(e) { console.error(e); }
+}
+
+function renderTable(rows) {
+    const txnTypes = {
+        'DEPOSIT': { label: 'إيداع', icon: 'arrow-down-circle', cls: 'DEPOSIT' },
+        'WITHDRAW': { label: 'سحب', icon: 'arrow-up-circle', cls: 'WITHDRAW' },
+        'TRANSFER_IN': { label: 'تحويل وارد', icon: 'arrow-down-left', cls: 'TRANSFER_IN' },
+        'TRANSFER_OUT': { label: 'تحويل صادر', icon: 'arrow-up-right', cls: 'TRANSFER_OUT' }
+    };
+    
+    document.getElementById('tbl').innerHTML = rows.length ? rows.map(t => {
+        const txn = txnTypes[t.txn_type] || { label: t.txn_type, icon: 'circle', cls: '' };
+        const boxType = t.box_type === 'CASH_BOX' ? 'خزينة' : t.box_type === 'BANK' ? 'بنك' : 'بطاقة';
+        const isIn = ['DEPOSIT', 'TRANSFER_IN'].includes(t.txn_type);
+        const amountClass = isIn ? 'amount-in' : 'amount-out';
+        const sign = isIn ? '+' : '-';
+        
+        return `
+            <tr>
+                <td>${t.txn_date}</td>
+                <td><code>${t.reference_no || '-'}</code></td>
+                <td><span class="badge-txn badge-${txn.cls}"><i class="bi bi-${txn.icon}"></i> ${txn.label}</span></td>
+                <td><span class="badge-box-${t.box_type}">${boxType}</span> ${t.box_name || '-'}</td>
+                <td class="text-end ${amountClass}">${sign}${parseFloat(t.amount).toFixed(2)}</td>
+                <td class="text-end">${parseFloat(t.balance_after || 0).toFixed(2)}</td>
+                <td><small>${t.description || '-'}</small></td>
+                <td>${t.journal_entry_id ? '<span class="badge bg-success">✓</span>' : '-'}</td>
+            </tr>
+        `;
+    }).join('') : '<tr><td colspan="8" class="text-center text-muted py-4">لا توجد حركات</td></tr>';
+}
+
+function filterTable() {
+    const txnType = document.getElementById('flt-txn-type').value;
+    if (!txnType) return renderTable(allTxn);
+    const filtered = allTxn.filter(t => t.txn_type === txnType);
+    renderTable(filtered);
+}
+
+function resetFilters() {
+    ['flt-box-type', 'flt-txn-type', 'flt-from', 'flt-to'].forEach(id => 
+        document.getElementById(id).value = '');
+    loadTransactions();
+}
+
+// ============================================
+// Modals
+// ============================================
+function openDepositModal() {
+    document.getElementById('d-date').value = new Date().toISOString().split('T')[0];
+    document.getElementById('d-amount').value = '';
+    document.getElementById('d-description').value = '';
+    document.getElementById('d-reference').value = '';
+    document.getElementById('d-box').value = '';
+    document.getElementById('d-balance').textContent = '-';
+    depositModal.show();
+}
+
+function openWithdrawModal() {
+    document.getElementById('w-date').value = new Date().toISOString().split('T')[0];
+    document.getElementById('w-amount').value = '';
+    document.getElementById('w-description').value = '';
+    document.getElementById('w-reference').value = '';
+    document.getElementById('w-box').value = '';
+    document.getElementById('w-balance').textContent = '-';
+    withdrawModal.show();
+}
+
+function openTransferModal() {
+    document.getElementById('t-date').value = new Date().toISOString().split('T')[0];
+    document.getElementById('t-amount').value = '';
+    document.getElementById('t-description').value = '';
+    document.getElementById('t-from').value = '';
+    document.getElementById('t-to').value = '';
+    document.getElementById('tf-balance').textContent = '-';
+    document.getElementById('tt-balance').textContent = '-';
+    transferModal.show();
+}
+
+function showBoxBalance(prefix) {
+    const map = {
+        'd': 'd-box', 'w': 'w-box', 
+        'tf': 't-from', 'tt': 't-to'
+    };
+    const selectId = map[prefix];
+    const select = document.getElementById(selectId);
+    const opt = select.options[select.selectedIndex];
+    const bal = opt.getAttribute('data-balance');
+    const balEl = document.getElementById(prefix + '-balance');
+    if (balEl) balEl.textContent = bal ? parseFloat(bal).toFixed(2) : '-';
+}
+
+// ============================================
+// Save
+// ============================================
+async function saveTransaction(type) {
+    const prefix = type === 'DEPOSIT' ? 'd' : 'w';
+    const boxVal = document.getElementById(`${prefix}-box`).value;
+    if (!boxVal) { alert('اختر الخزينة'); return; }
+    
+    const [boxType, boxId] = boxVal.split('|');
+    const amount = parseFloat(document.getElementById(`${prefix}-amount`).value);
+    if (!amount || amount <= 0) { alert('أدخل مبلغاً صحيحاً'); return; }
+    
+    const data = {
+        box_type: boxType,
+        box_id: parseInt(boxId),
+        txn_type: type,
+        txn_date: document.getElementById(`${prefix}-date`).value,
+        amount: amount,
+        description: document.getElementById(`${prefix}-description`).value.trim(),
+        reference_no: document.getElementById(`${prefix}-reference`).value.trim()
+    };
+    
+    try {
+        const r = await fetch(`${API}/cash-boxes/transactions/`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(data)
+        }).then(x => x.json());
+        
+        if (r.success) {
+            alert(`✅ تم تسجيل الحركة: ${r.data.reference_no}\nالرصيد الجديد: ${r.data.balance_after.toFixed(2)}`);
+            type === 'DEPOSIT' ? depositModal.hide() : withdrawModal.hide();
+            await loadAllBoxes();
+            loadTransactions();
+        } else {
+            alert('❌ ' + (r.message || 'خطأ'));
+        }
+    } catch(e) {
+        alert('خطأ في الاتصال');
+        console.error(e);
+    }
+}
+
+async function saveTransfer() {
+    const fromVal = document.getElementById('t-from').value;
+    const toVal = document.getElementById('t-to').value;
+    if (!fromVal || !toVal) { alert('اختر الخزينتين'); return; }
+    if (fromVal === toVal) { alert('لا يمكن التحويل لنفس الخزينة'); return; }
+    
+    const [fromType, fromId] = fromVal.split('|');
+    const [toType, toId] = toVal.split('|');
+    const amount = parseFloat(document.getElementById('t-amount').value);
+    if (!amount || amount <= 0) { alert('أدخل مبلغاً صحيحاً'); return; }
+    
+    const data = {
+        from_box_type: fromType,
+        from_box_id: parseInt(fromId),
+        to_box_type: toType,
+        to_box_id: parseInt(toId),
+        txn_date: document.getElementById('t-date').value,
+        amount: amount,
+        description: document.getElementById('t-description').value.trim()
+    };
+    
+    try {
+        const r = await fetch(`${API}/cash-boxes/transfers/`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(data)
+        }).then(x => x.json());
+        
+        if (r.success) {
+            alert(`✅ تم التحويل: ${r.data.reference_no}\nالرصيد الجديد في المصدر: ${r.data.from_balance_after.toFixed(2)}\nالرصيد الجديد في الوجهة: ${r.data.to_balance_after.toFixed(2)}`);
+            transferModal.hide();
+            await loadAllBoxes();
+            loadTransactions();
+        } else {
+            alert('❌ ' + (r.message || 'خطأ'));
+        }
+    } catch(e) {
+        alert('خطأ في الاتصال');
+        console.error(e);
+    }
+}
+
+// ============================================
+// Init
+// ============================================
+(async () => {
+    await loadAllBoxes();
+    await loadTransactions();
+})();
+</script>
+
+<script>
+// دالة تصدير Excel
+function exportToExcel(templateKey) {
+    if (!templateKey) {
+        alert('مفيش قالب تصدير');
+        return;
+    }
+    window.location.href = '/api/v1/export/excel/export/' + templateKey;
+}
+</script>
+
+</body>
+</html>

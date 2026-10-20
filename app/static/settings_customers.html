@@ -1,0 +1,399 @@
+﻿<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>سياسات العملاء</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+* { font-family: Cairo, sans-serif; box-sizing: border-box; }
+body { background: #f5f6fa; padding: 12px; font-size: 13px; color: #1e293b; line-height: 1.5; }
+.container-box { max-width: 1300px; margin: 0 auto; }
+.page-head { background: white; border-radius: 10px; padding: 14px 18px; margin-bottom: 14px; box-shadow: 0 1px 6px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+.page-head h2 { margin: 0; font-size: 1.15rem; font-weight: 700; color: #1e3c72; display: flex; align-items: center; gap: 8px; }
+.page-head h2 i { color: #ec4899; }
+.page-head .btn { font-size: 0.82rem; padding: 6px 14px; border-radius: 7px; }
+.tab-content { background: white; border-radius: 10px; padding: 20px; box-shadow: 0 1px 6px rgba(0,0,0,0.05); margin-bottom: 14px; }
+.form-label { font-size: 0.8rem; font-weight: 600; color: #475569; margin-bottom: 4px; }
+.form-control, .form-select { font-size: 0.85rem; padding: 7px 12px; border-radius: 6px; border-color: #e2e8f0; }
+.form-section-title { font-weight: 700; font-size: 0.9rem; color: #1e3c72; padding-bottom: 8px; margin-bottom: 12px; border-bottom: 1.5px solid #f1f5f9; display: flex; align-items: center; gap: 6px; }
+.form-section-title i { color: #ec4899; }
+.form-switch .form-check-input { width: 2.5em; height: 1.3em; cursor: pointer; }
+.form-check-label { font-size: 0.85rem; cursor: pointer; }
+.form-check-input:checked { background-color: #ec4899; border-color: #ec4899; }
+.save-bar { background: white; border-radius: 10px; padding: 12px 18px; box-shadow: 0 -2px 10px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; position: sticky; bottom: 12px; z-index: 100; margin-top: 14px; }
+.save-bar .info { font-size: 0.82rem; color: #64748b; }
+.save-bar .info.dirty { color: #dc2626; font-weight: 600; }
+.toast-msg { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #16a34a; color: white; padding: 12px 24px; border-radius: 8px; font-weight: 600; box-shadow: 0 8px 24px rgba(0,0,0,0.15); z-index: 9999; display: none; align-items: center; gap: 8px; }
+.toast-msg.show { display: flex; }
+.toast-msg.error { background: #dc2626; }
+.setting-row { padding: 12px 0; border-bottom: 1px solid #f1f5f9; }
+.setting-row:last-child { border-bottom: none; }
+.setting-label { font-weight: 600; font-size: 0.88rem; color: #1e293b; margin-bottom: 2px; }
+.setting-desc { font-size: 0.75rem; color: #64748b; }
+
+/* ============================================
+   إلغاء أسهم input[type=number]
+   ============================================ */
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none !important;
+    margin: 0 !important;
+}
+input[type=number] {
+    -moz-appearance: textfield !important;
+    appearance: textfield !important;
+}
+input[type="number"] {
+    -moz-appearance: textfield !important;
+}
+
+</style>
+<script src="permissions.js"></script>
+
+
+
+<style id="compact-spacing-global">
+/* ============================================
+   توحيد المسافات المضغوطة
+   ============================================ */
+
+.table td, .table th {
+    padding: 3px 6px !important;
+    font-size: 0.75rem !important;
+    vertical-align: middle !important;
+    line-height: 1.2 !important;
+}
+
+.table tbody tr {
+    height: auto !important;
+}
+
+.form-control, .form-select {
+    font-size: 0.75rem !important;
+    line-height: 1.2 !important;
+}
+
+.form-control-sm, .form-select-sm {
+    height: 26px !important;
+    padding: 2px 6px !important;
+    font-size: 0.72rem !important;
+    line-height: 1 !important;
+}
+
+.btn {
+    padding: 3px 8px !important;
+    font-size: 0.72rem !important;
+    line-height: 1.2 !important;
+}
+
+.btn-sm {
+    padding: 2px 6px !important;
+    font-size: 0.7rem !important;
+}
+
+.card {
+    margin-bottom: 6px !important;
+}
+
+.card-body, .card.p-2, .card.p-3, .card.p-4 {
+    padding: 6px 8px !important;
+}
+
+.modal-header {
+    padding: 6px 12px !important;
+}
+
+.modal-title {
+    font-size: 0.9rem !important;
+}
+
+.modal-body {
+    padding: 8px 12px !important;
+}
+
+.modal-footer {
+    padding: 6px 12px !important;
+}
+
+.modal-footer .btn {
+    padding: 4px 10px !important;
+    font-size: 0.75rem !important;
+}
+
+.mb-1, .mb-2, .mb-3, .mb-4 {
+    margin-bottom: 4px !important;
+}
+
+.mt-1, .mt-2, .mt-3, .mt-4 {
+    margin-top: 4px !important;
+}
+
+.ms-1, .ms-2, .ms-3 {
+    margin-right: 4px !important;
+}
+
+.me-1, .me-2, .me-3 {
+    margin-left: 4px !important;
+}
+
+.p-1, .p-2, .p-3, .p-4 {
+    padding: 4px !important;
+}
+
+.g-1, .g-2, .g-3 {
+    gap: 4px !important;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    line-height: 1.3 !important;
+}
+
+h1 { font-size: 1.2rem !important; margin-bottom: 6px !important; }
+h2 { font-size: 1.05rem !important; margin-bottom: 6px !important; }
+h3 { font-size: 0.95rem !important; margin-bottom: 4px !important; }
+h4 { font-size: 0.9rem !important; margin-bottom: 4px !important; }
+h5 { font-size: 0.85rem !important; margin-bottom: 4px !important; }
+h6 { font-size: 0.8rem !important; margin-bottom: 4px !important; }
+
+.alert {
+    padding: 6px 10px !important;
+    margin-bottom: 6px !important;
+    font-size: 0.78rem !important;
+}
+
+.badge {
+    padding: 2px 6px !important;
+    font-size: 0.68rem !important;
+}
+
+.nav-tabs .nav-link {
+    padding: 5px 12px !important;
+    font-size: 0.78rem !important;
+}
+
+hr {
+    margin: 6px 0 !important;
+}
+
+/* بطاقات الأعمار (aging) */
+.aging-card, .bucket-card, .stat-card {
+    padding: 6px 8px !important;
+    margin-bottom: 4px !important;
+}
+
+.aging-card .h4, .aging-card .h5,
+.bucket-card .h4, .bucket-card .h5 {
+    font-size: 1rem !important;
+    margin: 2px 0 !important;
+}
+
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none !important;
+    margin: 0 !important;
+}
+input[type=number] {
+    -moz-appearance: textfield !important;
+}
+</style>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 16 16%22><text y=%2214%22 font-size=%2214%22>📒</text></svg>">
+</head>
+<body>
+<div class="container-box">
+<div class="page-head">
+<h2><i class="bi bi-people"></i> سياسات العملاء</h2>
+<div class="d-flex gap-2">
+<a href="settings.html" class="btn btn-outline-info"><i class="bi bi-arrow-right"></i> الإعدادات</a>
+<a href="index.html" class="btn btn-outline-secondary"><i class="bi bi-house-fill"></i> الرئيسية</a>
+</div>
+</div>
+
+<div class="tab-content">
+<div class="form-section-title"><i class="bi bi-credit-card"></i> سياسات الائتمان</div>
+
+<div class="row g-3 mb-3">
+<div class="col-md-6">
+<label class="form-label">حد الائتمان الافتراضي</label>
+<div class="input-group">
+<input type="number" class="form-control" id="f-default_credit_limit" min="0" step="100" oninput="markDirty()">
+<span class="input-group-text">ج.م</span>
+</div>
+<small class="text-muted">يطبّق على العملاء الجدد</small>
+</div>
+<div class="col-md-6">
+<label class="form-label">مدة السماح الافتراضية</label>
+<div class="input-group">
+<input type="number" class="form-control" id="f-default_payment_terms" min="0" max="365" oninput="markDirty()">
+<span class="input-group-text">يوم</span>
+</div>
+<small class="text-muted">عدد الأيام المسموح بها قبل اعتبار العميل متأخرًا</small>
+</div>
+</div>
+
+<div class="setting-row">
+<div class="row align-items-center">
+<div class="col-md-8">
+<div class="setting-label">منع البيع للعملاء المتأخرين</div>
+<div class="setting-desc">عند التفعيل، لا يمكن إصدار فاتورة لعميل تجاوز حد الائتمان</div>
+</div>
+<div class="col-md-4 text-end">
+<div class="form-check form-switch d-inline-block">
+<input class="form-check-input" type="checkbox" id="f-block_overdue_customers" onchange="markDirty()">
+</div>
+</div>
+</div>
+</div>
+
+<div class="setting-row">
+<div class="row align-items-center">
+<div class="col-md-8">
+<div class="setting-label">إلزامية حد الائتمان</div>
+<div class="setting-desc">يجب إدخال حد ائتمان لكل عميل جديد</div>
+</div>
+<div class="col-md-4 text-end">
+<div class="form-check form-switch d-inline-block">
+<input class="form-check-input" type="checkbox" id="f-require_credit_limit" onchange="markDirty()">
+</div>
+</div>
+</div>
+</div>
+
+<div class="setting-row">
+<div class="row align-items-center">
+<div class="col-md-8">
+<div class="setting-label">السماح بالدفع المقدّم</div>
+<div class="setting-desc">تمكين استلام دفعات مقدمة من العملاء قبل إصدار الفاتورة</div>
+</div>
+<div class="col-md-4 text-end">
+<div class="form-check form-switch d-inline-block">
+<input class="form-check-input" type="checkbox" id="f-allow_prepayment" onchange="markDirty()">
+</div>
+</div>
+</div>
+</div>
+
+<div class="form-section-title mt-4"><i class="bi bi-bell"></i> التنبيهات</div>
+
+<div class="setting-row">
+<div class="row align-items-center">
+<div class="col-md-8">
+<div class="setting-label">تنبيهات تأخر السداد</div>
+<div class="setting-desc">إرسال إشعار عند تأخر عميل عن السداد</div>
+</div>
+<div class="col-md-4 text-end">
+<div class="form-check form-switch d-inline-block">
+<input class="form-check-input" type="checkbox" id="f-overdue_alerts" onchange="markDirty()">
+</div>
+</div>
+</div>
+</div>
+
+<div class="setting-row">
+<div class="row align-items-center">
+<div class="col-md-8">
+<div class="setting-label">كشف حساب تلقائي شهريًا</div>
+<div class="setting-desc">إرسال كشف حساب آلي لكل عميل في نهاية الشهر</div>
+</div>
+<div class="col-md-4 text-end">
+<div class="form-check form-switch d-inline-block">
+<input class="form-check-input" type="checkbox" id="f-monthly_statement" onchange="markDirty()">
+</div>
+</div>
+</div>
+</div>
+
+<div class="form-section-title mt-4"><i class="bi bi-percent"></i> الخصومات</div>
+
+<div class="row g-3">
+<div class="col-md-6">
+<label class="form-label">نسبة الخصم الافتراضية</label>
+<div class="input-group">
+<input type="number" class="form-control" id="f-default_discount" min="0" max="100" step="0.5" oninput="markDirty()">
+<span class="input-group-text">%</span>
+</div>
+<small class="text-muted">تطبّق على العملاء الجدد (قابلة للتعديل)</small>
+</div>
+</div>
+
+</div>
+
+<div class="save-bar">
+<div class="info" id="save-info"><i class="bi bi-info-circle"></i> لا توجد تغييرات غير محفوظة</div>
+<button class="btn btn-primary" onclick="save()" id="btn-save"><i class="bi bi-check-circle-fill"></i> حفظ التغييرات</button>
+</div>
+</div>
+
+<div class="toast-msg" id="toast"><i class="bi bi-check-circle-fill"></i> <span id="toast-text">تم الحفظ</span></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+const API = "http://localhost:5000/api/v1";
+let isDirty = false;
+
+async function load() {
+    try {
+        const r = await fetch(API + "/settings/customers").then(x => x.json());
+        if (!r.success) return;
+        for (const [k, v] of Object.entries(r.data)) {
+            const el = document.getElementById("f-" + k);
+            if (!el) continue;
+            if (el.type === "checkbox") el.checked = !!v;
+            else el.value = v ?? "";
+        }
+        isDirty = false;
+        updateSaveBar();
+    } catch (e) { console.error(e); }
+}
+
+function markDirty() { isDirty = true; updateSaveBar(); }
+
+function updateSaveBar() {
+    const info = document.getElementById("save-info");
+    if (isDirty) {
+        info.innerHTML = "<i class=\"bi bi-exclamation-circle\"></i> هناك تغييرات غير محفوظة";
+        info.className = "info dirty";
+    } else {
+        info.innerHTML = "<i class=\"bi bi-info-circle\"></i> لا توجد تغييرات غير محفوظة";
+        info.className = "info";
+    }
+}
+
+async function save() {
+    const btn = document.getElementById("btn-save");
+    btn.disabled = true;
+    btn.innerHTML = "جاري الحفظ...";
+    const data = {};
+    document.querySelectorAll("[id^=\"f-\"]").forEach(el => {
+        const k = el.id.replace("f-", "");
+        data[k] = el.type === "checkbox" ? el.checked : el.value;
+    });
+    try {
+        const r = await fetch(API + "/settings/customers", {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data)
+        }).then(x => x.json());
+        if (r.success) {
+            showToast("تم حفظ سياسات العملاء");
+            isDirty = false;
+            updateSaveBar();
+        } else showToast(r.message || "خطأ", true);
+    } catch (e) { showToast("خطأ في الاتصال", true); }
+    finally { btn.disabled = false; btn.innerHTML = "حفظ التغييرات"; }
+}
+
+function showToast(msg, err = false) {
+    const t = document.getElementById("toast");
+    document.getElementById("toast-text").textContent = msg;
+    t.className = "toast-msg show" + (err ? " error" : "");
+    setTimeout(() => t.className = "toast-msg", 3000);
+}
+
+window.addEventListener("beforeunload", e => { if (isDirty) { e.preventDefault(); e.returnValue = ""; } });
+
+load();
+</script>
+</body>
+</html>

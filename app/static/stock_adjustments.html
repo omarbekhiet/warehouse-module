@@ -1,0 +1,759 @@
+﻿<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>التسويات المخزنية</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+* { font-family: 'Cairo','Segoe UI',Tahoma,sans-serif; box-sizing: border-box; }
+body { background: #f5f6fa; padding: 12px; font-size: 13px; color: #1e293b; line-height: 1.5; }
+.container-box { max-width: 1300px; margin: 0 auto; }
+.page-head { background: white; border-radius: 10px; padding: 14px 18px; margin-bottom: 14px; box-shadow: 0 1px 6px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+.page-head h2 { margin: 0; font-size: 1.15rem; font-weight: 700; color: #1e3c72; display: flex; align-items: center; gap: 8px; }
+.page-head h2 i { color: #4facfe; }
+.page-head .btn { font-size: 0.82rem; padding: 6px 14px; border-radius: 7px; }
+.filters-box { background: white; border-radius: 10px; padding: 14px 18px; margin-bottom: 14px; box-shadow: 0 1px 6px rgba(0,0,0,0.05); }
+.filters-box .form-label { font-size: 0.75rem; font-weight: 600; color: #64748b; margin-bottom: 4px; }
+.filters-box .form-control, .filters-box .form-select { font-size: 0.85rem; padding: 6px 10px; border-radius: 6px; }
+.kpi-inline { display: flex; flex-wrap: nowrap; gap: 12px; margin-bottom: 14px; overflow-x: auto; }
+.kpi-item { flex: 1 1 0; min-width: 200px; display: flex; align-items: center; gap: 14px; padding: 16px 18px; border-radius: 12px; color: white; position: relative; overflow: hidden; box-shadow: 0 3px 10px rgba(0,0,0,0.08); min-height: 90px; }
+.kpi-item .kpi-icon { width: 50px; height: 50px; border-radius: 12px; background: rgba(255,255,255,0.25); display: flex; align-items: center; justify-content: center; font-size: 1.5rem; flex-shrink: 0; }
+.kpi-item .kpi-body { flex: 1; min-width: 0; }
+.kpi-item .kpi-label { font-size: 0.78rem; opacity: 0.92; margin-bottom: 2px; font-weight: 500; }
+.kpi-item .kpi-value { font-size: 1.6rem; font-weight: 700; line-height: 1.1; }
+.kpi-item .kpi-sub { font-size: 0.7rem; opacity: 0.85; margin-top: 2px; }
+.kpi-item .icon-bg { position: absolute; left: -15px; bottom: -25px; font-size: 5rem; opacity: 0.13; }
+.table-card { background: white; border-radius: 10px; padding: 16px 18px; box-shadow: 0 1px 6px rgba(0,0,0,0.05); margin-bottom: 14px; }
+.table-card h6 { margin: 0 0 12px; font-size: 0.95rem; font-weight: 700; color: #1e3c72; display: flex; align-items: center; gap: 8px; padding-bottom: 10px; border-bottom: 1.5px solid #f1f5f9; }
+.table-card h6 i { color: #4facfe; }
+.table-card h6 .badge { background: #e0f2fe; color: #0369a1; font-size: 0.72rem; padding: 3px 9px; border-radius: 20px; font-weight: 700; }
+table { width: 100%; border-collapse: collapse; font-size: 0.82rem; margin: 0; }
+table thead th { background: #f8fafc; color: #475569; font-weight: 600; padding: 9px 10px; text-align: right; font-size: 0.76rem; border-bottom: 1.5px solid #e2e8f0; white-space: nowrap; }
+table tbody td { padding: 9px 10px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
+table tbody tr:last-child td { border-bottom: none; }
+table tbody tr:hover { background: #fafbfc; }
+table code { background: #f1f5f9; padding: 2px 6px; border-radius: 4px; font-size: 0.76rem; color: #475569; }
+.badge-type { display: inline-flex; align-items: center; gap: 3px; padding: 3px 9px; border-radius: 4px; font-size: 0.72rem; font-weight: 600; }
+.badge-SHORTAGE { background: #fee2e2; color: #dc2626; }
+.badge-SURPLUS  { background: #dcfce7; color: #15803d; }
+.amount-debit { color: #dc2626; font-weight: 700; }
+.amount-credit { color: #16a34a; font-weight: 700; }
+.table-empty { text-align: center; padding: 30px 20px; color: #94a3b8; }
+.table-empty i { font-size: 2.5rem; opacity: 0.35; display: block; margin-bottom: 8px; }
+.line-row td { padding: 6px 8px; }
+.line-row .form-control, .line-row .form-select { font-size: 0.82rem; padding: 4px 8px; }
+@media print { .no-print { display: none !important; } body { background: white; padding: 0; } }
+@media (max-width: 900px) { .kpi-inline { overflow-x: auto; } .kpi-item { min-width: 220px; } }
+
+/* ============================================
+   إلغاء أسهم input[type=number]
+   ============================================ */
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none !important;
+    margin: 0 !important;
+}
+input[type=number] {
+    -moz-appearance: textfield !important;
+    appearance: textfield !important;
+}
+input[type="number"] {
+    -moz-appearance: textfield !important;
+}
+
+</style>
+<script src="permissions.js"></script>
+
+
+
+<style id="compact-spacing-global">
+/* ============================================
+   توحيد المسافات المضغوطة
+   ============================================ */
+
+.table td, .table th {
+    padding: 3px 6px !important;
+    font-size: 0.75rem !important;
+    vertical-align: middle !important;
+    line-height: 1.2 !important;
+}
+
+.table tbody tr {
+    height: auto !important;
+}
+
+.form-control, .form-select {
+    font-size: 0.75rem !important;
+    line-height: 1.2 !important;
+}
+
+.form-control-sm, .form-select-sm {
+    height: 26px !important;
+    padding: 2px 6px !important;
+    font-size: 0.72rem !important;
+    line-height: 1 !important;
+}
+
+.btn {
+    padding: 3px 8px !important;
+    font-size: 0.72rem !important;
+    line-height: 1.2 !important;
+}
+
+.btn-sm {
+    padding: 2px 6px !important;
+    font-size: 0.7rem !important;
+}
+
+.card {
+    margin-bottom: 6px !important;
+}
+
+.card-body, .card.p-2, .card.p-3, .card.p-4 {
+    padding: 6px 8px !important;
+}
+
+.modal-header {
+    padding: 6px 12px !important;
+}
+
+.modal-title {
+    font-size: 0.9rem !important;
+}
+
+.modal-body {
+    padding: 8px 12px !important;
+}
+
+.modal-footer {
+    padding: 6px 12px !important;
+}
+
+.modal-footer .btn {
+    padding: 4px 10px !important;
+    font-size: 0.75rem !important;
+}
+
+.mb-1, .mb-2, .mb-3, .mb-4 {
+    margin-bottom: 4px !important;
+}
+
+.mt-1, .mt-2, .mt-3, .mt-4 {
+    margin-top: 4px !important;
+}
+
+.ms-1, .ms-2, .ms-3 {
+    margin-right: 4px !important;
+}
+
+.me-1, .me-2, .me-3 {
+    margin-left: 4px !important;
+}
+
+.p-1, .p-2, .p-3, .p-4 {
+    padding: 4px !important;
+}
+
+.g-1, .g-2, .g-3 {
+    gap: 4px !important;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    line-height: 1.3 !important;
+}
+
+h1 { font-size: 1.2rem !important; margin-bottom: 6px !important; }
+h2 { font-size: 1.05rem !important; margin-bottom: 6px !important; }
+h3 { font-size: 0.95rem !important; margin-bottom: 4px !important; }
+h4 { font-size: 0.9rem !important; margin-bottom: 4px !important; }
+h5 { font-size: 0.85rem !important; margin-bottom: 4px !important; }
+h6 { font-size: 0.8rem !important; margin-bottom: 4px !important; }
+
+.alert {
+    padding: 6px 10px !important;
+    margin-bottom: 6px !important;
+    font-size: 0.78rem !important;
+}
+
+.badge {
+    padding: 2px 6px !important;
+    font-size: 0.68rem !important;
+}
+
+.nav-tabs .nav-link {
+    padding: 5px 12px !important;
+    font-size: 0.78rem !important;
+}
+
+hr {
+    margin: 6px 0 !important;
+}
+
+/* بطاقات الأعمار (aging) */
+.aging-card, .bucket-card, .stat-card {
+    padding: 6px 8px !important;
+    margin-bottom: 4px !important;
+}
+
+.aging-card .h4, .aging-card .h5,
+.bucket-card .h4, .bucket-card .h5 {
+    font-size: 1rem !important;
+    margin: 2px 0 !important;
+}
+
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none !important;
+    margin: 0 !important;
+}
+input[type=number] {
+    -moz-appearance: textfield !important;
+}
+</style>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 16 16%22><text y=%2214%22 font-size=%2214%22>📒</text></svg>">
+</head>
+<body>
+
+<div class="container-box">
+
+    <div class="page-head no-print">
+        <h2><i class="bi bi-sliders"></i> التسويات المخزنية</h2>
+        <div class="d-flex gap-2">
+            <button class="btn btn-sm btn-outline-success" onclick="exportToExcel('stock_adjustments')" title="تصدير Excel">
+                <i class="bi bi-file-earmark-excel"></i> Excel
+            </button>
+            <a href="index.html" class="btn btn-outline-secondary">
+                <i class="bi bi-house-fill"></i> الرئيسية
+            </a>
+            <a href="counts.html" class="btn btn-outline-info">
+                <i class="bi bi-clipboard-check"></i> الجرد
+            </a>
+            <button class="btn btn-primary" onclick="openAdd()">
+                <i class="bi bi-plus-circle"></i> تسوية جديدة
+            </button>
+        </div>
+    </div>
+
+    <div class="kpi-inline">
+        <div class="kpi-item" style="background: linear-gradient(135deg, #4facfe, #00f2fe);">
+            <i class="bi bi-sliders icon-bg"></i>
+            <div class="kpi-icon"><i class="bi bi-sliders"></i></div>
+            <div class="kpi-body">
+                <div class="kpi-label">إجمالي التسويات</div>
+                <div class="kpi-value" id="s-total">—</div>
+                <div class="kpi-sub">تسوية مسجلة</div>
+            </div>
+        </div>
+        <div class="kpi-item" style="background: linear-gradient(135deg, #f5576c, #f093fb);">
+            <i class="bi bi-arrow-down-circle icon-bg"></i>
+            <div class="kpi-icon"><i class="bi bi-arrow-down-circle-fill"></i></div>
+            <div class="kpi-body">
+                <div class="kpi-label">حالات العجز</div>
+                <div class="kpi-value" id="s-shortage">—</div>
+                <div class="kpi-sub">نقص مخزون</div>
+            </div>
+        </div>
+        <div class="kpi-item" style="background: linear-gradient(135deg, #43e97b, #38f9d7);">
+            <i class="bi bi-arrow-up-circle icon-bg"></i>
+            <div class="kpi-icon"><i class="bi bi-arrow-up-circle-fill"></i></div>
+            <div class="kpi-body">
+                <div class="kpi-label">حالات الزيادة</div>
+                <div class="kpi-value" id="s-surplus">—</div>
+                <div class="kpi-sub">زيادة مخزون</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="filters-box no-print">
+        <div class="row g-2 align-items-end">
+            <div class="col-md-3">
+                <label class="form-label">المستودع</label>
+                <select class="form-select" id="flt-wh" onchange="load()">
+                    <option value="">— كل المستودعات —</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">من تاريخ</label>
+                <input type="date" class="form-control" id="flt-from" onchange="load()">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">إلى تاريخ</label>
+                <input type="date" class="form-control" id="flt-to" onchange="load()">
+            </div>
+            <div class="col-md-3">
+                <button class="btn btn-outline-primary w-100" onclick="load()">
+                    <i class="bi bi-search"></i> بحث
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div class="table-card">
+        <h6>
+            <i class="bi bi-list-ul"></i>
+            قائمة التسويات
+            <span class="badge" id="cnt-badge">0</span>
+        </h6>
+        <table>
+            <thead>
+                <tr>
+                    <th>رقم التسوية</th>
+                    <th>التاريخ</th>
+                    <th>المستودع</th>
+                    <th>النوع</th>
+                    <th>السبب</th>
+                    <th class="text-end">القيمة</th>
+                    <th>القيد</th>
+                    <th>المستخدم</th>
+                    <th>إجراءات</th>
+                </tr>
+            </thead>
+            <tbody id="tbl">
+                <tr><td colspan="9"><div class="table-empty"><i class="bi bi-inbox"></i> جاري التحميل...</div></td></tr>
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+<div class="modal fade" id="addModal" tabindex="-1">
+<div class="modal-dialog modal-lg">
+<div class="modal-content">
+<div class="modal-header" style="background: linear-gradient(135deg, #4facfe, #00f2fe); color: white;">
+    <h5 class="modal-title"><i class="bi bi-plus-circle"></i> تسوية مخزنية جديدة</h5>
+    <button class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+</div>
+<div class="modal-body">
+
+    <div class="row g-2 mb-3">
+        <div class="col-md-4">
+            <label class="form-label">المستودع *</label>
+            <select class="form-select" id="f-warehouse"></select>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">التاريخ *</label>
+            <input type="date" class="form-control" id="f-date">
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">نوع التسوية *</label>
+            <select class="form-select" id="f-type" onchange="updateReasonOptions()">
+                <option value="SHORTAGE">عجز (نقص)</option>
+                <option value="SURPLUS">زيادة (فائض)</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="row g-2 mb-3">
+        <div class="col-md-6">
+            <label class="form-label">السبب *</label>
+            <select class="form-select" id="f-reason"></select>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">ملاحظات</label>
+            <input type="text" class="form-control" id="f-notes" placeholder="اختياري">
+        </div>
+    </div>
+
+    <hr>
+
+    <div class="d-flex justify-content-between align-items-center mb-2">
+        <h6 class="mb-0"><i class="bi bi-list-check"></i> بنود التسوية</h6>
+        <button class="btn btn-sm btn-outline-primary" onclick="addLine()">
+            <i class="bi bi-plus"></i> إضافة صنف
+        </button>
+    </div>
+
+    <table class="table table-bordered table-sm">
+        <thead class="table-light">
+            <tr>
+                <th style="width: 40%;">الصنف</th>
+                <th style="width: 20%;">الكمية</th>
+                <th style="width: 20%;">سعر الوحدة</th>
+                <th style="width: 15%;">القيمة</th>
+                <th style="width: 5%;"></th>
+            </tr>
+        </thead>
+        <tbody id="lines-body">
+            <tr><td colspan="5" class="text-center text-muted py-3">أضف صنفًا للبدء</td></tr>
+        </tbody>
+    </table>
+
+    <div class="alert alert-info mb-0">
+        <i class="bi bi-calculator"></i>
+        <strong>الإجمالي:</strong>
+        <span id="total-value">0.00</span> ج.م
+    </div>
+
+</div>
+<div class="modal-footer">
+    <button class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+    <button class="btn btn-primary" onclick="saveAdjustment()">
+        <i class="bi bi-check-circle"></i> حفظ وترحيل
+    </button>
+</div>
+</div>
+</div>
+</div>
+
+<div class="modal fade" id="viewModal" tabindex="-1">
+<div class="modal-dialog modal-lg">
+<div class="modal-content">
+<div class="modal-header bg-info text-white">
+    <h5 class="modal-title"><i class="bi bi-eye"></i> تفاصيل التسوية</h5>
+    <button class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+</div>
+<div class="modal-body" id="viewBody">
+    <div class="text-center text-muted py-4">جاري التحميل...</div>
+</div>
+</div>
+</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+const API = 'http://localhost:5000/api/v1';
+const addModal = new bootstrap.Modal(document.getElementById('addModal'));
+const viewModal = new bootstrap.Modal(document.getElementById('viewModal'));
+
+const REASONS = {
+    SHORTAGE: [
+        {v:'DAMAGE',   t:'تلف'},
+        {v:'BREAKAGE', t:'كسر'},
+        {v:'LOSS',     t:'فقد'},
+        {v:'THEFT',    t:'سرقة'},
+        {v:'EXPIRY',   t:'انتهاء صلاحية'},
+        {v:'OTHER',    t:'أخرى'}
+    ],
+    SURPLUS: [
+        {v:'SURPLUS',  t:'فائض جرد'},
+        {v:'GIFT',     t:'هدية'},
+        {v:'SAMPLE',   t:'عينة'},
+        {v:'OPENING',  t:'رصيد افتتاحي'},
+        {v:'OTHER',    t:'أخرى'}
+    ]
+};
+
+let warehousesList = [];
+let itemsList = [];
+let lines = [];
+
+async function loadWarehouses() {
+    const r = await fetch(`${API}/warehouses/`).then(x => x.json());
+    warehousesList = r.data || [];
+    const opts = warehousesList.map(w => `<option value="${w.id}">${w.code} - ${w.name_ar}</option>`).join('');
+    document.getElementById('f-warehouse').innerHTML = opts;
+    document.getElementById('flt-wh').innerHTML = '<option value="">— كل المستودعات —</option>' + opts;
+}
+
+async function loadItems() {
+    const r = await fetch(`${API}/items/`).then(x => x.json());
+    itemsList = r.data || [];
+}
+
+function updateReasonOptions() {
+    const type = document.getElementById('f-type').value;
+    const list = REASONS[type] || [];
+    document.getElementById('f-reason').innerHTML = list.map(r => `<option value="${r.v}">${r.t}</option>`).join('');
+}
+
+function openAdd() {
+    document.getElementById('f-date').value = new Date().toISOString().split('T')[0];
+    document.getElementById('f-notes').value = '';
+    lines = [];
+    renderLines();
+    updateReasonOptions();
+    addModal.show();
+}
+
+function addLine() {
+    lines.push({ item_id: '', quantity: '', unit_cost: '' });
+    renderLines();
+}
+
+function removeLine(idx) {
+    lines.splice(idx, 1);
+    renderLines();
+}
+
+function renderLines() {
+    const tbody = document.getElementById('lines-body');
+    if (!lines.length) {
+        tbody.innerHTML = '<tr><td colspan="5" class="text-center text-muted py-3">أضف صنفًا للبدء</td></tr>';
+        updateTotal();
+        return;
+    }
+
+    const itemsOpts = '<option value="">— اختر صنف —</option>' +
+        itemsList.map(i => `<option value="${i.id}">${i.code} - ${i.name_ar}</option>`).join('');
+
+    tbody.innerHTML = lines.map((l, idx) => `
+        <tr class="line-row">
+            <td>
+                <select class="form-select" data-idx="${idx}" onchange="updateLine(${idx}, 'item_id', this.value)">
+                    ${itemsOpts}
+                </select>
+            </td>
+            <td>
+                <input type="number" class="form-control" step="0.01" min="0"
+                       value="${l.quantity}" oninput="updateLine(${idx}, 'quantity', this.value)">
+            </td>
+            <td>
+                <input type="number" class="form-control" step="0.01" min="0"
+                       value="${l.unit_cost}" oninput="updateLine(${idx}, 'unit_cost', this.value)"
+                       placeholder="اختياري">
+            </td>
+            <td class="text-end">
+                <strong>${lineValue(idx).toFixed(2)}</strong>
+            </td>
+            <td class="text-center">
+                <button class="btn btn-sm btn-outline-danger" onclick="removeLine(${idx})">
+                    <i class="bi bi-x"></i>
+                </button>
+            </td>
+        </tr>
+    `).join('');
+
+    lines.forEach((l, idx) => {
+        const sel = tbody.querySelector(`select[data-idx="${idx}"]`);
+        if (sel && l.item_id) sel.value = l.item_id;
+    });
+
+    updateTotal();
+}
+
+function updateLine(idx, field, value) {
+    lines[idx][field] = value;
+    if (field === 'quantity' || field === 'unit_cost') {
+        const tbody = document.getElementById('lines-body');
+        const rows = tbody.querySelectorAll('tr.line-row');
+        if (rows[idx]) {
+            rows[idx].children[3].innerHTML = `<strong>${lineValue(idx).toFixed(2)}</strong>`;
+        }
+        updateTotal();
+    }
+}
+
+function lineValue(idx) {
+    const q = parseFloat(lines[idx].quantity) || 0;
+    const c = parseFloat(lines[idx].unit_cost) || 0;
+    return q * c;
+}
+
+function updateTotal() {
+    const total = lines.reduce((s, _, idx) => s + lineValue(idx), 0);
+    document.getElementById('total-value').textContent = total.toLocaleString('ar-EG', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+}
+
+async function saveAdjustment() {
+    const warehouse_id = parseInt(document.getElementById('f-warehouse').value);
+    const adjustment_date = document.getElementById('f-date').value;
+    const adjustment_type = document.getElementById('f-type').value;
+    const reason = document.getElementById('f-reason').value;
+    const notes = document.getElementById('f-notes').value;
+
+    if (!warehouse_id || !adjustment_date) {
+        alert('لازم تحدد المستودع والتاريخ');
+        return;
+    }
+
+    const payloadLines = [];
+    for (let i = 0; i < lines.length; i++) {
+        const l = lines[i];
+        if (!l.item_id || !l.quantity || parseFloat(l.quantity) <= 0) {
+            alert(`البند رقم ${i+1}: لازم تحدد الصنف والكمية`);
+            return;
+        }
+        payloadLines.push({
+            item_id: parseInt(l.item_id),
+            quantity: parseFloat(l.quantity),
+            unit_cost: l.unit_cost ? parseFloat(l.unit_cost) : null
+        });
+    }
+
+    if (!payloadLines.length) {
+        alert('لازم بند واحد على الأقل');
+        return;
+    }
+
+    const body = {
+        warehouse_id, adjustment_date, adjustment_type, reason, notes,
+        lines: payloadLines
+    };
+
+    try {
+        const r = await fetch(`${API}/counts/quick-adjustment`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+        }).then(x => x.json());
+
+        if (r.success) {
+            alert(`تم تسجيل التسوية ${r.data.count_no}`);
+            addModal.hide();
+            load();
+        } else {
+            alert(r.message || 'خطأ');
+        }
+    } catch (e) {
+        console.error(e);
+        alert('خطأ في الاتصال بالسيرفر');
+    }
+}
+
+async function load() {
+    const wh = document.getElementById('flt-wh').value;
+    const from = document.getElementById('flt-from').value;
+    const to = document.getElementById('flt-to').value;
+
+    let url = `${API}/counts/adjustments?`;
+    if (wh) url += `warehouse_id=${wh}&`;
+    if (from) url += `date_from=${from}&`;
+    if (to) url += `date_to=${to}`;
+
+    try {
+        const r = await fetch(url).then(x => x.json());
+        const rows = r.data || [];
+
+        let shortage = 0, surplus = 0;
+        rows.forEach(x => {
+            if (x.notes && x.notes.includes('[عجز]')) shortage++;
+            else if (x.notes && x.notes.includes('[زيادة]')) surplus++;
+        });
+
+        document.getElementById('s-total').textContent = rows.length;
+        document.getElementById('s-shortage').textContent = shortage;
+        document.getElementById('s-surplus').textContent = surplus;
+        document.getElementById('cnt-badge').textContent = rows.length;
+
+        if (!rows.length) {
+            document.getElementById('tbl').innerHTML = `
+                <tr><td colspan="9">
+                    <div class="table-empty">
+                        <i class="bi bi-inbox"></i>
+                        لا توجد تسويات مسجلة
+                    </div>
+                </td></tr>`;
+            return;
+        }
+
+        document.getElementById('tbl').innerHTML = rows.map(x => {
+            const isShortage = x.notes && x.notes.includes('[عجز]');
+            const typeBadge = isShortage
+                ? '<span class="badge-type badge-SHORTAGE"><i class="bi bi-arrow-down"></i> عجز</span>'
+                : '<span class="badge-type badge-SURPLUS"><i class="bi bi-arrow-up"></i> زيادة</span>';
+
+            let reasonAr = '-';
+            const match = x.notes && x.notes.match(/السبب:\s*([^|]+)/);
+            if (match) reasonAr = match[1].trim();
+
+            const value = parseFloat(x.total_value || 0);
+            const valueClass = isShortage ? 'amount-debit' : 'amount-credit';
+
+            return `
+                <tr>
+                    <td><code>${x.count_no}</code></td>
+                    <td>${x.count_date}</td>
+                    <td>${x.warehouse_name || '-'}</td>
+                    <td>${typeBadge}</td>
+                    <td>${reasonAr}</td>
+                    <td class="text-end ${valueClass}">${value.toFixed(2)}</td>
+                    <td>${x.entry_no ? `<code>${x.entry_no}</code>` : '-'}</td>
+                    <td>${x.created_by_name || '—'}</td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-secondary" onclick="printDoc(${x.id})" title="طباعة">
+                            <i class="bi bi-printer"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-info" onclick="viewAdjustment(${x.id})">
+                            <i class="bi bi-eye"></i>
+                        </button>
+                    </td>
+                </tr>`;
+        }).join('');
+    } catch (e) {
+        console.error(e);
+    }
+}
+
+async function viewAdjustment(id) {
+    document.getElementById('viewBody').innerHTML = '<div class="text-center text-muted py-4">جاري التحميل...</div>';
+    viewModal.show();
+
+    try {
+        const r = await fetch(`${API}/counts/adjustments/${id}`).then(x => x.json());
+        if (!r.success) {
+            document.getElementById('viewBody').innerHTML = '<div class="alert alert-danger">خطأ</div>';
+            return;
+        }
+        const d = r.data;
+        const isShortage = d.notes && d.notes.includes('[عجز]');
+
+        let html = `
+            <div class="row g-2 mb-3">
+                <div class="col-md-6"><strong>رقم التسوية:</strong> <code>${d.count_no}</code></div>
+                <div class="col-md-6"><strong>التاريخ:</strong> ${d.count_date}</div>
+                <div class="col-md-6"><strong>المستودع:</strong> ${d.warehouse_name || '-'}</div>
+                <div class="col-md-6"><strong>النوع:</strong> ${isShortage ? 'عجز' : 'زيادة'}</div>
+                <div class="col-md-12"><strong>ملاحظات:</strong> ${d.notes || '-'}</div>
+                <div class="col-md-12"><strong>القيد:</strong> ${d.entry_no ? `<code>${d.entry_no}</code>` : '-'}</div>
+            </div>
+            <table class="table table-bordered table-sm">
+                <thead class="table-light">
+                    <tr>
+                        <th>الصنف</th>
+                        <th class="text-end">الرصيد قبل</th>
+                        <th class="text-end">الرصيد بعد</th>
+                        <th class="text-end">الفرق</th>
+                        <th class="text-end">سعر الوحدة</th>
+                        <th class="text-end">القيمة</th>
+                    </tr>
+                </thead>
+                <tbody>
+        `;
+        (d.lines || []).forEach(l => {
+            const variance = parseFloat(l.counted_qty) - parseFloat(l.system_qty);
+            const vClass = variance < 0 ? 'amount-debit' : 'amount-credit';
+            html += `
+                <tr>
+                    <td><code>${l.item_code}</code> ${l.item_name}</td>
+                    <td class="text-end">${parseFloat(l.system_qty).toFixed(2)}</td>
+                    <td class="text-end">${parseFloat(l.counted_qty).toFixed(2)}</td>
+                    <td class="text-end ${vClass}"><strong>${variance.toFixed(2)}</strong></td>
+                    <td class="text-end">${parseFloat(l.unit_cost).toFixed(2)}</td>
+                    <td class="text-end">${parseFloat(l.variance_value).toFixed(2)}</td>
+                </tr>`;
+        });
+        html += '</tbody></table>';
+
+        document.getElementById('viewBody').innerHTML = html;
+    } catch (e) {
+        document.getElementById('viewBody').innerHTML = '<div class="alert alert-danger">خطأ في الاتصال</div>';
+    }
+}
+
+(async () => {
+    await loadWarehouses();
+    await loadItems();
+    await load();
+})();
+
+function printDoc(id) {
+    window.open('print_adjustment.html?id=' + id, '_blank');
+}
+</script>
+
+<script>
+// دالة تصدير Excel
+function exportToExcel(templateKey) {
+    if (!templateKey) {
+        alert('مفيش قالب تصدير');
+        return;
+    }
+    window.location.href = '/api/v1/export/excel/export/' + templateKey;
+}
+</script>
+
+</body>
+</html>

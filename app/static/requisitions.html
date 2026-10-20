@@ -1,0 +1,259 @@
+﻿<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>طلبات الاحتياج</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+<style>
+body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f0f2f5; padding: 20px; }
+.card-box { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); margin-bottom: 20px; }
+h2 { color: #1e3c72; font-weight: 700; }
+table { font-size: 0.9rem; }
+.badge-DRAFT { background: #fef3c7; color: #92400e; padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; }
+.badge-APPROVED { background: #dbeafe; color: #1e40af; padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; }
+.badge-REJECTED { background: #fee2e2; color: #991b1b; padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; }
+.badge-CONVERTED { background: #d1fae5; color: #065f46; padding: 4px 10px; border-radius: 12px; font-size: 0.75rem; }
+
+/* ============================================
+   إلغاء أسهم input[type=number]
+   ============================================ */
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none !important;
+    margin: 0 !important;
+}
+input[type=number] {
+    -moz-appearance: textfield !important;
+    appearance: textfield !important;
+}
+input[type="number"] {
+    -moz-appearance: textfield !important;
+}
+
+</style>
+<script src="permissions.js"></script>
+
+
+
+<style id="compact-spacing-global">
+/* ============================================
+   توحيد المسافات المضغوطة
+   ============================================ */
+
+.table td, .table th {
+    padding: 3px 6px !important;
+    font-size: 0.75rem !important;
+    vertical-align: middle !important;
+    line-height: 1.2 !important;
+}
+
+.table tbody tr {
+    height: auto !important;
+}
+
+.form-control, .form-select {
+    font-size: 0.75rem !important;
+    line-height: 1.2 !important;
+}
+
+.form-control-sm, .form-select-sm {
+    height: 26px !important;
+    padding: 2px 6px !important;
+    font-size: 0.72rem !important;
+    line-height: 1 !important;
+}
+
+.btn {
+    padding: 3px 8px !important;
+    font-size: 0.72rem !important;
+    line-height: 1.2 !important;
+}
+
+.btn-sm {
+    padding: 2px 6px !important;
+    font-size: 0.7rem !important;
+}
+
+.card {
+    margin-bottom: 6px !important;
+}
+
+.card-body, .card.p-2, .card.p-3, .card.p-4 {
+    padding: 6px 8px !important;
+}
+
+.modal-header {
+    padding: 6px 12px !important;
+}
+
+.modal-title {
+    font-size: 0.9rem !important;
+}
+
+.modal-body {
+    padding: 8px 12px !important;
+}
+
+.modal-footer {
+    padding: 6px 12px !important;
+}
+
+.modal-footer .btn {
+    padding: 4px 10px !important;
+    font-size: 0.75rem !important;
+}
+
+.mb-1, .mb-2, .mb-3, .mb-4 {
+    margin-bottom: 4px !important;
+}
+
+.mt-1, .mt-2, .mt-3, .mt-4 {
+    margin-top: 4px !important;
+}
+
+.ms-1, .ms-2, .ms-3 {
+    margin-right: 4px !important;
+}
+
+.me-1, .me-2, .me-3 {
+    margin-left: 4px !important;
+}
+
+.p-1, .p-2, .p-3, .p-4 {
+    padding: 4px !important;
+}
+
+.g-1, .g-2, .g-3 {
+    gap: 4px !important;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    line-height: 1.3 !important;
+}
+
+h1 { font-size: 1.2rem !important; margin-bottom: 6px !important; }
+h2 { font-size: 1.05rem !important; margin-bottom: 6px !important; }
+h3 { font-size: 0.95rem !important; margin-bottom: 4px !important; }
+h4 { font-size: 0.9rem !important; margin-bottom: 4px !important; }
+h5 { font-size: 0.85rem !important; margin-bottom: 4px !important; }
+h6 { font-size: 0.8rem !important; margin-bottom: 4px !important; }
+
+.alert {
+    padding: 6px 10px !important;
+    margin-bottom: 6px !important;
+    font-size: 0.78rem !important;
+}
+
+.badge {
+    padding: 2px 6px !important;
+    font-size: 0.68rem !important;
+}
+
+.nav-tabs .nav-link {
+    padding: 5px 12px !important;
+    font-size: 0.78rem !important;
+}
+
+hr {
+    margin: 6px 0 !important;
+}
+
+/* بطاقات الأعمار (aging) */
+.aging-card, .bucket-card, .stat-card {
+    padding: 6px 8px !important;
+    margin-bottom: 4px !important;
+}
+
+.aging-card .h4, .aging-card .h5,
+.bucket-card .h4, .bucket-card .h5 {
+    font-size: 1rem !important;
+    margin: 2px 0 !important;
+}
+
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none !important;
+    margin: 0 !important;
+}
+input[type=number] {
+    -moz-appearance: textfield !important;
+}
+</style>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 16 16%22><text y=%2214%22 font-size=%2214%22>📒</text></svg>">
+</head>
+<body>
+<div class="container-fluid">
+<div class="d-flex justify-content-between mb-4">
+<h2><i class="bi bi-clipboard-check"></i> طلبات الاحتياج</h2>
+<button class="btn btn-sm btn-outline-success" onclick="exportToExcel('requisitions')" title="تصدير Excel">
+                <i class="bi bi-file-earmark-excel"></i> Excel
+            </button>
+            <a href="index.html#purchases" class="btn btn-outline-secondary"><i class="bi bi-house"></i> الرئيسية</a>
+</div>
+
+<div class="alert alert-info">
+<i class="bi bi-info-circle"></i> <b>دورة الطلب:</b> قسم يطلب ← اعتماد المدير ← تحويل إلى أمر شراء
+</div>
+
+<div class="card-box">
+<table class="table table-hover">
+<thead class="table-light">
+<tr>
+<th>رقم الطلب</th><th>التاريخ</th><th>مقدم الطلب</th><th>القسم</th>
+<th>الأولوية</th><th>مطلوب بحلول</th><th>الحالة</th>
+</tr>
+</thead>
+<tbody id="tbl">
+<tr><td colspan="7" class="text-center text-muted">جاري التحميل...</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+
+<script>
+const API = '/api/v1';
+
+async function load(){
+    try {
+        const r = await fetch(`${API}/requisitions/`).then(x => x.json());
+        const rows = r.data || [];
+        
+        const statusLabels = {
+            DRAFT: 'مسودة',
+            APPROVED: 'معتمد',
+            CONVERTED: 'محوّل لأمر شراء',
+            REJECTED: 'مرفوض'
+        };
+        const prioLabels = { LOW: 'منخفضة', NORMAL: 'عادية', HIGH: 'عالية', URGENT: 'عاجلة' };
+        
+        document.getElementById('tbl').innerHTML = rows.length ? rows.map(m => `
+            <tr>
+                <td><code>${m.req_no}</code></td>
+                <td>${m.req_date}</td>
+                <td>${m.requester_name || '-'}</td>
+                <td>${m.department || '-'}</td>
+                <td>${prioLabels[m.priority] || m.priority}</td>
+                <td>${m.needed_by || '-'}</td>
+                <td><span class="badge-${m.status}">${statusLabels[m.status] || m.status}</span></td>
+            </tr>
+        `).join('') : '<tr><td colspan="7" class="text-center text-muted">لا توجد طلبات</td></tr>';
+    } catch(e) { console.error(e); }
+}
+
+load();
+</script>
+
+<script>
+// دالة تصدير Excel
+function exportToExcel(templateKey) {
+    if (!templateKey) {
+        alert('مفيش قالب تصدير');
+        return;
+    }
+    window.location.href = '/api/v1/export/excel/export/' + templateKey;
+}
+</script>
+
+</body>
+</html>

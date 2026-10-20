@@ -1,142 +1,1402 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
 <meta charset="UTF-8">
-<title>لوحة التحكم</title>
+<title>موديول المخازن</title>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
-<link href="style.css" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<script src="permissions.js"></script>
+<style>
+* { 
+    font-family: 'IBM Plex Sans Arabic', 'Cairo', 'Segoe UI', Tahoma, sans-serif; 
+    box-sizing: border-box; 
+    margin: 0; 
+    padding: 0; 
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+}
+
+body {
+    background: #f1f5f9;
+    line-height: 1.5;
+    font-size: 13px;
+    font-weight: 600;
+    display: flex;
+    min-height: 100vh;
+}
+
+/* ============ Sidebar ============ */
+.sidebar {
+    width: 220px;
+    background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+    color: #cbd5e1;
+    display: flex;
+    flex-direction: column;
+    padding: 10px;
+    gap: 5px;
+    flex-shrink: 0;
+    overflow-y: auto;
+    max-height: 100vh;
+}
+
+.sidebar-header {
+    padding: 10px 12px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    margin-bottom: 8px;
+}
+.sidebar-header h1 {
+    font-size: 1.05rem;
+    font-weight: 900;
+    color: white;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.sidebar-header p {
+    font-size: 0.72rem;
+    color: #94a3b8;
+    margin-top: 3px;
+}
+
+.nav-item {
+    padding: 8px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.82rem;
+    font-weight: 700;
+    transition: 0.15s;
+    color: #cbd5e1;
+    border: 1px solid transparent;
+    user-select: none;
+}
+.nav-item:hover {
+    background: rgba(255,255,255,0.08);
+    color: white;
+}
+.nav-item.active {
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    color: white;
+    box-shadow: 0 4px 12px rgba(99,102,241,0.4);
+}
+.nav-item .nav-icon {
+    width: 24px;
+    height: 24px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    background: rgba(255,255,255,0.1);
+    flex-shrink: 0;
+}
+.nav-item.active .nav-icon {
+    background: rgba(255,255,255,0.25);
+}
+.nav-item .nav-text { flex: 1; }
+
+.sidebar-footer {
+    margin-top: auto;
+    padding-top: 8px;
+    border-top: 1px solid rgba(255,255,255,0.1);
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+/* ============ Main Content ============ */
+.main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.topbar {
+    background: white;
+    padding: 8px 14px;
+    border-bottom: 1px solid #e2e8f0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+}
+.topbar-title h2 {
+    font-size: 0.95rem;
+    font-weight: 900;
+    color: #1e293b;
+}
+.topbar-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.btn-mini {
+    padding: 7px 14px;
+    border-radius: 8px;
+    border: 1.5px solid #e2e8f0;
+    background: white;
+    color: #475569;
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    transition: 0.15s;
+    cursor: pointer;
+}
+.btn-mini:hover {
+    border-color: #6366f1;
+    color: #6366f1;
+    background: #eef2ff;
+}
+.btn-mini.primary {
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    color: white;
+    border-color: transparent;
+}
+
+.content {
+    flex: 1;
+    overflow-y: auto;
+    padding: 12px;
+}
+.section-pane {
+    display: none;
+    animation: fadeIn 0.25s ease-out;
+}
+.section-pane.active { display: block; }
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* ============ Section Header ============ */
+.section-header {
+    background: white;
+    padding: 12px 16px;
+    border-radius: 12px;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    border-right: 6px solid var(--section-color, #6366f1);
+}
+.section-header-icon {
+    width: 46px;
+    height: 46px;
+    border-radius: 11px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    background: var(--section-color, #6366f1);
+    color: white;
+    flex-shrink: 0;
+    box-shadow: 0 4px 16px var(--section-shadow, rgba(99,102,241,0.3));
+}
+.section-header-text h3 {
+    font-size: 1.15rem;
+    font-weight: 900;
+    color: #1e293b;
+    margin-bottom: 3px;
+}
+.section-header-text p {
+    font-size: 0.75rem;
+    color: #94a3b8;
+    font-weight: 500;
+}
+
+/* ============ Category Block ============ */
+.category-block {
+    background: var(--cat-bg, #ffffff);
+    border-radius: 12px;
+    padding: 12px 14px 14px 14px;
+    margin-bottom: 10px;
+    box-shadow: 0 2px 10px var(--cat-shadow-light, rgba(0,0,0,0.04));
+    border: 1.5px solid var(--cat-border, #e2e8f0);
+    border-right: 4px solid var(--cat-color, #6366f1);
+    transition: 0.25s;
+    position: relative;
+    overflow: hidden;
+}
+.category-block::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, var(--cat-color) 0%, transparent 60%);
+    opacity: 0.04;
+    pointer-events: none;
+}
+.category-block:hover {
+    box-shadow: 0 8px 24px var(--cat-shadow-light, rgba(0,0,0,0.08));
+    transform: translateY(-2px);
+    border-color: var(--cat-color, #6366f1);
+    border-width: 1.5px 1.5px 1.5px 4px;
+}
+
+.category-head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid #f1f5f9;
+    position: relative;
+    z-index: 1;
+}
+.category-head-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 9px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    background: var(--cat-color, #6366f1);
+    color: white;
+    flex-shrink: 0;
+    box-shadow: 0 3px 10px var(--cat-shadow, rgba(99,102,241,0.3));
+}
+.category-head-text {
+    font-size: 0.95rem;
+    font-weight: 800;
+    color: #1e293b;
+    flex: 1;
+}
+.category-head-count {
+    background: linear-gradient(135deg, var(--cat-color), var(--cat-color));
+    color: white;
+    padding: 4px 14px;
+    border-radius: 20px;
+    font-size: 0.7rem;
+    font-weight: 800;
+    box-shadow: 0 2px 6px var(--cat-shadow, rgba(99,102,241,0.3));
+    opacity: 0.9;
+}
+
+/* ============ Tiles Grid ============ */
+.tiles-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 8px;
+    position: relative;
+    z-index: 1;
+}
+
+.feature-tile {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    background: white;
+    border: 1.5px solid var(--tile-border, #e2e8f0);
+    border-radius: 10px;
+    text-decoration: none;
+    color: inherit;
+    transition: all 0.2s ease;
+    position: relative;
+    overflow: hidden;
+    min-height: 58px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.03);
+}
+.feature-tile::before {
+    content: '';
+    position: absolute;
+    right: 0;
+    top: 0;
+    width: 5px;
+    height: 0;
+    background: var(--tile-color, #6366f1);
+    transition: height 0.25s;
+}
+.feature-tile:hover {
+    background: var(--tile-bg, #ffffff);
+    border-color: var(--tile-color, #6366f1);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px var(--tile-shadow, rgba(99,102,241,0.15));
+}
+.feature-tile:hover::before {
+    height: 100%;
+}
+
+.tile-icon {
+    width: 38px;
+    height: 38px;
+    border-radius: 9px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 17px;
+    background: var(--tile-bg, #eef2ff);
+    color: var(--tile-color, #6366f1);
+    flex-shrink: 0;
+    transition: 0.2s;
+}
+.feature-tile:hover .tile-icon {
+    transform: scale(1.1) rotate(-5deg);
+    color: white;
+    background: var(--tile-color, #6366f1);
+    box-shadow: 0 4px 12px var(--tile-color, #6366f1);
+}
+
+.tile-content { flex: 1; min-width: 0; }
+.tile-name {
+    font-size: 0.85rem;
+    font-weight: 800;
+    color: #1e293b;
+    margin-bottom: 3px;
+    line-height: 1.25;
+}
+.tile-desc {
+    font-size: 0.7rem;
+    color: #94a3b8;
+    font-weight: 500;
+    line-height: 1.3;
+}
+.tile-arrow {
+    color: #cbd5e1;
+    font-size: 0.9rem;
+    transition: 0.2s;
+    flex-shrink: 0;
+}
+.feature-tile:hover .tile-arrow {
+    color: var(--tile-color, #6366f1);
+    transform: translateX(-5px);
+}
+
+/* ============ Responsive ============ */
+@media (max-width: 1200px) {
+    .tiles-grid { grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); }
+}
+@media (max-width: 900px) {
+    body { flex-direction: column; }
+    .sidebar { width: 100%; max-height: 200px; flex-direction: row; overflow-x: auto; }
+    .sidebar-header { display: none; }
+    .sidebar-footer { display: none; }
+    .nav-item { flex-shrink: 0; }
+    .tiles-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 600px) {
+    .tiles-grid { grid-template-columns: 1fr; }
+    .content { padding: 12px; }
+}
+
+/* ============================================
+   إلغاء أسهم input[type=number]
+   ============================================ */
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none !important;
+    margin: 0 !important;
+}
+input[type=number] {
+    -moz-appearance: textfield !important;
+    appearance: textfield !important;
+}
+input[type="number"] {
+    -moz-appearance: textfield !important;
+}
+
+</style>
+
+<style id="compact-spacing-global">
+/* ============================================
+   توحيد المسافات المضغوطة — كل المشروع
+   ============================================ */
+
+/* الجداول */
+.table td,
+.table th {
+    padding: 3px 6px !important;
+    font-size: 0.75rem !important;
+    vertical-align: middle !important;
+    line-height: 1.2 !important;
+}
+
+.table tbody tr {
+    height: auto !important;
+}
+
+/* الـ inputs */
+.form-control,
+.form-select {
+    font-size: 0.75rem !important;
+    line-height: 1.2 !important;
+}
+
+.form-control-sm,
+.form-select-sm {
+    height: 26px !important;
+    padding: 2px 6px !important;
+    font-size: 0.72rem !important;
+    line-height: 1 !important;
+}
+
+/* الأزرار */
+.btn {
+    padding: 3px 8px !important;
+    font-size: 0.72rem !important;
+    line-height: 1.2 !important;
+}
+
+.btn-sm {
+    padding: 2px 6px !important;
+    font-size: 0.7rem !important;
+}
+
+/* البطاقات */
+.card {
+    margin-bottom: 6px !important;
+}
+
+.card-body,
+.card.p-2,
+.card.p-3,
+.card.p-4 {
+    padding: 6px 8px !important;
+}
+
+/* الـ Modal */
+.modal-header {
+    padding: 6px 12px !important;
+}
+
+.modal-title {
+    font-size: 0.9rem !important;
+}
+
+.modal-body {
+    padding: 8px 12px !important;
+}
+
+.modal-footer {
+    padding: 6px 12px !important;
+}
+
+.modal-footer .btn {
+    padding: 4px 10px !important;
+    font-size: 0.75rem !important;
+}
+
+/* المسافات */
+.mb-1, .mb-2, .mb-3, .mb-4 {
+    margin-bottom: 4px !important;
+}
+
+.mt-1, .mt-2, .mt-3, .mt-4 {
+    margin-top: 4px !important;
+}
+
+.ms-1, .ms-2, .ms-3 {
+    margin-right: 4px !important;
+}
+
+.me-1, .me-2, .me-3 {
+    margin-left: 4px !important;
+}
+
+.p-1, .p-2, .p-3, .p-4 {
+    padding: 4px !important;
+}
+
+.g-1, .g-2, .g-3 {
+    gap: 4px !important;
+}
+
+/* العناوين */
+h1, h2, h3, h4, h5, h6 {
+    line-height: 1.3 !important;
+}
+
+h1 { font-size: 1.2rem !important; margin-bottom: 6px !important; }
+h2 { font-size: 1.05rem !important; margin-bottom: 6px !important; }
+h3 { font-size: 0.95rem !important; margin-bottom: 4px !important; }
+h4 { font-size: 0.9rem !important; margin-bottom: 4px !important; }
+h5 { font-size: 0.85rem !important; margin-bottom: 4px !important; }
+h6 { font-size: 0.8rem !important; margin-bottom: 4px !important; }
+
+/* الـ alerts */
+.alert {
+    padding: 6px 10px !important;
+    margin-bottom: 6px !important;
+    font-size: 0.78rem !important;
+}
+
+/* الـ badges */
+.badge {
+    padding: 2px 6px !important;
+    font-size: 0.68rem !important;
+}
+
+/* الـ tabs */
+.nav-tabs .nav-link {
+    padding: 5px 12px !important;
+    font-size: 0.78rem !important;
+}
+
+/* الـ dropdown */
+.dropdown-menu {
+    font-size: 0.78rem !important;
+    padding: 4px !important;
+}
+
+.dropdown-item {
+    padding: 4px 8px !important;
+    font-size: 0.75rem !important;
+}
+
+/* الـ hr */
+hr {
+    margin: 6px 0 !important;
+}
+
+/* الـ Modal dialog */
+.modal-dialog {
+    margin: 6px auto !important;
+}
+
+/* ============================================
+   إخفاء أسهم input[type=number]
+   ============================================ */
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none !important;
+    margin: 0 !important;
+}
+input[type=number] {
+    -moz-appearance: textfield !important;
+}
+</style>
+
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 16 16%22><text y=%2214%22 font-size=%2214%22>📒</text></svg>">
 </head>
 <body>
-<div class="container-fluid"><div class="row">
-<div class="col-md-2 sidebar p-0">
-<div class="brand"><i class="bi bi-box-seam" style="font-size:2rem;"></i><h5 class="mt-2 mb-0">موديول المخازن</h5></div>
-<nav class="mt-3">
-<a href="index.html" class="active"><i class="bi bi-speedometer2"></i> لوحة التحكم</a>
-<a href="notifications.html"><i class="bi bi-bell"></i> الإشعارات</a>
-<a href="accounts.html"><i class="bi bi-book"></i> الدليل المحاسبي</a>
-<a href="warehouses.html"><i class="bi bi-building"></i> المستودعات</a>
-<a href="item_groups.html"><i class="bi bi-diagram-3"></i> مجموعات الأصناف</a>
-<a href="suppliers.html"><i class="bi bi-truck"></i> الموردون</a>
-<a href="customers.html"><i class="bi bi-people"></i> العملاء</a>
-<a href="requisitions.html"><i class="bi bi-clipboard-check"></i> طلبات الاحتياج</a>
-<a href="purchase_orders.html"><i class="bi bi-file-earmark-text"></i> أوامر الشراء</a>
-<a href="purchase_invoices.html"><i class="bi bi-receipt"></i> فواتير الشراء</a>
-<a href="sales_invoices.html"><i class="bi bi-cart-check"></i> فواتير البيع</a>
-<a href="purchase_returns.html"><i class="bi bi-arrow-return-left"></i> مرتجع شراء</a>
-<a href="sales_returns.html"><i class="bi bi-arrow-return-right"></i> مرتجع بيع</a>
-<a href="payments.html"><i class="bi bi-cash-coin"></i> مدفوعات الموردين</a>
-<a href="customer_receipts.html"><i class="bi bi-cash-stack"></i> تحصيلات العملاء</a>
-<a href="items.html"><i class="bi bi-box"></i> الأصناف</a>
-<a href="uom.html"><i class="bi bi-rulers"></i> وحدات القياس</a>
-<a href="receipts.html"><i class="bi bi-arrow-down-circle"></i> الاستلام</a>
-<a href="material_requests.html"><i class="bi bi-clipboard-plus"></i> طلبات الصرف</a>
-<a href="issues.html"><i class="bi bi-arrow-up-circle"></i> الصرف</a>
-<a href="transfers.html"><i class="bi bi-arrow-left-right"></i> التحويلات</a>
-<a href="counts.html"><i class="bi bi-clipboard-check"></i> الجرد</a>
-<a href="clearing.html"><i class="bi bi-arrow-left-right"></i> الحسابات الوسيطة</a>
-<a href="financial_reports.html"><i class="bi bi-graph-up"></i> التقارير المالية</a>
-<a href="reports.html"><i class="bi bi-file-earmark-bar-graph"></i> التقارير</a>
-<a href="journal.html"><i class="bi bi-journal-text"></i> القيود</a>
-</nav></div>
 
-<div class="col-md-10 p-4">
-<div class="d-flex justify-content-between mb-4">
-<h2><i class="bi bi-speedometer2"></i> لوحة التحكم</h2>
-<button class="btn btn-outline-primary btn-sm" onclick="loadAll()"><i class="bi bi-arrow-clockwise"></i> تحديث</button>
+<!-- ============ Sidebar ============ -->
+<div class="sidebar">
+    <div class="sidebar-header">
+        <h1><i class="bi bi-box-seam-fill"></i> موديول المخازن</h1>
+        <p>نظام متكامل</p>
+    </div>
+
+    <div class="nav-item active" data-section="customers" onclick="showSection('customers', this)">
+        <div class="nav-icon"><i class="bi bi-people-fill"></i></div>
+        <span class="nav-text">العملاء</span>
+    </div>
+
+    <div class="nav-item" data-section="suppliers" onclick="showSection('suppliers', this)">
+        <div class="nav-icon"><i class="bi bi-truck"></i></div>
+        <span class="nav-text">الموردين</span>
+    </div>
+
+    <div class="nav-item" data-section="warehouse" onclick="showSection('warehouse', this)">
+        <div class="nav-icon"><i class="bi bi-box-seam-fill"></i></div>
+        <span class="nav-text">المخازن والأصناف</span>
+    </div>
+
+    <div class="nav-item" data-section="purchases" onclick="showSection('purchases', this)">
+        <div class="nav-icon"><i class="bi bi-cart-plus-fill"></i></div>
+        <span class="nav-text">المشتريات</span>
+    </div>
+
+    <div class="nav-item" data-section="sales" onclick="showSection('sales', this)">
+        <div class="nav-icon"><i class="bi bi-cart-check-fill"></i></div>
+        <span class="nav-text">المبيعات</span>
+    </div>
+
+    <div class="nav-item" data-section="accounting" onclick="showSection('accounting', this)">
+        <div class="nav-icon"><i class="bi bi-calculator-fill"></i></div>
+        <span class="nav-text">المحاسبة</span>
+    </div>
+
+    <div class="nav-item" data-section="reports" onclick="showSection('reports', this)">
+        <div class="nav-icon"><i class="bi bi-file-earmark-bar-graph-fill"></i></div>
+        <span class="nav-text">التقارير الختامية</span>
+    </div>
+
+    <div class="nav-item" data-section="settings" onclick="showSection('settings', this)">
+        <div class="nav-icon"><i class="bi bi-gear-fill"></i></div>
+        <span class="nav-text">الإعدادات</span>
+    </div>
+
+    <div class="sidebar-footer">
+        <a href="notifications.html" class="nav-item" style="text-decoration:none;">
+            <div class="nav-icon"><i class="bi bi-bell"></i></div>
+            <span class="nav-text">الإشعارات</span>
+            <span class="nav-count" id="notif-count" style="background:#dc2626; padding: 2px 8px; border-radius: 10px; font-size: 0.7rem; margin-right:auto;">0</span>
+        </a>
+        <div class="nav-item" onclick="logout()" style="cursor:pointer;">
+            <div class="nav-icon"><i class="bi bi-box-arrow-left"></i></div>
+            <span class="nav-text">تسجيل الخروج</span>
+        </div>
+    </div>
 </div>
 
-<!-- Stats -->
-<div class="row g-3 mb-4">
-<div class="col-md-3"><div class="stat-card card p-3"><div class="d-flex justify-content-between"><div><div class="label">المستودعات</div><div class="value text-primary" id="s1">-</div></div><i class="bi bi-building icon text-primary"></i></div></div></div>
-<div class="col-md-3"><div class="stat-card card p-3"><div class="d-flex justify-content-between"><div><div class="label">الأصناف</div><div class="value text-success" id="s2">-</div></div><i class="bi bi-box icon text-success"></i></div></div></div>
-<div class="col-md-3"><div class="stat-card card p-3"><div class="d-flex justify-content-between"><div><div class="label">الحركات</div><div class="value text-warning" id="s3">-</div></div><i class="bi bi-arrow-left-right icon text-warning"></i></div></div></div>
-<div class="col-md-3"><div class="stat-card card p-3"><div class="d-flex justify-content-between"><div><div class="label">قيمة المخزون</div><div class="value text-danger" id="s4">-</div></div><i class="bi bi-cash-stack icon text-danger"></i></div></div></div>
+<!-- ============ Main ============ -->
+<div class="main">
+    <div class="topbar">
+        <div class="topbar-title">
+            <h2 id="page-title">🧑 قسم العملاء</h2>
+        </div>
+        <div class="topbar-actions">
+            <a href="notifications.html" class="btn-mini">
+                <i class="bi bi-bell"></i> الإشعارات
+            </a>
+            <a href="#" class="btn-mini primary" onclick="logout(event)">
+                <i class="bi bi-person-circle"></i> <span id="user-btn-name">admin</span>
+            </a>
+        </div>
+    </div>
+
+    <div class="content">
+
+        <!-- ========== قسم العملاء ========== -->
+        <div class="section-pane active" id="pane-customers">
+            <div class="section-header" style="--section-color: #6366f1; --section-color-2: #8b5cf6;">
+                <div class="section-header-icon"><i class="bi bi-people-fill"></i></div>
+                <div class="section-header-text">
+                    <h3>قسم العملاء</h3>
+                    <p>إدارة العملاء والحركات والتقارير</p>
+                </div>
+            </div>
+
+            <!-- 📋 الإعدادات -->
+            <div class="category-block" style="--cat-color: #10b981; --cat-bg: #f5fdf9; --cat-border: #c9f0dd; --cat-shadow-light: rgba(16,185,129,0.08);">
+                <div class="category-head">
+                    <div class="category-head-icon"><i class="bi bi-gear"></i></div>
+                    <div class="category-head-text">الإعدادات</div>
+                    <div class="category-head-count">2 شاشات</div>
+                </div>
+                <div class="tiles-grid">
+                    <a href="customers.html" class="feature-tile" style="--tile-color: #10b981; --tile-border: #c9f0dd; --tile-shadow: rgba(16,185,129,0.15); --tile-bg: #ecfdf5;">
+                        <div class="tile-icon"><i class="bi bi-people"></i></div>
+                        <div class="tile-content"><div class="tile-name">العملاء</div><div class="tile-desc">إدارة العملاء</div></div>
+                        <i class="bi bi-arrow-left tile-arrow"></i>
+                    </a>
+                    <a href="customer_groups.html" class="feature-tile" style="--tile-color: #8b5cf6; --tile-border: #ded0ff; --tile-shadow: rgba(139,92,246,0.15); --tile-bg: #f5f3ff;">
+                        <div class="tile-icon"><i class="bi bi-diagram-3-fill"></i></div>
+                        <div class="tile-content"><div class="tile-name">مجموعات العملاء</div><div class="tile-desc">إدارة المجموعات</div></div>
+                        <i class="bi bi-arrow-left tile-arrow"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- 📝 الحركات -->
+            <div class="category-block" style="--cat-color: #3b82f6; --cat-bg: #f5f9ff; --cat-border: #bfdbfe; --cat-shadow-light: rgba(59,130,246,0.08);">
+                <div class="category-head">
+                    <div class="category-head-icon"><i class="bi bi-list-ul"></i></div>
+                    <div class="category-head-text">الحركات</div>
+                    <div class="category-head-count">3 شاشات</div>
+                </div>
+                <div class="tiles-grid">
+                    <a href="sales_invoices.html" class="feature-tile" style="--tile-color: #10b981; --tile-border: #c9f0dd; --tile-shadow: rgba(16,185,129,0.15); --tile-bg: #ecfdf5;">
+                        <div class="tile-icon"><i class="bi bi-receipt"></i></div>
+                        <div class="tile-content"><div class="tile-name">فواتير البيع</div><div class="tile-desc">Sales Invoice</div></div>
+                        <i class="bi bi-arrow-left tile-arrow"></i>
+                    </a>
+                    <a href="customer_receipts.html" class="feature-tile" style="--tile-color: #3b82f6; --tile-border: #bfdbfe; --tile-shadow: rgba(59,130,246,0.15); --tile-bg: #eff6ff;">
+                        <div class="tile-icon"><i class="bi bi-cash-stack"></i></div>
+                        <div class="tile-content"><div class="tile-name">تحصيلات العملاء</div><div class="tile-desc">Receipts</div></div>
+                        <i class="bi bi-arrow-left tile-arrow"></i>
+                    </a>
+                    <a href="sales_returns.html" class="feature-tile" style="--tile-color: #f97316; --tile-border: #fed7aa; --tile-shadow: rgba(249,115,22,0.15); --tile-bg: #fff7ed;">
+                        <div class="tile-icon"><i class="bi bi-arrow-return-right"></i></div>
+                        <div class="tile-content"><div class="tile-name">مرتجع بيع</div><div class="tile-desc">Sales Return</div></div>
+                        <i class="bi bi-arrow-left tile-arrow"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- 📊 التقارير -->
+            <div class="category-block" style="--cat-color: #ef4444; --cat-bg: #fef7f7; --cat-border: #fdd; --cat-shadow-light: rgba(239,68,68,0.08);">
+                <div class="category-head">
+                    <div class="category-head-icon"><i class="bi bi-graph-up"></i></div>
+                    <div class="category-head-text">التقارير</div>
+                    <div class="category-head-count">4 شاشات</div>
+                </div>
+                <div class="tiles-grid">
+                    <a href="customer_balances.html" class="feature-tile" style="--tile-color: #f472b6; --tile-border: #fcd1e8; --tile-shadow: rgba(244,114,182,0.15); --tile-bg: #fdf2f8;">
+                        <div class="tile-icon"><i class="bi bi-wallet2"></i></div>
+                        <div class="tile-content"><div class="tile-name">أرصدة العملاء</div><div class="tile-desc">كشف الأرصدة</div></div>
+                        <i class="bi bi-arrow-left tile-arrow"></i>
+                    </a>
+                    <a href="customer_statement.html" class="feature-tile" style="--tile-color: #ec4899; --tile-border: #fbcfe8; --tile-shadow: rgba(236,72,153,0.15); --tile-bg: #fce7f3;">
+                        <div class="tile-icon"><i class="bi bi-file-earmark-text"></i></div>
+                        <div class="tile-content"><div class="tile-name">كشف حساب عميل</div><div class="tile-desc">تفاصيل الحركات</div></div>
+                        <i class="bi bi-arrow-left tile-arrow"></i>
+                    </a>
+                    <a href="aging_report.html" class="feature-tile" style="--tile-color: #ef4444; --tile-border: #fdd; --tile-shadow: rgba(239,68,68,0.15); --tile-bg: #fef2f2;">
+                        <div class="tile-icon"><i class="bi bi-clock-history"></i></div>
+                        <div class="tile-content"><div class="tile-name">أعمار ديون العملاء</div><div class="tile-desc">Aging Report</div></div>
+                        <i class="bi bi-arrow-left tile-arrow"></i>
+                    </a>
+                    <a href="reports.html" class="feature-tile" style="--tile-color: #06b6d4; --tile-border: #c3ecf3; --tile-shadow: rgba(6,182,212,0.15); --tile-bg: #ecfeff;">
+                        <div class="tile-icon"><i class="bi bi-bar-chart"></i></div>
+                        <div class="tile-content"><div class="tile-name">تقرير مبيعات</div><div class="tile-desc">Sales Report</div></div>
+                        <i class="bi bi-arrow-left tile-arrow"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-pane" id="pane-suppliers">
+            <div class="section-header" style="--section-color: #f59e0b; --section-color-2: #f97316;">
+                <div class="section-header-icon"><i class="bi bi-truck"></i></div>
+                <div class="section-header-text">
+                    <h3>قسم الموردين</h3>
+                    <p>إدارة الموردين والحركات والتقارير</p>
+                </div>
+            </div>
+
+            <!-- 📋 الإعدادات -->
+            <div class="category-block" style="--cat-color: #f59e0b; --cat-bg: #fffbf5; --cat-border: #fde9c1; --cat-shadow-light: rgba(245,158,11,0.08);">
+                <div class="category-head">
+                    <div class="category-head-icon"><i class="bi bi-gear"></i></div>
+                    <div class="category-head-text">الإعدادات</div>
+                    <div class="category-head-count">2 شاشات</div>
+                </div>
+                <div class="tiles-grid">
+                    <a href="suppliers.html" class="feature-tile" style="--tile-color: #f59e0b; --tile-border: #fde9c1; --tile-shadow: rgba(245,158,11,0.15); --tile-bg: #fffbeb;">
+                        <div class="tile-icon"><i class="bi bi-truck"></i></div>
+                        <div class="tile-content"><div class="tile-name">الموردون</div><div class="tile-desc">إدارة الموردين</div></div>
+                        <i class="bi bi-arrow-left tile-arrow"></i>
+                    </a>
+                    <a href="supplier_groups.html" class="feature-tile" style="--tile-color: #8b5cf6; --tile-border: #ded0ff; --tile-shadow: rgba(139,92,246,0.15); --tile-bg: #f5f3ff;">
+                        <div class="tile-icon"><i class="bi bi-diagram-3-fill"></i></div>
+                        <div class="tile-content"><div class="tile-name">مجموعات الموردين</div><div class="tile-desc">إدارة المجموعات</div></div>
+                        <i class="bi bi-arrow-left tile-arrow"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- 📝 الحركات -->
+            <div class="category-block" style="--cat-color: #3b82f6; --cat-bg: #f5f9ff; --cat-border: #bfdbfe; --cat-shadow-light: rgba(59,130,246,0.08);">
+                <div class="category-head">
+                    <div class="category-head-icon"><i class="bi bi-list-ul"></i></div>
+                    <div class="category-head-text">الحركات</div>
+                    <div class="category-head-count">4 شاشات</div>
+                </div>
+                <div class="tiles-grid">
+                    <a href="purchase_invoices.html" class="feature-tile" style="--tile-color: #f59e0b; --tile-border: #fde9c1; --tile-shadow: rgba(245,158,11,0.15); --tile-bg: #fffbeb;">
+                        <div class="tile-icon"><i class="bi bi-receipt"></i></div>
+                        <div class="tile-content"><div class="tile-name">فواتير الشراء</div><div class="tile-desc">Purchase Invoice</div></div>
+                        <i class="bi bi-arrow-left tile-arrow"></i>
+                    </a>
+                    <a href="receipts.html" class="feature-tile" style="--tile-color: #06b6d4; --tile-border: #c3ecf3; --tile-shadow: rgba(6,182,212,0.15); --tile-bg: #ecfeff;">
+                        <div class="tile-icon"><i class="bi bi-arrow-down-circle"></i></div>
+                        <div class="tile-content"><div class="tile-name">الاستلام</div><div class="tile-desc">GRN</div></div>
+                        <i class="bi bi-arrow-left tile-arrow"></i>
+                    </a>
+                    <a href="payments.html" class="feature-tile" style="--tile-color: #8b5cf6; --tile-border: #ded0ff; --tile-shadow: rgba(139,92,246,0.15); --tile-bg: #f5f3ff;">
+                        <div class="tile-icon"><i class="bi bi-cash-coin"></i></div>
+                        <div class="tile-content"><div class="tile-name">مدفوعات الموردين</div><div class="tile-desc">دفع</div></div>
+                        <i class="bi bi-arrow-left tile-arrow"></i>
+                    </a>
+                    <a href="purchase_returns.html" class="feature-tile" style="--tile-color: #ef4444; --tile-border: #fdd; --tile-shadow: rgba(239,68,68,0.15); --tile-bg: #fef2f2;">
+                        <div class="tile-icon"><i class="bi bi-arrow-return-left"></i></div>
+                        <div class="tile-content"><div class="tile-name">مرتجع شراء</div><div class="tile-desc">Return</div></div>
+                        <i class="bi bi-arrow-left tile-arrow"></i>
+                    </a>
+                </div>
+            </div>
+
+            <!-- 📊 التقارير -->
+            <div class="category-block" style="--cat-color: #ef4444; --cat-bg: #fef7f7; --cat-border: #fdd; --cat-shadow-light: rgba(239,68,68,0.08);">
+                <div class="category-head">
+                    <div class="category-head-icon"><i class="bi bi-graph-up"></i></div>
+                    <div class="category-head-text">التقارير</div>
+                    <div class="category-head-count">4 شاشات</div>
+                </div>
+                <div class="tiles-grid">
+                    <a href="supplier_balances.html" class="feature-tile" style="--tile-color: #f472b6; --tile-border: #fcd1e8; --tile-shadow: rgba(244,114,182,0.15); --tile-bg: #fdf2f8;">
+                        <div class="tile-icon"><i class="bi bi-wallet2"></i></div>
+                        <div class="tile-content"><div class="tile-name">أرصدة الموردين</div><div class="tile-desc">كشف الأرصدة</div></div>
+                        <i class="bi bi-arrow-left tile-arrow"></i>
+                    </a>
+                    <a href="supplier_statement.html" class="feature-tile" style="--tile-color: #ec4899; --tile-border: #fbcfe8; --tile-shadow: rgba(236,72,153,0.15); --tile-bg: #fce7f3;">
+                        <div class="tile-icon"><i class="bi bi-file-earmark-text"></i></div>
+                        <div class="tile-content"><div class="tile-name">كشف حساب مورد</div><div class="tile-desc">تفاصيل الحركات</div></div>
+                        <i class="bi bi-arrow-left tile-arrow"></i>
+                    </a>
+                    <a href="supplier_aging_report.html" class="feature-tile" style="--tile-color: #ef4444; --tile-border: #fdd; --tile-shadow: rgba(239,68,68,0.15); --tile-bg: #fef2f2;">
+                        <div class="tile-icon"><i class="bi bi-clock-history"></i></div>
+                        <div class="tile-content"><div class="tile-name">أعمار ديون الموردين</div><div class="tile-desc">Aging Report</div></div>
+                        <i class="bi bi-arrow-left tile-arrow"></i>
+                    </a>
+                    <a href="reports.html" class="feature-tile" style="--tile-color: #06b6d4; --tile-border: #c3ecf3; --tile-shadow: rgba(6,182,212,0.15); --tile-bg: #ecfeff;">
+                        <div class="tile-icon"><i class="bi bi-bar-chart"></i></div>
+                        <div class="tile-content"><div class="tile-name">تقرير مشتريات</div><div class="tile-desc">Purchases Report</div></div>
+                        <i class="bi bi-arrow-left tile-arrow"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-pane" id="pane-warehouse">
+            <div class="section-header" style="--section-color: #06b6d4; --section-shadow: rgba(6,182,212,0.3);">
+                <div class="section-header-icon"><i class="bi bi-box-seam-fill"></i></div>
+                <div class="section-header-text">
+                    <h3>قسم المخازن والأصناف</h3>
+                    <p>كل ما يخص المخازن والأصناف — الإعدادات والحركات والتقارير</p>
+                </div>
+            </div>
+
+            <div class="category-block" style="--cat-color: #06b6d4; --cat-bg: #f5fdff; --cat-border: #c3ecf3; --cat-shadow-light: rgba(6,182,212,0.08);">
+                <div class="category-head">
+                    <div class="category-head-icon"><i class="bi bi-gear"></i></div>
+                    <div class="category-head-text">الإعدادات</div>
+                    <div class="category-head-count">5 شاشات</div>
+                </div>
+                <div class="tiles-grid">
+                    <a href="warehouses.html" class="feature-tile" style="--tile-color: #6366f1; --tile-border: #dbe3ff; --tile-shadow: rgba(99,102,241,0.15); --tile-bg: #eef2ff;">
+                        <div class="tile-icon"><i class="bi bi-building"></i></div>
+                        <div class="tile-content"><div class="tile-name">المستودعات</div><div class="tile-desc">إدارة المستودعات</div></div>
+                        <i class="bi bi-arrow-left tile-arrow"></i>
+                    </a>
+                    <a href="items.html" class="feature-tile" style="--tile-color: #10b981; --tile-border: #c9f0dd; --tile-shadow: rgba(16,185,129,0.15); --tile-bg: #ecfdf5;">
+                        <div class="tile-icon"><i class="bi bi-box"></i></div>
+                        <div class="tile-content"><div class="tile-name">الأصناف</div><div class="tile-desc">إدارة الأصناف</div></div>
+                        <i class="bi bi-arrow-left tile-arrow"></i>
+                    </a>
+                    <a href="item_groups.html" class="feature-tile" style="--tile-color: #f59e0b; --tile-border: #fde9c1; --tile-shadow: rgba(245,158,11,0.15); --tile-bg: #fffbeb;">
+                        <div class="tile-icon"><i class="bi bi-diagram-3"></i></div>
+                        <div class="tile-content"><div class="tile-name">مجموعات الأصناف</div><div class="tile-desc">تصنيف الأصناف</div></div>
+                        <i class="bi bi-arrow-left tile-arrow"></i>
+                    </a>
+                    <a href="uom.html" class="feature-tile" style="--tile-color: #06b6d4; --tile-border: #c3ecf3; --tile-shadow: rgba(6,182,212,0.15); --tile-bg: #ecfeff;">
+                        <div class="tile-icon"><i class="bi bi-rulers"></i></div>
+                        <div class="tile-content"><div class="tile-name">وحدات القياس</div><div class="tile-desc">UOM</div></div>
+                        <i class="bi bi-arrow-left tile-arrow"></i>
+                    </a>
+                    <a href="stock_movements.html" class="feature-tile" style="--tile-color: #8b5cf6; --tile-border: #ded0ff; --tile-shadow: rgba(139,92,246,0.15); --tile-bg: #f5f3ff;">
+                        <div class="tile-icon"><i class="bi bi-arrow-left-right"></i></div>
+                        <div class="tile-content"><div class="tile-name">أنواع الحركات</div><div class="tile-desc">تعريف الحركات</div></div>
+                        <i class="bi bi-arrow-left tile-arrow"></i>
+                    </a>
+                </div>
+            </div>
+
+            <div class="category-block" style="--cat-color: #10b981; --cat-bg: #f5fdf9; --cat-border: #c9f0dd; --cat-shadow-light: rgba(16,185,129,0.08);">
+                <div class="category-head">
+                    <div class="category-head-icon"><i class="bi bi-list-ul"></i></div>
+                    <div class="category-head-text">الحركات</div>
+                    <div class="category-head-count">5 شاشات</div>
+                </div>
+                <div class="tiles-grid">
+                    <a href="receipts.html" class="feature-tile" style="--tile-color: #10b981; --tile-border: #c9f0dd; --tile-shadow: rgba(16,185,129,0.15); --tile-bg: #ecfdf5;">
+                        <div class="tile-icon"><i class="bi bi-arrow-down-circle"></i></div>
+                        <div class="tile-content"><div class="tile-name">الاستلام</div><div class="tile-desc">Receipts</div></div>
+                        <i class="bi bi-arrow-left tile-arrow"></i>
+                    </a>
+                    <a href="issues.html" class="feature-tile" style="--tile-color: #ef4444; --tile-border: #fdd; --tile-shadow: rgba(239,68,68,0.15); --tile-bg: #fef2f2;">
+                        <div class="tile-icon"><i class="bi bi-arrow-up-circle"></i></div>
+                        <div class="tile-content"><div class="tile-name">الصرف</div><div class="tile-desc">Issues</div></div>
+                        <i class="bi bi-arrow-left tile-arrow"></i>
+                    </a>
+                    <a href="transfers.html" class="feature-tile" style="--tile-color: #06b6d4; --tile-border: #c3ecf3; --tile-shadow: rgba(6,182,212,0.15); --tile-bg: #ecfeff;">
+                        <div class="tile-icon"><i class="bi bi-arrow-left-right"></i></div>
+                        <div class="tile-content"><div class="tile-name">التحويلات</div><div class="tile-desc">Transfers</div></div>
+                        <i class="bi bi-arrow-left tile-arrow"></i>
+                    </a>
+                    <a href="counts.html" class="feature-tile" style="--tile-color: #f59e0b; --tile-border: #fde9c1; --tile-shadow: rgba(245,158,11,0.15); --tile-bg: #fffbeb;">
+                        <div class="tile-icon"><i class="bi bi-clipboard-check"></i></div>
+                        <div class="tile-content"><div class="tile-name">الجرد</div><div class="tile-desc">Inventory Count</div></div>
+                        <i class="bi bi-arrow-left tile-arrow"></i>
+                    </a>
+                    <a href="stock_adjustments.html" class="feature-tile" style="--tile-color: #6366f1; --tile-border: #dbe3ff; --tile-shadow: rgba(99,102,241,0.15); --tile-bg: #eef2ff;">
+                        <div class="tile-icon"><i class="bi bi-sliders"></i></div>
+                        <div class="tile-content"><div class="tile-name">التسويات المخزنية</div><div class="tile-desc">عجز وزيادة</div></div>
+                        <i class="bi bi-arrow-left tile-arrow"></i>
+                    </a>
+                </div>
+            </div>
+
+            <div class="category-block" style="--cat-color: #ef4444; --cat-bg: #fef7f7; --cat-border: #fdd; --cat-shadow-light: rgba(239,68,68,0.08);">
+                <div class="category-head">
+                    <div class="category-head-icon"><i class="bi bi-graph-up"></i></div>
+                    <div class="category-head-text">التقارير</div>
+                    <div class="category-head-count">3 شاشات</div>
+                </div>
+                <div class="tiles-grid">
+                    <a href="item_card.html" class="feature-tile" style="--tile-color: #6366f1; --tile-border: #dbe3ff; --tile-shadow: rgba(99,102,241,0.15); --tile-bg: #eef2ff;">
+                        <div class="tile-icon"><i class="bi bi-card-list"></i></div>
+                        <div class="tile-content"><div class="tile-name">كارت الصنف</div><div class="tile-desc">حركة الصنف</div></div>
+                        <i class="bi bi-arrow-left tile-arrow"></i>
+                    </a>
+                    <a href="stock_report.html" class="feature-tile" style="--tile-color: #06b6d4; --tile-border: #c3ecf3; --tile-shadow: rgba(6,182,212,0.15); --tile-bg: #ecfeff;">
+                        <div class="tile-icon"><i class="bi bi-file-earmark-bar-graph"></i></div>
+                        <div class="tile-content"><div class="tile-name">حركات الإضافة والمنصرف</div><div class="tile-desc">تقرير موحّد</div></div>
+                        <i class="bi bi-arrow-left tile-arrow"></i>
+                    </a>
+                    <a href="inventory_by_warehouse.html" class="feature-tile" style="--tile-color: #8b5cf6; --tile-border: #ded0ff; --tile-shadow: rgba(139,92,246,0.15); --tile-bg: #f5f3ff;">
+                        <div class="tile-icon"><i class="bi bi-building-gear"></i></div>
+                        <div class="tile-content"><div class="tile-name">المخزون حسب المستودع</div><div class="tile-desc">By Warehouse</div></div>
+                        <i class="bi bi-arrow-left tile-arrow"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========== قسم المشتريات ========== -->
+        <div class="section-pane" id="pane-purchases">
+            <div class="section-header" style="--section-color: #f59e0b; --section-shadow: rgba(245,158,11,0.3);">
+                <div class="section-header-icon"><i class="bi bi-cart-plus-fill"></i></div>
+                <div class="section-header-text">
+                    <h3>قسم المشتريات</h3>
+                    <p>دورة الشراء الكاملة من الطلب للدفع</p>
+                </div>
+            </div>
+
+            <div class="category-block" style="--cat-color: #f59e0b; --cat-bg: #fffdf5; --cat-border: #fde9c1; --cat-shadow-light: rgba(245,158,11,0.08);">
+                <div class="category-head">
+                    <div class="category-head-icon"><i class="bi bi-gear"></i></div>
+                    <div class="category-head-text">الإعدادات</div>
+                    <div class="category-head-count">3 شاشات</div>
+                </div>
+                <div class="tiles-grid">
+                    <a href="requisitions.html" class="feature-tile" style="--tile-color: #6366f1; --tile-border: #dbe3ff; --tile-shadow: rgba(99,102,241,0.15); --tile-bg: #eef2ff;">
+                        <div class="tile-icon"><i class="bi bi-clipboard-check"></i></div>
+                        <div class="tile-content"><div class="tile-name">طلبات الاحتياج</div><div class="tile-desc">طلب أولي</div></div>
+                        <i class="bi bi-arrow-left tile-arrow"></i>
+                    </a>
+                    <a href="purchase_orders.html" class="feature-tile" style="--tile-color: #f59e0b; --tile-border: #fde9c1; --tile-shadow: rgba(245,158,11,0.15); --tile-bg: #fffbeb;">
+                        <div class="tile-icon"><i class="bi bi-file-earmark-text"></i></div>
+                        <div class="tile-content"><div class="tile-name">أوامر الشراء</div><div class="tile-desc">Purchase Order</div></div>
+                        <i class="bi bi-arrow-left tile-arrow"></i>
+                    </a>
+                    
+                </div>
+            </div>
+
+            <div class="category-block" style="--cat-color: #10b981; --cat-bg: #f5fdf9; --cat-border: #c9f0dd; --cat-shadow-light: rgba(16,185,129,0.08);">
+                <div class="category-head">
+                    <div class="category-head-icon"><i class="bi bi-list-ul"></i></div>
+                    <div class="category-head-text">الحركات</div>
+                    <div class="category-head-count">5 شاشات</div>
+                </div>
+                <div class="tiles-grid">
+                    <a href="purchase_invoices.html" class="feature-tile" style="--tile-color: #10b981; --tile-border: #c9f0dd; --tile-shadow: rgba(16,185,129,0.15); --tile-bg: #ecfdf5;">
+                        <div class="tile-icon"><i class="bi bi-receipt"></i></div>
+                        <div class="tile-content"><div class="tile-name">فواتير الشراء</div><div class="tile-desc">Purchase Invoice</div></div>
+                        <i class="bi bi-arrow-left tile-arrow"></i>
+                    </a>
+                    <a href="receipts.html" class="feature-tile" style="--tile-color: #06b6d4; --tile-border: #c3ecf3; --tile-shadow: rgba(6,182,212,0.15); --tile-bg: #ecfeff;">
+                        <div class="tile-icon"><i class="bi bi-arrow-down-circle"></i></div>
+                        <div class="tile-content"><div class="tile-name">الاستلام</div><div class="tile-desc">GRN</div></div>
+                        <i class="bi bi-arrow-left tile-arrow"></i>
+                    </a>
+                    <a href="payments.html" class="feature-tile" style="--tile-color: #ef4444; --tile-border: #fdd; --tile-shadow: rgba(239,68,68,0.15); --tile-bg: #fef2f2;">
+                        <div class="tile-icon"><i class="bi bi-cash-coin"></i></div>
+                        <div class="tile-content"><div class="tile-name">مدفوعات الموردين</div><div class="tile-desc">دفع</div></div>
+                        <i class="bi bi-arrow-left tile-arrow"></i>
+                    </a>
+                    <a href="purchase_returns.html" class="feature-tile" style="--tile-color: #ec4899; --tile-border: #fbcfe8; --tile-shadow: rgba(236,72,153,0.15); --tile-bg: #fce7f3;">
+                        <div class="tile-icon"><i class="bi bi-arrow-return-left"></i></div>
+                        <div class="tile-content"><div class="tile-name">مرتجع شراء</div><div class="tile-desc">Return</div></div>
+                        <i class="bi bi-arrow-left tile-arrow"></i>
+                    </a>
+                    <a href="settlements.html" class="feature-tile" style="--tile-color: #ef4444; --tile-border: #fdd; --tile-shadow: rgba(239,68,68,0.15); --tile-bg: #fef2f2;">
+                        <div class="tile-icon"><i class="bi bi-cash-stack"></i></div>
+                        <div class="tile-content"><div class="tile-name">التسويات</div><div class="tile-desc">تسويات الحسابات</div></div>
+                        <i class="bi bi-arrow-left tile-arrow"></i>
+                    </a>
+                </div>
+            </div>
+
+            <div class="category-block" style="--cat-color: #ef4444; --cat-bg: #fef7f7; --cat-border: #fdd; --cat-shadow-light: rgba(239,68,68,0.08);">
+                <div class="category-head">
+                    <div class="category-head-icon"><i class="bi bi-graph-up"></i></div>
+                    <div class="category-head-text">التقارير</div>
+                    <div class="category-head-count">3 شاشات</div>
+                </div>
+                <div class="tiles-grid">
+                    <a href="reports.html" class="feature-tile" style="--tile-color: #06b6d4; --tile-border: #c3ecf3; --tile-shadow: rgba(6,182,212,0.15); --tile-bg: #ecfeff;">
+                        <div class="tile-icon"><i class="bi bi-bar-chart"></i></div>
+                        <div class="tile-content"><div class="tile-name">تقرير مشتريات</div><div class="tile-desc">Purchases Report</div></div>
+                        <i class="bi bi-arrow-left tile-arrow"></i>
+                    </a>
+                    <a href="supplier_rating.html" class="feature-tile" style="--tile-color: #f59e0b; --tile-border: #fde9c1; --tile-shadow: rgba(245,158,11,0.15); --tile-bg: #fffbeb;">
+                        <div class="tile-icon"><i class="bi bi-star-fill"></i></div>
+                        <div class="tile-content"><div class="tile-name">تقييم الموردين</div><div class="tile-desc">ترتيب ونقاط</div></div>
+                        <i class="bi bi-arrow-left tile-arrow"></i>
+                    </a>
+                    <a href="price_comparison.html" class="feature-tile" style="--tile-color: #0ea5e9; --tile-border: #c3ecf3; --tile-shadow: rgba(14,165,233,0.15); --tile-bg: #f0f9ff;">
+                        <div class="tile-icon"><i class="bi bi-bar-chart-line"></i></div>
+                        <div class="tile-content"><div class="tile-name">مقارنة أسعار</div><div class="tile-desc">أفضل الأسعار</div></div>
+                        <i class="bi bi-arrow-left tile-arrow"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========== قسم المبيعات ========== -->
+        <div class="section-pane" id="pane-sales">
+            <div class="section-header" style="--section-color: #10b981; --section-shadow: rgba(16,185,129,0.3);">
+                <div class="section-header-icon"><i class="bi bi-cart-check-fill"></i></div>
+                <div class="section-header-text">
+                    <h3>قسم المبيعات</h3>
+                    <p>دورة البيع الكاملة والتحصيلات</p>
+                </div>
+            </div>
+
+            <div class="category-block" style="--cat-color: #10b981; --cat-bg: #f5fdf9; --cat-border: #c9f0dd; --cat-shadow-light: rgba(16,185,129,0.08);">
+                <div class="category-head">
+                    <div class="category-head-icon"><i class="bi bi-list-ul"></i></div>
+                    <div class="category-head-text">الحركات</div>
+                    <div class="category-head-count">4 شاشات</div>
+                </div>
+                <div class="tiles-grid">
+                    <a href="sales_invoices.html" class="feature-tile" style="--tile-color: #10b981; --tile-border: #c9f0dd; --tile-shadow: rgba(16,185,129,0.15); --tile-bg: #ecfdf5;">
+                        <div class="tile-icon"><i class="bi bi-cart-check"></i></div>
+                        <div class="tile-content"><div class="tile-name">فواتير البيع</div><div class="tile-desc">Sales Invoice</div></div>
+                        <i class="bi bi-arrow-left tile-arrow"></i>
+                    </a>
+                    <a href="customer_receipts.html" class="feature-tile" style="--tile-color: #06b6d4; --tile-border: #c3ecf3; --tile-shadow: rgba(6,182,212,0.15); --tile-bg: #ecfeff;">
+                        <div class="tile-icon"><i class="bi bi-cash-stack"></i></div>
+                        <div class="tile-content"><div class="tile-name">تحصيلات العملاء</div><div class="tile-desc">Receipts</div></div>
+                        <i class="bi bi-arrow-left tile-arrow"></i>
+                    </a>
+                    <a href="sales_returns.html" class="feature-tile" style="--tile-color: #ec4899; --tile-border: #fbcfe8; --tile-shadow: rgba(236,72,153,0.15); --tile-bg: #fce7f3;">
+                        <div class="tile-icon"><i class="bi bi-arrow-return-right"></i></div>
+                        <div class="tile-content"><div class="tile-name">مرتجع بيع</div><div class="tile-desc">Sales Return</div></div>
+                        <i class="bi bi-arrow-left tile-arrow"></i>
+                    </a>
+                    <a href="issues.html" class="feature-tile" style="--tile-color: #f59e0b; --tile-border: #fde9c1; --tile-shadow: rgba(245,158,11,0.15); --tile-bg: #fffbeb;">
+                        <div class="tile-icon"><i class="bi bi-arrow-up-circle"></i></div>
+                        <div class="tile-content"><div class="tile-name">الصرف</div><div class="tile-desc">Delivery</div></div>
+                        <i class="bi bi-arrow-left tile-arrow"></i>
+                    </a>
+                </div>
+            </div>
+
+            <div class="category-block" style="--cat-color: #ef4444; --cat-bg: #fef7f7; --cat-border: #fdd; --cat-shadow-light: rgba(239,68,68,0.08);">
+                <div class="category-head">
+                    <div class="category-head-icon"><i class="bi bi-graph-up"></i></div>
+                    <div class="category-head-text">التقارير</div>
+                    <div class="category-head-count">2 شاشات</div>
+                </div>
+                <div class="tiles-grid">
+                    <a href="aging_report.html" class="feature-tile" style="--tile-color: #ef4444; --tile-border: #fdd; --tile-shadow: rgba(239,68,68,0.15); --tile-bg: #fef2f2;">
+                        <div class="tile-icon"><i class="bi bi-clock-history"></i></div>
+                        <div class="tile-content"><div class="tile-name">أعمار ديون العملاء</div><div class="tile-desc">Aging Report</div></div>
+                        <i class="bi bi-arrow-left tile-arrow"></i>
+                    </a>
+                    <a href="reports.html" class="feature-tile" style="--tile-color: #10b981; --tile-border: #c9f0dd; --tile-shadow: rgba(16,185,129,0.15); --tile-bg: #ecfdf5;">
+                        <div class="tile-icon"><i class="bi bi-bar-chart"></i></div>
+                        <div class="tile-content"><div class="tile-name">تقرير مبيعات</div><div class="tile-desc">Sales Report</div></div>
+                        <i class="bi bi-arrow-left tile-arrow"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========== قسم المحاسبة ========== -->
+        <div class="section-pane" id="pane-accounting">
+            <div class="section-header" style="--section-color: #8b5cf6; --section-shadow: rgba(139,92,246,0.3);">
+                <div class="section-header-icon"><i class="bi bi-calculator-fill"></i></div>
+                <div class="section-header-text">
+                    <h3>قسم المحاسبة</h3>
+                    <p>القيود والحسابات والخزائن</p>
+                </div>
+            </div>
+
+            <div class="category-block" style="--cat-color: #8b5cf6; --cat-bg: #faf8ff; --cat-border: #ded0ff; --cat-shadow-light: rgba(139,92,246,0.08);">
+                <div class="category-head">
+                    <div class="category-head-icon"><i class="bi bi-gear"></i></div>
+                    <div class="category-head-text">الإعدادات</div>
+                    <div class="category-head-count">3 شاشات</div>
+                </div>
+                <div class="tiles-grid">
+                    <a href="accounts.html" class="feature-tile" style="--tile-color: #8b5cf6; --tile-border: #ded0ff; --tile-shadow: rgba(139,92,246,0.15); --tile-bg: #f5f3ff;">
+                        <div class="tile-icon"><i class="bi bi-book"></i></div>
+                        <div class="tile-content"><div class="tile-name">الدليل المحاسبي</div><div class="tile-desc">شجرة الحسابات</div></div>
+                        <i class="bi bi-arrow-left tile-arrow"></i>
+                    </a>
+                    <a href="mapping.html" class="feature-tile" style="--tile-color: #6366f1; --tile-border: #dbe3ff; --tile-shadow: rgba(99,102,241,0.15); --tile-bg: #eef2ff;">
+                        <div class="tile-icon"><i class="bi bi-link-45deg"></i></div>
+                        <div class="tile-content"><div class="tile-name">ربط الحسابات</div><div class="tile-desc">Mapping الدليل</div></div>
+                        <i class="bi bi-arrow-left tile-arrow"></i>
+                    </a>
+                    <a href="cash_boxes.html" class="feature-tile" style="--tile-color: #f59e0b; --tile-border: #fde9c1; --tile-shadow: rgba(245,158,11,0.15); --tile-bg: #fffbeb;">
+                        <div class="tile-icon"><i class="bi bi-safe2-fill"></i></div>
+                        <div class="tile-content"><div class="tile-name">الخزائن والبنوك</div><div class="tile-desc">إدارة الخزائن</div></div>
+                        <i class="bi bi-arrow-left tile-arrow"></i>
+                    </a>
+                </div>
+            </div>
+
+            <div class="category-block" style="--cat-color: #10b981; --cat-bg: #f5fdf9; --cat-border: #c9f0dd; --cat-shadow-light: rgba(16,185,129,0.08);">
+                <div class="category-head">
+                    <div class="category-head-icon"><i class="bi bi-list-ul"></i></div>
+                    <div class="category-head-text">الحركات</div>
+                    <div class="category-head-count">5 شاشات</div>
+                </div>
+                <div class="tiles-grid">
+                    <a href="journal.html" class="feature-tile" style="--tile-color: #6366f1; --tile-border: #dbe3ff; --tile-shadow: rgba(99,102,241,0.15); --tile-bg: #eef2ff;">
+                        <div class="tile-icon"><i class="bi bi-journal-text"></i></div>
+                        <div class="tile-content"><div class="tile-name">القيود</div><div class="tile-desc">Journal Entries</div></div>
+                        <i class="bi bi-arrow-left tile-arrow"></i>
+                    </a>
+                    <a href="cash_box_transactions.html" class="feature-tile" style="--tile-color: #6366f1; --tile-border: #dbe3ff; --tile-shadow: rgba(99,102,241,0.15); --tile-bg: #eef2ff;">
+                        <div class="tile-icon"><i class="bi bi-arrow-left-right"></i></div>
+                        <div class="tile-content"><div class="tile-name">حركات الخزائن</div><div class="tile-desc">إيداع وسحب</div></div>
+                        <i class="bi bi-arrow-left tile-arrow"></i>
+                    </a>
+                    <a href="expenses.html" class="feature-tile" style="--tile-color: #ef4444; --tile-border: #fdd; --tile-shadow: rgba(239,68,68,0.15); --tile-bg: #fef2f2;">
+                        <div class="tile-icon"><i class="bi bi-receipt-cutoff"></i></div>
+                        <div class="tile-content"><div class="tile-name">صرف النثريات</div><div class="tile-desc">مصروفات نقدية</div></div>
+                        <i class="bi bi-arrow-left tile-arrow"></i>
+                    </a>
+                    <a href="expense_categories.html" class="feature-tile" style="--tile-color: #f59e0b; --tile-border: #fde9c1; --tile-shadow: rgba(245,158,11,0.15); --tile-bg: #fffbeb;">
+                        <div class="tile-icon"><i class="bi bi-tags"></i></div>
+                        <div class="tile-content"><div class="tile-name">تصنيفات المصروفات</div><div class="tile-desc">أنواع المصروفات</div></div>
+                        <i class="bi bi-arrow-left tile-arrow"></i>
+                    </a>
+                    <a href="bank_reconciliation.html" class="feature-tile" style="--tile-color: #06b6d4; --tile-border: #c3ecf3; --tile-shadow: rgba(6,182,212,0.15); --tile-bg: #ecfeff;">
+                        <div class="tile-icon"><i class="bi bi-clipboard-check"></i></div>
+                        <div class="tile-content"><div class="tile-name">التسوية البنكية</div><div class="tile-desc">مطابقة كشوف البنك</div></div>
+                        <i class="bi bi-arrow-left tile-arrow"></i>
+                    </a>
+                </div>
+            </div>
+
+            <div class="category-block" style="--cat-color: #ef4444; --cat-bg: #fef7f7; --cat-border: #fdd; --cat-shadow-light: rgba(239,68,68,0.08);">
+                <div class="category-head">
+                    <div class="category-head-icon"><i class="bi bi-graph-up"></i></div>
+                    <div class="category-head-text">التقارير</div>
+                    <div class="category-head-count">4 شاشات</div>
+                </div>
+                <div class="tiles-grid">
+                    
+                    <a href="cash_box_reports.html" class="feature-tile" style="--tile-color: #a18cd1; --tile-border: #ded0ff; --tile-shadow: rgba(161,140,209,0.15); --tile-bg: #f5f3ff;">
+                        <div class="tile-icon"><i class="bi bi-bar-chart-line"></i></div>
+                        <div class="tile-content"><div class="tile-name">تقارير الخزائن</div><div class="tile-desc">الأرصدة والحركات</div></div>
+                        <i class="bi bi-arrow-left tile-arrow"></i>
+                    </a>
+                    <a href="branches.html" class="feature-tile" style="--tile-color: #0ea5e9; --tile-border: #c3ecf3; --tile-shadow: rgba(14,165,233,0.15); --tile-bg: #f0f9ff;">
+                        <div class="tile-icon"><i class="bi bi-building"></i></div>
+                        <div class="tile-content"><div class="tile-name">الفروع</div><div class="tile-desc">إدارة الفروع</div></div>
+                        <i class="bi bi-arrow-left tile-arrow"></i>
+                    </a>
+                    <a href="movements_journal.html" class="feature-tile" style="--tile-color: #8b5cf6; --tile-border: #ded0ff; --tile-shadow: rgba(139,92,246,0.15); --tile-bg: #f5f3ff;">
+                        <div class="tile-icon"><i class="bi bi-link-45deg"></i></div>
+                        <div class="tile-content"><div class="tile-name">ربط الحركات بالقيود</div><div class="tile-desc">البحث والربط</div></div>
+                        <i class="bi bi-arrow-left tile-arrow"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- ========== قسم التقارير ========== -->
+        <div class="section-pane" id="pane-reports">
+            <div class="section-header" style="--section-color: #ef4444; --section-shadow: rgba(239,68,68,0.3);">
+                <div class="section-header-icon"><i class="bi bi-graph-up-arrow"></i></div>
+                <div class="section-header-text">
+                    <h3>قسم التقارير</h3>
+                    <p>كل التقارير المالية والمخزنية</p>
+                </div>
+            </div>
+
+            <div class="category-block" style="--cat-color: #ef4444; --cat-bg: #fef7f7; --cat-border: #fdd; --cat-shadow-light: rgba(239,68,68,0.08);">
+                <div class="category-head">
+                    <div class="category-head-icon"><i class="bi bi-file-earmark-bar-graph"></i></div>
+                    <div class="category-head-text">التقارير</div>
+                    <div class="category-head-count">7 شاشات</div>
+                </div>
+                <div class="tiles-grid">
+                    
+                    
+                    <a href="trial_balance.html" class="feature-tile" style="--tile-color: #ef4444; --tile-border: #fdd; --tile-shadow: rgba(239,68,68,0.15); --tile-bg: #fef2f2;">
+                        <div class="tile-icon"><i class="bi bi-list-check"></i></div>
+                        <div class="tile-content"><div class="tile-name">ميزان المراجعة</div><div class="tile-desc">Trial Balance</div></div>
+                        <i class="bi bi-arrow-left tile-arrow"></i>
+                    </a>
+                    <a href="balance_sheet.html" class="feature-tile" style="--tile-color: #10b981; --tile-border: #c9f0dd; --tile-shadow: rgba(16,185,129,0.15); --tile-bg: #ecfdf5;">
+                        <div class="tile-icon"><i class="bi bi-file-earmark-bar-graph"></i></div>
+                        <div class="tile-content"><div class="tile-name">الميزانية</div><div class="tile-desc">Balance Sheet</div></div>
+                        <i class="bi bi-arrow-left tile-arrow"></i>
+                    </a>
+                    <a href="income_statement.html" class="feature-tile" style="--tile-color: #f59e0b; --tile-border: #fde9c1; --tile-shadow: rgba(245,158,11,0.15); --tile-bg: #fffbeb;">
+                        <div class="tile-icon"><i class="bi bi-graph-up-arrow"></i></div>
+                        <div class="tile-content"><div class="tile-name">قائمة الدخل</div><div class="tile-desc">Income Statement</div></div>
+                        <i class="bi bi-arrow-left tile-arrow"></i>
+                    </a>
+                    <a href="comparative_statements.html" class="feature-tile" style="--tile-color: #8b5cf6; --tile-border: #ddd6fe; --tile-shadow: rgba(139,92,246,0.15); --tile-bg: #f5f3ff;">
+                        <div class="tile-icon"><i class="bi bi-bar-chart-line"></i></div>
+                        <div class="tile-content"><div class="tile-name">القوائم المقارنة</div><div class="tile-desc">Comparative</div></div>
+                        <i class="bi bi-arrow-left tile-arrow"></i>
+                    </a>
+                    
+
+                    
+                    
+                </div>
+            </div>
+        </div>
+
+        <!-- ========== قسم الإعدادات ========== -->
+        <div class="section-pane" id="pane-settings">
+            <div class="section-header" style="--section-color: #0f172a; --section-shadow: rgba(15,23,42,0.3);">
+                <div class="section-header-icon"><i class="bi bi-gear-fill"></i></div>
+                <div class="section-header-text">
+                    <h3>قسم الإعدادات</h3>
+                    <p>إعدادات النظام والمستخدمين والطباعة</p>
+                </div>
+            </div>
+
+            <div class="category-block" style="--cat-color: #0f172a; --cat-bg: #f8fafc; --cat-border: #dbe2ea; --cat-shadow-light: rgba(15,23,42,0.08);">
+                <div class="category-head">
+                    <div class="category-head-icon"><i class="bi bi-sliders"></i></div>
+                    <div class="category-head-text">الإعدادات</div>
+                    <div class="category-head-count">10 شاشات</div>
+                </div>
+                <div class="tiles-grid">
+                    <a href="settings.html" class="feature-tile" style="--tile-color: #0f172a; --tile-border: #dbe2ea; --tile-shadow: rgba(15,23,42,0.15); --tile-bg: #f1f5f9;">
+                        <div class="tile-icon"><i class="bi bi-gear"></i></div>
+                        <div class="tile-content"><div class="tile-name">إعدادات النظام</div><div class="tile-desc">الإعدادات العامة</div></div>
+                        <i class="bi bi-arrow-left tile-arrow"></i>
+                    </a>
+                    <a href="settings_company.html" class="feature-tile" style="--tile-color: #06b6d4; --tile-border: #c3ecf3; --tile-shadow: rgba(6,182,212,0.15); --tile-bg: #ecfeff;">
+                        <div class="tile-icon"><i class="bi bi-briefcase"></i></div>
+                        <div class="tile-content"><div class="tile-name">بيانات الشركة</div><div class="tile-desc">الاسم والعنوان</div></div>
+                        <i class="bi bi-arrow-left tile-arrow"></i>
+                    </a>
+                    <a href="settings_accounting.html" class="feature-tile" style="--tile-color: #10b981; --tile-border: #c9f0dd; --tile-shadow: rgba(16,185,129,0.15); --tile-bg: #ecfdf5;">
+                        <div class="tile-icon"><i class="bi bi-book"></i></div>
+                        <div class="tile-content"><div class="tile-name">إعدادات المحاسبة</div><div class="tile-desc">حسابات افتراضية</div></div>
+                        <i class="bi bi-arrow-left tile-arrow"></i>
+                    </a>
+                    <a href="settings_inventory.html" class="feature-tile" style="--tile-color: #06b6d4; --tile-border: #c3ecf3; --tile-shadow: rgba(6,182,212,0.15); --tile-bg: #ecfeff;">
+                        <div class="tile-icon"><i class="bi bi-box"></i></div>
+                        <div class="tile-content"><div class="tile-name">إعدادات المخزون</div><div class="tile-desc">سياسات المخزون</div></div>
+                        <i class="bi bi-arrow-left tile-arrow"></i>
+                    </a>
+                    <a href="settings_users.html" class="feature-tile" style="--tile-color: #8b5cf6; --tile-border: #ded0ff; --tile-shadow: rgba(139,92,246,0.15); --tile-bg: #f5f3ff;">
+                        <div class="tile-icon"><i class="bi bi-person-badge"></i></div>
+                        <div class="tile-content"><div class="tile-name">إدارة المستخدمين</div><div class="tile-desc">المستخدمين</div></div>
+                        <i class="bi bi-arrow-left tile-arrow"></i>
+                    </a>
+                    <a href="settings_print.html" class="feature-tile" style="--tile-color: #0ea5e9; --tile-border: #c3ecf3; --tile-shadow: rgba(14,165,233,0.15); --tile-bg: #f0f9ff;">
+                        <div class="tile-icon"><i class="bi bi-printer"></i></div>
+                        <div class="tile-content"><div class="tile-name">إعدادات الطباعة</div><div class="tile-desc">القوالب</div></div>
+                        <i class="bi bi-arrow-left tile-arrow"></i>
+                    </a>
+                    <a href="print_center.html" class="feature-tile" style="--tile-color: #06b6d4; --tile-border: #c3ecf3; --tile-shadow: rgba(6,182,212,0.15); --tile-bg: #ecfeff;">
+                        <div class="tile-icon"><i class="bi bi-printer-fill"></i></div>
+                        <div class="tile-content"><div class="tile-name">مركز الطباعة</div><div class="tile-desc">كل القوالب</div></div>
+                        <i class="bi bi-arrow-left tile-arrow"></i>
+                    </a>
+                    <a href="data_io.html" class="feature-tile" style="--tile-color: #10b981; --tile-border: #c9f0dd; --tile-shadow: rgba(16,185,129,0.15); --tile-bg: #ecfdf5;">
+                        <div class="tile-icon"><i class="bi bi-database-check"></i></div>
+                        <div class="tile-content"><div class="tile-name">استيراد وتصدير</div><div class="tile-desc">نسخ احتياطي</div></div>
+                        <i class="bi bi-arrow-left tile-arrow"></i>
+                    </a>
+                    <a href="test_engine.html" class="feature-tile" style="--tile-color: #f59e0b; --tile-border: #fde9c1; --tile-shadow: rgba(245,158,11,0.15); --tile-bg: #fffbeb;">
+                        <div class="tile-icon"><i class="bi bi-cpu"></i></div>
+                        <div class="tile-content"><div class="tile-name">اختبار المحرك</div><div class="tile-desc">فحص التكلفة</div></div>
+                        <i class="bi bi-arrow-left tile-arrow"></i>
+                    </a>
+                    <a href="branches.html" class="feature-tile" style="--tile-color: #0ea5e9; --tile-border: #c3ecf3; --tile-shadow: rgba(14,165,233,0.15); --tile-bg: #f0f9ff;">
+                        <div class="tile-icon"><i class="bi bi-building"></i></div>
+                        <div class="tile-content"><div class="tile-name">الفروع</div><div class="tile-desc">إدارة الفروع</div></div>
+                        <i class="bi bi-arrow-left tile-arrow"></i>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+    </div>
 </div>
 
-<!-- Charts -->
-<div class="row g-3 mb-4">
-<div class="col-md-6"><div class="card p-3"><h5>الحركات حسب النوع</h5><canvas id="chart1" style="max-height:280px;"></canvas></div></div>
-<div class="col-md-6"><div class="card p-3"><h5>تقييم المخزون حسب النوع</h5><canvas id="chart2" style="max-height:280px;"></canvas></div></div>
-</div>
-
-<!-- Recent + Low Stock -->
-<div class="row g-3">
-<div class="col-md-7"><div class="card p-3"><h5><i class="bi bi-clock-history"></i> آخر الحركات</h5>
-<table class="table table-hover"><thead><tr><th>رقم الحركة</th><th>النوع</th><th>الكمية</th><th>القيمة</th><th>الحالة</th></tr></thead><tbody id="tx"><tr><td colspan="5" class="text-center">جاري التحميل...</td></tr></tbody></table></div></div>
-<div class="col-md-5"><div class="card p-3"><h5><i class="bi bi-exclamation-triangle text-warning"></i> أصناف تحت الحد الأدنى</h5>
-<table class="table table-hover"><thead><tr><th>الصنف</th><th>المتاح</th><th>الحد</th></tr></thead><tbody id="low"><tr><td colspan="3" class="text-center">جاري التحميل...</td></tr></tbody></table></div></div>
-</div>
-</div></div></div>
-
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-const API='http://localhost:5000/api/v1';
-let chart1, chart2;
+const SECTIONS = {
+    'customers': '🧑 قسم العملاء',
+    'suppliers': '🚚 قسم الموردين',
+    'warehouse': '📦 قسم المخازن والأصناف',
+    'purchases': '🛒 قسم المشتريات',
+    'sales': '🛍️ قسم المبيعات',
+    'accounting': '💰 قسم المحاسبة',
+    'reports': '📈 قسم التقارير',
+    'settings': '⚙️ قسم الإعدادات'
+};
 
-async function loadAll(){
- try{
-  const [w,i,r,is,t,b,l,v]=await Promise.all([
-   fetch(`${API}/warehouses/`).then(x=>x.json()),
-   fetch(`${API}/items/`).then(x=>x.json()),
-   fetch(`${API}/receipts/`).then(x=>x.json()),
-   fetch(`${API}/issues/`).then(x=>x.json()),
-   fetch(`${API}/transfers/`).then(x=>x.json()),
-   fetch(`${API}/reports/stock-balance`).then(x=>x.json()),
-   fetch(`${API}/reports/low-stock`).then(x=>x.json()),
-   fetch(`${API}/reports/valuation`).then(x=>x.json())]);
-
-  document.getElementById('s1').textContent=w.data?.length||0;
-  document.getElementById('s2').textContent=i.data?.length||0;
-  document.getElementById('s3').textContent=(r.data?.length||0)+(is.data?.length||0)+(t.data?.length||0);
-  const val=(b.data||[]).reduce((s,x)=>s+parseFloat(x.total_value||0),0);
-  document.getElementById('s4').textContent=val.toLocaleString('ar-EG')+' ج.م';
-
-  // Charts
-  const cntTypes = {
-   'استلام': (r.data||[]).length,
-   'صرف': (is.data||[]).length,
-   'تحويل': (t.data||[]).length
-  };
-  if (chart1) chart1.destroy();
-  chart1 = new Chart(document.getElementById('chart1'), {
-   type: 'doughnut',
-   data: {
-    labels: Object.keys(cntTypes),
-    datasets: [{
-     data: Object.values(cntTypes),
-     backgroundColor: ['#28a745','#dc3545','#17a2b8']
-    }]
-   },
-   options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom' } } }
-  });
-
-  const vLabels = (v.data||[]).map(x=>x.item_type);
-  const vValues = (v.data||[]).map(x=>parseFloat(x.total_value||0));
-  if (chart2) chart2.destroy();
-  chart2 = new Chart(document.getElementById('chart2'), {
-   type: 'bar',
-   data: {
-    labels: vLabels,
-    datasets: [{
-     label: 'القيمة',
-     data: vValues,
-     backgroundColor: '#3498db'
-    }]
-   },
-   options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } }
-  });
-
-  // Recent
-  const all=[...(r.data||[]).map(x=>({...x,ty:'استلام',c:'success'})),...(is.data||[]).map(x=>({...x,ty:'صرف',c:'danger'})),...(t.data||[]).map(x=>({...x,ty:'تحويل',c:'info'}))].sort((a,b)=>b.id-a.id).slice(0,8);
-  document.getElementById('tx').innerHTML=all.length?all.map(x=>`<tr><td><code>${x.transaction_no}</code></td><td><span class="badge bg-${x.c}">${x.ty}</span></td><td>${x.total_qty}</td><td>${x.total_value}</td><td><span class="badge-status badge-${x.status}">${x.status}</span></td></tr>`).join(''):'<tr><td colspan="5" class="text-center text-muted">لا توجد حركات</td></tr>';
-
-  const ld=l.data||[];
-  document.getElementById('low').innerHTML=ld.length?ld.map(x=>`<tr><td>${x.name_ar}</td><td class="text-danger">${x.total_qty}</td><td>${x.reorder_level}</td></tr>`).join(''):'<tr><td colspan="3" class="text-center text-success">لا توجد أصناف ✅</td></tr>';
- }catch(e){console.error(e)}
+function showSection(sectionId, el) {
+    document.querySelectorAll('.section-pane').forEach(p => p.classList.remove('active'));
+    const pane = document.getElementById('pane-' + sectionId);
+    if (pane) pane.classList.add('active');
+    
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    if (el) el.classList.add('active');
+    
+    document.getElementById('page-title').textContent = SECTIONS[sectionId] || sectionId;
+    window.scrollTo({ top: 0, behavior: 'smooth' });
 }
-loadAll();
-setInterval(loadAll, 30000);
+
+function logout(e) {
+    if (e) e.preventDefault();
+    if (confirm('تسجيل الخروج؟')) {
+        localStorage.clear();
+        window.location.href = 'login.html';
+    }
+}
+
+fetch('/api/v1/notifications/summary')
+    .then(r => r.json())
+    .then(data => {
+        const el = document.getElementById('notif-count');
+        if (el) {
+            const count = data.total_alerts || 0;
+            el.textContent = count;
+            if (count === 0) el.style.background = '#10b981';
+        }
+    })
+    .catch(() => {});
+
+(function() {
+    var userName = localStorage.getItem('user_name') || 'admin';
+    var el = document.getElementById('user-btn-name');
+    if (el) el.textContent = userName;
+})();
 </script>
-</body></html>
+
+<script>
+// دعم URL hash — لفتح قسم تلقائياً عند الرجوع من شاشة مستقلة
+window.addEventListener('DOMContentLoaded', function() {
+    const hash = window.location.hash.replace('#', '');
+    if (hash) {
+        const navItem = document.querySelector(`[data-section="${hash}"]`);
+        if (navItem && typeof showSection === 'function') {
+            // ننتظر قليلاً للتأكد من تحميل الصفحة
+            setTimeout(() => showSection(hash, navItem), 100);
+        }
+    }
+});
+
+// مراقبة تغيير الـ hash
+window.addEventListener('hashchange', function() {
+    const hash = window.location.hash.replace('#', '');
+    if (hash) {
+        const navItem = document.querySelector(`[data-section="${hash}"]`);
+        if (navItem && typeof showSection === 'function') {
+            showSection(hash, navItem);
+        }
+    }
+});
+</script>
+
+</body>
+</html>

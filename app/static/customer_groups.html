@@ -1,0 +1,593 @@
+﻿<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>مجموعات العملاء</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<script src="permissions.js"></script>
+<style>
+* { font-family: 'Cairo', sans-serif; box-sizing: border-box; }
+body { background: #f1f5f9; padding: 8px; font-size: 13px; font-weight: 600; }
+
+.page-header {
+    background: white; padding: 10px 16px; border-radius: 10px;
+    margin-bottom: 8px; display: flex; justify-content: space-between;
+    align-items: center; flex-wrap: wrap; gap: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+.page-header h1 {
+    font-size: 1.1rem; font-weight: 900; margin: 0;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+
+.btn-mini {
+    padding: 5px 12px; border-radius: 7px; border: 1.5px solid #e2e8f0;
+    background: white; color: #475569; text-decoration: none; font-size: 0.78rem;
+    font-weight: 700; display: inline-flex; align-items: center; gap: 4px;
+    transition: 0.15s; cursor: pointer;
+}
+.btn-mini:hover { border-color: #6366f1; color: #6366f1; background: #eef2ff; }
+.btn-mini.primary {
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    color: white; border-color: transparent;
+}
+
+/* Cards Grid */
+.groups-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 10px;
+}
+
+.group-card {
+    background: white; border-radius: 12px; padding: 14px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    border-right: 5px solid var(--group-color, #6366f1);
+    transition: all 0.2s;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+}
+.group-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.12);
+}
+
+.group-card-header {
+    display: flex; align-items: center; gap: 10px; margin-bottom: 10px;
+}
+.group-icon {
+    width: 42px; height: 42px; border-radius: 10px;
+    background: var(--group-color, #6366f1); color: white;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; flex-shrink: 0;
+    box-shadow: 0 3px 10px var(--group-shadow, rgba(99,102,241,0.3));
+}
+.group-info { flex: 1; }
+.group-name { font-size: 0.95rem; font-weight: 900; color: #1e293b; }
+.group-code { font-size: 0.68rem; color: #94a3b8; font-family: monospace; }
+
+.group-stats {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px;
+    margin-top: 10px;
+}
+.group-stat {
+    text-align: center; padding: 6px 4px; border-radius: 6px;
+    background: #f8fafc; border: 1px solid #e2e8f0;
+}
+.group-stat-value {
+    font-size: 0.95rem; font-weight: 900; color: var(--group-color, #6366f1);
+    font-family: monospace; line-height: 1;
+}
+.group-stat-label {
+    font-size: 0.62rem; color: #64748b; font-weight: 700; margin-top: 2px;
+    text-transform: uppercase;
+}
+
+.group-actions {
+    display: flex; gap: 4px; margin-top: 10px; padding-top: 10px;
+    border-top: 1px solid #f1f5f9;
+}
+.group-actions .btn-mini { font-size: 0.7rem; padding: 3px 8px; flex: 1; justify-content: center; }
+
+/* Modal */
+.modal-content { font-size: 0.85rem; }
+.modal-header { background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; }
+.modal-title { font-weight: 800; }
+.form-label { font-weight: 700; font-size: 0.78rem; margin-bottom: 3px; }
+.form-control, .form-select {
+    font-weight: 700; font-size: 0.8rem;
+    border: 1.5px solid #e2e8f0;
+    transition: all 0.15s;
+}
+.form-control:focus, .form-select:focus {
+    border-color: #6366f1; border-width: 2px;
+    box-shadow: 0 0 0 3px rgba(99,102,241,0.12);
+}
+
+/* Color Picker */
+.color-picker {
+    display: flex; gap: 5px; flex-wrap: wrap; margin-top: 4px;
+}
+.color-option {
+    width: 28px; height: 28px; border-radius: 6px;
+    border: 2px solid transparent; cursor: pointer;
+    transition: 0.15s;
+}
+.color-option:hover { transform: scale(1.15); }
+.color-option.selected { border-color: #1e293b; transform: scale(1.1); }
+
+/* ============================================
+   إلغاء أسهم input[type=number]
+   ============================================ */
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none !important;
+    margin: 0 !important;
+}
+input[type=number] {
+    -moz-appearance: textfield !important;
+    appearance: textfield !important;
+}
+input[type="number"] {
+    -moz-appearance: textfield !important;
+}
+
+</style>
+
+
+
+<style id="compact-spacing-global">
+/* ============================================
+   توحيد المسافات المضغوطة
+   ============================================ */
+
+.table td, .table th {
+    padding: 3px 6px !important;
+    font-size: 0.75rem !important;
+    vertical-align: middle !important;
+    line-height: 1.2 !important;
+}
+
+.table tbody tr {
+    height: auto !important;
+}
+
+.form-control, .form-select {
+    font-size: 0.75rem !important;
+    line-height: 1.2 !important;
+}
+
+.form-control-sm, .form-select-sm {
+    height: 26px !important;
+    padding: 2px 6px !important;
+    font-size: 0.72rem !important;
+    line-height: 1 !important;
+}
+
+.btn {
+    padding: 3px 8px !important;
+    font-size: 0.72rem !important;
+    line-height: 1.2 !important;
+}
+
+.btn-sm {
+    padding: 2px 6px !important;
+    font-size: 0.7rem !important;
+}
+
+.card {
+    margin-bottom: 6px !important;
+}
+
+.card-body, .card.p-2, .card.p-3, .card.p-4 {
+    padding: 6px 8px !important;
+}
+
+.modal-header {
+    padding: 6px 12px !important;
+}
+
+.modal-title {
+    font-size: 0.9rem !important;
+}
+
+.modal-body {
+    padding: 8px 12px !important;
+}
+
+.modal-footer {
+    padding: 6px 12px !important;
+}
+
+.modal-footer .btn {
+    padding: 4px 10px !important;
+    font-size: 0.75rem !important;
+}
+
+.mb-1, .mb-2, .mb-3, .mb-4 {
+    margin-bottom: 4px !important;
+}
+
+.mt-1, .mt-2, .mt-3, .mt-4 {
+    margin-top: 4px !important;
+}
+
+.ms-1, .ms-2, .ms-3 {
+    margin-right: 4px !important;
+}
+
+.me-1, .me-2, .me-3 {
+    margin-left: 4px !important;
+}
+
+.p-1, .p-2, .p-3, .p-4 {
+    padding: 4px !important;
+}
+
+.g-1, .g-2, .g-3 {
+    gap: 4px !important;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    line-height: 1.3 !important;
+}
+
+h1 { font-size: 1.2rem !important; margin-bottom: 6px !important; }
+h2 { font-size: 1.05rem !important; margin-bottom: 6px !important; }
+h3 { font-size: 0.95rem !important; margin-bottom: 4px !important; }
+h4 { font-size: 0.9rem !important; margin-bottom: 4px !important; }
+h5 { font-size: 0.85rem !important; margin-bottom: 4px !important; }
+h6 { font-size: 0.8rem !important; margin-bottom: 4px !important; }
+
+.alert {
+    padding: 6px 10px !important;
+    margin-bottom: 6px !important;
+    font-size: 0.78rem !important;
+}
+
+.badge {
+    padding: 2px 6px !important;
+    font-size: 0.68rem !important;
+}
+
+.nav-tabs .nav-link {
+    padding: 5px 12px !important;
+    font-size: 0.78rem !important;
+}
+
+hr {
+    margin: 6px 0 !important;
+}
+
+/* بطاقات الأعمار (aging) */
+.aging-card, .bucket-card, .stat-card {
+    padding: 6px 8px !important;
+    margin-bottom: 4px !important;
+}
+
+.aging-card .h4, .aging-card .h5,
+.bucket-card .h4, .bucket-card .h5 {
+    font-size: 1rem !important;
+    margin: 2px 0 !important;
+}
+
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none !important;
+    margin: 0 !important;
+}
+input[type=number] {
+    -moz-appearance: textfield !important;
+}
+</style>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 16 16%22><text y=%2214%22 font-size=%2214%22>📒</text></svg>">
+</head>
+<body>
+
+<div class="page-header">
+    <div>
+        <h1><i class="bi bi-people-fill"></i> مجموعات العملاء</h1>
+        <div style="font-size: 0.72rem; color: #94a3b8; margin-top: 2px;">
+            إدارة مجموعات العملاء + فترة الائتمان + حد الائتمان
+        </div>
+    </div>
+    <div style="display: flex; gap: 5px;">
+        <a href="customers.html" class="btn-mini">
+            <i class="bi bi-people"></i> العملاء
+        </a>
+        <a href="aging_report.html" class="btn-mini">
+            <i class="bi bi-clock-history"></i> أعمار الديون
+        </a>
+        <a href="index.html#customers" class="btn-mini">
+            <i class="bi bi-house"></i> الرئيسية
+        </a>
+        <button class="btn-mini primary" onclick="openAdd()">
+            <i class="bi bi-plus-circle"></i> مجموعة جديدة
+        </button>
+    </div>
+</div>
+
+<!-- Groups Grid -->
+<div class="groups-grid" id="groups-grid">
+    <div style="grid-column: 1/-1; text-align: center; padding: 40px; color: #94a3b8;">
+        <i class="bi bi-hourglass-split" style="font-size: 2rem;"></i>
+        <div style="margin-top: 10px;">جاري التحميل...</div>
+    </div>
+</div>
+
+<!-- Modal Add/Edit -->
+<div class="modal fade" id="groupModal" tabindex="-1">
+<div class="modal-dialog">
+<div class="modal-content">
+<div class="modal-header">
+    <h5 class="modal-title" id="modal-title">
+        <i class="bi bi-plus-circle"></i> مجموعة جديدة
+    </h5>
+    <button class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+</div>
+<div class="modal-body">
+    <div class="row g-2">
+        <div class="col-md-6">
+            <label class="form-label">الكود *</label>
+            <input class="form-control" id="f-code" placeholder="GRP-XXX">
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">الاسم بالعربي *</label>
+            <input class="form-control" id="f-name_ar">
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">الاسم بالإنجليزي</label>
+            <input class="form-control" id="f-name_en">
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">فترة الائتمان (يوم) *</label>
+            <input type="number" class="form-control" id="f-credit_days" value="30" min="0">
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">حد الائتمان (ج.م)</label>
+            <input type="number" class="form-control" id="f-credit_limit" value="0" min="0">
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">نسبة الخصم (%)</label>
+            <input type="number" class="form-control" id="f-discount_pct" value="0" min="0" max="100" step="0.1">
+        </div>
+        <div class="col-md-12">
+            <label class="form-label">اللون</label>
+            <div class="color-picker" id="color-picker"></div>
+        </div>
+        <div class="col-12">
+            <label class="form-label">ملاحظات</label>
+            <textarea class="form-control" id="f-notes" rows="2"></textarea>
+        </div>
+    </div>
+</div>
+<div class="modal-footer">
+    <button class="btn btn-secondary btn-sm" data-bs-dismiss="modal">إلغاء</button>
+    <button class="btn btn-primary btn-sm" onclick="save()">
+        <i class="bi bi-check-circle"></i> حفظ
+    </button>
+</div>
+</div>
+</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+const API = '/api/v1/customer-groups';
+const modal = new bootstrap.Modal(document.getElementById('groupModal'));
+let editId = null;
+let selectedColor = '#6366f1';
+
+const COLORS = [
+    '#6366f1', '#8b5cf6', '#ec4899', '#ef4444',
+    '#f59e0b', '#10b981', '#06b6d4', '#0ea5e9',
+    '#14b8a6', '#84cc16', '#f97316', '#64748b'
+];
+
+// ============================================================
+// Load Groups
+// ============================================================
+async function load() {
+    try {
+        const r = await fetch(`${API}/`).then(x => x.json());
+        const groups = r.data || [];
+        
+        if (!groups.length) {
+            document.getElementById('groups-grid').innerHTML = 
+                '<div style="grid-column:1/-1; text-align:center; padding:40px; color:#94a3b8;">لا توجد مجموعات</div>';
+            return;
+        }
+        
+        document.getElementById('groups-grid').innerHTML = groups.map(g => {
+            const color = g.color || '#6366f1';
+            return `
+                <div class="group-card" style="--group-color: ${color}; --group-shadow: ${hexToRgba(color, 0.3)};">
+                    <div class="group-card-header">
+                        <div class="group-icon">
+                            <i class="bi bi-people-fill"></i>
+                        </div>
+                        <div class="group-info">
+                            <div class="group-name">${g.name_ar}</div>
+                            <div class="group-code">${g.code}</div>
+                        </div>
+                    </div>
+                    
+                    <div class="group-stats">
+                        <div class="group-stat">
+                            <div class="group-stat-value">${g.customers_count || 0}</div>
+                            <div class="group-stat-label">عميل</div>
+                        </div>
+                        <div class="group-stat">
+                            <div class="group-stat-value">${g.credit_days}</div>
+                            <div class="group-stat-label">يوم</div>
+                        </div>
+                        <div class="group-stat">
+                            <div class="group-stat-value">${(g.total_sales||0).toLocaleString('en-US', {maximumFractionDigits: 0})}</div>
+                            <div class="group-stat-label">مبيعات</div>
+                        </div>
+                    </div>
+                    
+                    <div class="group-actions">
+                        <button class="btn-mini" onclick="openEdit(${g.id})">
+                            <i class="bi bi-pencil"></i> تعديل
+                        </button>
+                        <button class="btn-mini" onclick="viewCustomers(${g.id})">
+                            <i class="bi bi-eye"></i> العملاء
+                        </button>
+                        <button class="btn-mini" onclick="del(${g.id}, '${g.name_ar}')" style="color:#dc2626; border-color:#fecaca;">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    } catch (e) {
+        console.error(e);
+        document.getElementById('groups-grid').innerHTML = 
+            '<div style="grid-column:1/-1; text-align:center; padding:40px; color:#dc2626;">خطأ في التحميل</div>';
+    }
+}
+
+// ============================================================
+// Color Picker
+// ============================================================
+function renderColorPicker() {
+    document.getElementById('color-picker').innerHTML = COLORS.map(c => `
+        <div class="color-option ${c === selectedColor ? 'selected' : ''}" 
+             style="background: ${c};"
+             onclick="selectColor('${c}')"></div>
+    `).join('');
+}
+
+function selectColor(color) {
+    selectedColor = color;
+    renderColorPicker();
+}
+
+// ============================================================
+// Add / Edit
+// ============================================================
+function openAdd() {
+    editId = null;
+    selectedColor = '#6366f1';
+    
+    ['f-code','f-name_ar','f-name_en','f-notes'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('f-credit_days').value = 30;
+    document.getElementById('f-credit_limit').value = 0;
+    document.getElementById('f-discount_pct').value = 0;
+    document.getElementById('f-code').disabled = false;
+    
+    document.getElementById('modal-title').innerHTML = '<i class="bi bi-plus-circle"></i> مجموعة جديدة';
+    renderColorPicker();
+    modal.show();
+}
+
+async function openEdit(id) {
+    editId = id;
+    const r = await fetch(`${API}/${id}`).then(x => x.json());
+    if (!r.success) return;
+    
+    const g = r.data;
+    document.getElementById('f-code').value = g.code || '';
+    document.getElementById('f-code').disabled = true;
+    document.getElementById('f-name_ar').value = g.name_ar || '';
+    document.getElementById('f-name_en').value = g.name_en || '';
+    document.getElementById('f-credit_days').value = g.credit_days || 30;
+    document.getElementById('f-credit_limit').value = g.credit_limit || 0;
+    document.getElementById('f-discount_pct').value = g.discount_pct || 0;
+    document.getElementById('f-notes').value = g.notes || '';
+    selectedColor = g.color || '#6366f1';
+    
+    document.getElementById('modal-title').innerHTML = '<i class="bi bi-pencil"></i> تعديل المجموعة';
+    renderColorPicker();
+    modal.show();
+}
+
+async function save() {
+    const data = {
+        code: document.getElementById('f-code').value.trim(),
+        name_ar: document.getElementById('f-name_ar').value.trim(),
+        name_en: document.getElementById('f-name_en').value.trim(),
+        credit_days: parseInt(document.getElementById('f-credit_days').value) || 30,
+        credit_limit: parseFloat(document.getElementById('f-credit_limit').value) || 0,
+        discount_pct: parseFloat(document.getElementById('f-discount_pct').value) || 0,
+        color: selectedColor,
+        notes: document.getElementById('f-notes').value.trim(),
+    };
+    
+    if (!data.code || !data.name_ar) {
+        alert('الكود والاسم مطلوبان');
+        return;
+    }
+    
+    let url = API + '/';
+    let method = 'POST';
+    if (editId) {
+        url = `${API}/${editId}`;
+        method = 'PUT';
+        delete data.code;  // ما نغيرش الكود
+    }
+    
+    try {
+        const r = await fetch(url, {
+            method: method,
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(data)
+        }).then(x => x.json());
+        
+        if (r.success) {
+            modal.hide();
+            load();
+        } else {
+            alert(r.message || 'خطأ');
+        }
+    } catch (e) {
+        alert('خطأ: ' + e.message);
+    }
+}
+
+// ============================================================
+// Delete
+// ============================================================
+async function del(id, name) {
+    if (!confirm(`حذف المجموعة "${name}"؟`)) return;
+    try {
+        const r = await fetch(`${API}/${id}`, { method: 'DELETE' }).then(x => x.json());
+        if (r.success) {
+            load();
+        } else {
+            alert(r.message || 'خطأ');
+        }
+    } catch (e) {
+        alert('خطأ');
+    }
+}
+
+// ============================================================
+// View Customers
+// ============================================================
+function viewCustomers(groupId) {
+    window.location.href = `customers.html?group_id=${groupId}`;
+}
+
+// ============================================================
+// Helper
+// ============================================================
+function hexToRgba(hex, alpha) {
+    const r = parseInt(hex.slice(1,3), 16);
+    const g = parseInt(hex.slice(3,5), 16);
+    const b = parseInt(hex.slice(5,7), 16);
+    return `rgba(${r},${g},${b},${alpha})`;
+}
+
+// ============================================================
+// Init
+// ============================================================
+load();
+</script>
+</body>
+</html>

@@ -1,22 +1,25 @@
-﻿from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify
 from app.database import db
 from app.utils import json_safe
+from app.services.payment_service import payment_service
 from datetime import datetime
 
 pay_bp = Blueprint('payments', __name__)
 
 
-def _next_payment_no(conn):
-    cur = conn.execute("SELECT COUNT(*)+1 as n FROM supplier_payments")
-    return f"PAY-{datetime.now().year}-{cur.fetchone()['n']:06d}"
+# =========================================
+# Payment Methods
+# =========================================
+
+@pay_bp.route('/methods/', methods=['GET'])
+def list_methods():
+    rows = db.query("SELECT * FROM payment_methods WHERE is_active=1 ORDER BY id")
+    return jsonify({'success': True, 'data': json_safe(rows)})
 
 
-def _next_receipt_no(conn):
-    cur = conn.execute("SELECT COUNT(*)+1 as n FROM customer_receipts")
-    return f"RCP-{datetime.now().year}-{cur.fetchone()['n']:06d}"
-
-
-# ============ Supplier Payments ============
+# =========================================
+# Supplier Payments
+# =========================================
 
 @pay_bp.route('/payments/', methods=['GET'])
 def list_payments():
@@ -39,71 +42,59 @@ def get_payment(pid):
     """, (pid,), one=True)
     if not row:
         return jsonify({'success': False, 'message': 'غير موجود'}), 404
+    
+    # التوزيعات
+    allocations = db.query("""
+        SELECT pa.*, pi.invoice_date
+        FROM payment_allocations pa
+        LEFT JOIN purchase_invoices pi ON pa.invoice_id = pi.id
+        WHERE pa.payment_id=? AND pa.payment_type='SUPPLIER_PAYMENT'
+    """, (pid,))
+    row['allocations'] = allocations
+    
     return jsonify({'success': True, 'data': json_safe(row)})
 
 
 @pay_bp.route('/payments/', methods=['POST'])
 def create_payment():
     d = request.get_json() or {}
+    
     if not d.get('supplier_id') or not d.get('amount'):
         return jsonify({'success': False, 'message': 'بيانات ناقصة'}), 400
-
-    with db.transaction() as conn:
-        no = _next_payment_no(conn)
-        cur = conn.execute("""
-            INSERT INTO supplier_payments
-            (payment_no, payment_date, supplier_id, payment_method,
-             amount, reference, notes, status)
-            VALUES (?, ?, ?, ?, ?, ?, ?, 'POSTED')
-        """, (no, d.get('payment_date', datetime.now().strftime('%Y-%m-%d')),
-              d['supplier_id'], d.get('payment_method', 'CASH'),
-              float(d['amount']), d.get('reference'), d.get('notes')))
-        pid = cur.lastrowid
-
-        # Journal entry: Debit AP (2211), Credit Cash/Bank
-        je_no = f"JE-{datetime.now().year}-{str(conn.execute('SELECT COUNT(*)+1 as n FROM journal_entries').fetchone()['n']).zfill(6)}"
-        cur = conn.execute("""
-            INSERT INTO journal_entries
-            (entry_no, entry_date, reference_type, reference_id, reference_no, description, status)
-            VALUES (?, ?, 'SUPPLIER_PAYMENT', ?, ?, ?, 'POSTED')
-        """, (je_no, d.get('payment_date'), pid, no, f"سداد مورد {no}"))
-        je_id = cur.lastrowid
-
-        # Debit AP
-        conn.execute("""
-            INSERT INTO journal_entry_lines
-            (journal_entry_id, line_no, account_code, description, debit_amount, credit_amount)
-            VALUES (?, 1, '2211', 'ذمم الموردين - سداد', ?, 0)
-        """, (je_id, float(d['amount'])))
-
-        # Credit Cash
-        cash_acc = '1211' if d.get('payment_method') == 'CASH' else '1212'
-        conn.execute("""
-            INSERT INTO journal_entry_lines
-            (journal_entry_id, line_no, account_code, description, debit_amount, credit_amount)
-            VALUES (?, 2, ?, 'نقدية - سداد مورد', 0, ?)
-        """, (je_id, cash_acc, float(d['amount'])))
-
-        conn.execute("UPDATE journal_entries SET total_debit=?, total_credit=? WHERE id=?",
-                     (float(d['amount']), float(d['amount']), je_id))
-        conn.execute("UPDATE supplier_payments SET journal_entry_id=? WHERE id=?", (je_id, pid))
-
-    return jsonify({'success': True, 'data': {'id': pid, 'payment_no': no}, 'message': 'تم السداد'}), 201
+    
+    result = payment_service.create_supplier_payment(d, user_id=1)
+    
+    if result['success']:
+        return jsonify(result), 201
+    return jsonify(result), 400
 
 
 @pay_bp.route('/payments/<int:pid>', methods=['DELETE'])
 def delete_payment(pid):
     with db.transaction() as conn:
-        cur = conn.execute("SELECT journal_entry_id FROM supplier_payments WHERE id=?", (pid,))
+        cur = conn.cursor()
+        
+        # حذف القيد
+        cur.execute("SELECT journal_entry_id FROM supplier_payments WHERE id=?", (pid,))
         row = cur.fetchone()
         if row and row['journal_entry_id']:
-            conn.execute("DELETE FROM journal_entry_lines WHERE journal_entry_id=?", (row['journal_entry_id'],))
-            conn.execute("DELETE FROM journal_entries WHERE id=?", (row['journal_entry_id'],))
-        conn.execute("DELETE FROM supplier_payments WHERE id=?", (pid,))
+            cur.execute("DELETE FROM journal_entry_lines WHERE journal_entry_id=?", (row['journal_entry_id'],))
+            cur.execute("DELETE FROM journal_entries WHERE id=?", (row['journal_entry_id'],))
+        
+        # حذف التوزيعات
+        cur.execute("DELETE FROM payment_allocations WHERE payment_id=? AND payment_type='SUPPLIER_PAYMENT'", (pid,))
+        
+        # حذف الدفعة
+        cur.execute("DELETE FROM supplier_payments WHERE id=?", (pid,))
+        
+        conn.commit()
+    
     return jsonify({'success': True, 'message': 'تم الحذف'})
 
 
-# ============ Customer Receipts ============
+# =========================================
+# Customer Receipts
+# =========================================
 
 @pay_bp.route('/receipts/', methods=['GET'])
 def list_receipts():
@@ -126,63 +117,125 @@ def get_receipt(rid):
     """, (rid,), one=True)
     if not row:
         return jsonify({'success': False, 'message': 'غير موجود'}), 404
+    
+    allocations = db.query("""
+        SELECT pa.*, si.invoice_date
+        FROM payment_allocations pa
+        LEFT JOIN sales_invoices si ON pa.invoice_id = si.id
+        WHERE pa.payment_id=? AND pa.payment_type='CUSTOMER_RECEIPT'
+    """, (rid,))
+    row['allocations'] = allocations
+    
     return jsonify({'success': True, 'data': json_safe(row)})
 
 
 @pay_bp.route('/receipts/', methods=['POST'])
 def create_receipt():
     d = request.get_json() or {}
+    
     if not d.get('customer_id') or not d.get('amount'):
         return jsonify({'success': False, 'message': 'بيانات ناقصة'}), 400
-
-    with db.transaction() as conn:
-        no = _next_receipt_no(conn)
-        cur = conn.execute("""
-            INSERT INTO customer_receipts
-            (receipt_no, receipt_date, customer_id, receipt_method,
-             amount, reference, notes, status)
-            VALUES (?, ?, ?, ?, ?, ?, ?, 'POSTED')
-        """, (no, d.get('receipt_date', datetime.now().strftime('%Y-%m-%d')),
-              d['customer_id'], d.get('receipt_method', 'CASH'),
-              float(d['amount']), d.get('reference'), d.get('notes')))
-        rid = cur.lastrowid
-
-        # Journal: Debit Cash, Credit AR (1221)
-        je_no = f"JE-{datetime.now().year}-{str(conn.execute('SELECT COUNT(*)+1 as n FROM journal_entries').fetchone()['n']).zfill(6)}"
-        cur = conn.execute("""
-            INSERT INTO journal_entries
-            (entry_no, entry_date, reference_type, reference_id, reference_no, description, status)
-            VALUES (?, ?, 'CUSTOMER_RECEIPT', ?, ?, ?, 'POSTED')
-        """, (je_no, d.get('receipt_date'), rid, no, f"تحصيل من عميل {no}"))
-        je_id = cur.lastrowid
-
-        cash_acc = '1211' if d.get('receipt_method') == 'CASH' else '1212'
-        conn.execute("""
-            INSERT INTO journal_entry_lines
-            (journal_entry_id, line_no, account_code, description, debit_amount, credit_amount)
-            VALUES (?, 1, ?, 'نقدية - تحصيل', ?, 0)
-        """, (je_id, cash_acc, float(d['amount'])))
-
-        conn.execute("""
-            INSERT INTO journal_entry_lines
-            (journal_entry_id, line_no, account_code, description, debit_amount, credit_amount)
-            VALUES (?, 2, '1221', 'ذمم العملاء - تحصيل', 0, ?)
-        """, (je_id, float(d['amount'])))
-
-        conn.execute("UPDATE journal_entries SET total_debit=?, total_credit=? WHERE id=?",
-                     (float(d['amount']), float(d['amount']), je_id))
-        conn.execute("UPDATE customer_receipts SET journal_entry_id=? WHERE id=?", (je_id, rid))
-
-    return jsonify({'success': True, 'data': {'id': rid, 'receipt_no': no}, 'message': 'تم التحصيل'}), 201
+    
+    result = payment_service.create_customer_receipt(d, user_id=1)
+    
+    if result['success']:
+        return jsonify(result), 201
+    return jsonify(result), 400
 
 
 @pay_bp.route('/receipts/<int:rid>', methods=['DELETE'])
 def delete_receipt(rid):
     with db.transaction() as conn:
-        cur = conn.execute("SELECT journal_entry_id FROM customer_receipts WHERE id=?", (rid,))
+        cur = conn.cursor()
+        
+        cur.execute("SELECT journal_entry_id FROM customer_receipts WHERE id=?", (rid,))
         row = cur.fetchone()
         if row and row['journal_entry_id']:
-            conn.execute("DELETE FROM journal_entry_lines WHERE journal_entry_id=?", (row['journal_entry_id'],))
-            conn.execute("DELETE FROM journal_entries WHERE id=?", (row['journal_entry_id'],))
-        conn.execute("DELETE FROM customer_receipts WHERE id=?", (rid,))
+            cur.execute("DELETE FROM journal_entry_lines WHERE journal_entry_id=?", (row['journal_entry_id'],))
+            cur.execute("DELETE FROM journal_entries WHERE id=?", (row['journal_entry_id'],))
+        
+        cur.execute("DELETE FROM payment_allocations WHERE payment_id=? AND payment_type='CUSTOMER_RECEIPT'", (rid,))
+        cur.execute("DELETE FROM customer_receipts WHERE id=?", (rid,))
+        
+        conn.commit()
+    
+    return jsonify({'success': True, 'message': 'تم الحذف'})
+
+
+# =========================================
+# Open Invoices
+# =========================================
+
+@pay_bp.route('/open-invoices/supplier/<int:supplier_id>', methods=['GET'])
+def supplier_open_invoices(supplier_id):
+    invoices = payment_service.get_supplier_open_invoices(supplier_id)
+    return jsonify({'success': True, 'data': invoices})
+
+
+@pay_bp.route('/open-invoices/customer/<int:customer_id>', methods=['GET'])
+def customer_open_invoices(customer_id):
+    invoices = payment_service.get_customer_open_invoices(customer_id)
+    return jsonify({'success': True, 'data': invoices})
+
+
+
+# ============================================================
+# Payment Details
+# ============================================================
+
+@pay_bp.route('/details/<string:source_type>/<int:payment_id>', methods=['GET'])
+def get_payment_details(source_type, payment_id):
+    """يجيب تفاصيل دفع معين"""
+    row = db.query(
+        "SELECT * FROM payment_details WHERE source_type=? AND payment_id=?",
+        (source_type, payment_id),
+        one=True
+    )
+    return jsonify({'success': True, 'data': json_safe(row)})
+
+
+@pay_bp.route('/details', methods=['POST'])
+def save_payment_details():
+    """يحفظ تفاصيل دفع"""
+    d = request.get_json() or {}
+    
+    payment_type = d.get('payment_type')
+    payment_id = d.get('payment_id')
+    source_type = d.get('source_type')
+    
+    if not payment_type or not payment_id or not source_type:
+        return jsonify({'success': False, 'message': 'بيانات ناقصة'}), 400
+    
+    # امسح القديم
+    db.execute(
+        "DELETE FROM payment_details WHERE source_type=? AND payment_id=?",
+        (source_type, payment_id)
+    )
+    
+    # ضيف الجديد
+    db.execute("""
+        INSERT INTO payment_details 
+        (payment_type, payment_id, source_type,
+         cheque_no, cheque_bank, cheque_date, cheque_status,
+         transfer_no, transfer_bank,
+         card_txn_no, card_last4, card_bank,
+         wallet_name, wallet_txn_no, wallet_phone,
+         notes)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    """, (
+        payment_type, payment_id, source_type,
+        d.get('cheque_no'), d.get('cheque_bank'), d.get('cheque_date'), d.get('cheque_status'),
+        d.get('transfer_no'), d.get('transfer_bank'),
+        d.get('card_txn_no'), d.get('card_last4'), d.get('card_bank'),
+        d.get('wallet_name'), d.get('wallet_txn_no'), d.get('wallet_phone'),
+        d.get('notes')
+    ))
+    
+    return jsonify({'success': True, 'message': 'تم الحفظ'})
+
+
+@pay_bp.route('/details/<int:detail_id>', methods=['DELETE'])
+def delete_payment_details(detail_id):
+    """يمسح تفاصيل دفع"""
+    db.execute("DELETE FROM payment_details WHERE id=?", (detail_id,))
     return jsonify({'success': True, 'message': 'تم الحذف'})

@@ -3,12 +3,178 @@
 <head><meta charset="UTF-8"><title>التقارير</title>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
-<link href="style.css" rel="stylesheet"></head>
+<link href="style.css" rel="stylesheet"><script src="permissions.js"></script>
+<style>
+/* ============================================
+   إلغاء أسهم input[type=number]
+   ============================================ */
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none !important;
+    margin: 0 !important;
+}
+input[type=number] {
+    -moz-appearance: textfield !important;
+    appearance: textfield !important;
+}
+input[type="number"] {
+    -moz-appearance: textfield !important;
+}
+</style>
+
+
+
+<style id="compact-spacing-global">
+/* ============================================
+   توحيد المسافات المضغوطة
+   ============================================ */
+
+.table td, .table th {
+    padding: 3px 6px !important;
+    font-size: 0.75rem !important;
+    vertical-align: middle !important;
+    line-height: 1.2 !important;
+}
+
+.table tbody tr {
+    height: auto !important;
+}
+
+.form-control, .form-select {
+    font-size: 0.75rem !important;
+    line-height: 1.2 !important;
+}
+
+.form-control-sm, .form-select-sm {
+    height: 26px !important;
+    padding: 2px 6px !important;
+    font-size: 0.72rem !important;
+    line-height: 1 !important;
+}
+
+.btn {
+    padding: 3px 8px !important;
+    font-size: 0.72rem !important;
+    line-height: 1.2 !important;
+}
+
+.btn-sm {
+    padding: 2px 6px !important;
+    font-size: 0.7rem !important;
+}
+
+.card {
+    margin-bottom: 6px !important;
+}
+
+.card-body, .card.p-2, .card.p-3, .card.p-4 {
+    padding: 6px 8px !important;
+}
+
+.modal-header {
+    padding: 6px 12px !important;
+}
+
+.modal-title {
+    font-size: 0.9rem !important;
+}
+
+.modal-body {
+    padding: 8px 12px !important;
+}
+
+.modal-footer {
+    padding: 6px 12px !important;
+}
+
+.modal-footer .btn {
+    padding: 4px 10px !important;
+    font-size: 0.75rem !important;
+}
+
+.mb-1, .mb-2, .mb-3, .mb-4 {
+    margin-bottom: 4px !important;
+}
+
+.mt-1, .mt-2, .mt-3, .mt-4 {
+    margin-top: 4px !important;
+}
+
+.ms-1, .ms-2, .ms-3 {
+    margin-right: 4px !important;
+}
+
+.me-1, .me-2, .me-3 {
+    margin-left: 4px !important;
+}
+
+.p-1, .p-2, .p-3, .p-4 {
+    padding: 4px !important;
+}
+
+.g-1, .g-2, .g-3 {
+    gap: 4px !important;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    line-height: 1.3 !important;
+}
+
+h1 { font-size: 1.2rem !important; margin-bottom: 6px !important; }
+h2 { font-size: 1.05rem !important; margin-bottom: 6px !important; }
+h3 { font-size: 0.95rem !important; margin-bottom: 4px !important; }
+h4 { font-size: 0.9rem !important; margin-bottom: 4px !important; }
+h5 { font-size: 0.85rem !important; margin-bottom: 4px !important; }
+h6 { font-size: 0.8rem !important; margin-bottom: 4px !important; }
+
+.alert {
+    padding: 6px 10px !important;
+    margin-bottom: 6px !important;
+    font-size: 0.78rem !important;
+}
+
+.badge {
+    padding: 2px 6px !important;
+    font-size: 0.68rem !important;
+}
+
+.nav-tabs .nav-link {
+    padding: 5px 12px !important;
+    font-size: 0.78rem !important;
+}
+
+hr {
+    margin: 6px 0 !important;
+}
+
+/* بطاقات الأعمار (aging) */
+.aging-card, .bucket-card, .stat-card {
+    padding: 6px 8px !important;
+    margin-bottom: 4px !important;
+}
+
+.aging-card .h4, .aging-card .h5,
+.bucket-card .h4, .bucket-card .h5 {
+    font-size: 1rem !important;
+    margin: 2px 0 !important;
+}
+
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none !important;
+    margin: 0 !important;
+}
+input[type=number] {
+    -moz-appearance: textfield !important;
+}
+</style>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 16 16%22><text y=%2214%22 font-size=%2214%22>📒</text></svg>">
+</head>
 <body><div class="container-fluid"><div class="row">
 <div class="col-md-2 sidebar p-0">
 <div class="brand"><i class="bi bi-box-seam" style="font-size:2rem;"></i><h5 class="mt-2 mb-0">موديول المخازن</h5></div>
 <nav class="mt-3">
-<a href="index.html"><i class="bi bi-speedometer2"></i> لوحة التحكم</a>
+<a href="index.html"><i class="bi bi-house-fill"></i> الرئيسية</a>
 <a href="notifications.html"><i class="bi bi-bell"></i> الإشعارات</a>
 <a href="accounts.html"><i class="bi bi-book"></i> الدليل المحاسبي</a>
 <a href="warehouses.html"><i class="bi bi-building"></i> المستودعات</a>
@@ -37,6 +203,17 @@
 </nav></div>
 <div class="col-md-10 p-4">
 <h2 class="mb-4"><i class="bi bi-file-earmark-bar-graph"></i> التقارير</h2>
+<div class="d-flex gap-2 mb-3">
+<button class="btn btn-sm btn-outline-success" onclick="exportToExcel('reports')" title="تصدير Excel">
+                <i class="bi bi-file-earmark-excel"></i> Excel
+            </button>
+            <a href="index.html" class="btn btn-outline-secondary">
+                <i class="bi bi-house-fill"></i> الرئيسية
+            </a>
+<button class="btn btn-success" onclick="printCurrentReport()">
+    <i class="bi bi-printer-fill"></i> طباعة A4
+</button>
+</div>
 
 <!-- Filters Bar -->
 <div class="card p-3 mb-3">
@@ -59,6 +236,7 @@
 <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-issues" onclick="currentTab='issues'; loadCurrent()"><i class="bi bi-arrow-up-circle text-danger"></i> حركات الصرف</button></li>
 <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-transfers" onclick="currentTab='transfers'; loadCurrent()"><i class="bi bi-arrow-left-right text-info"></i> التحويلات</button></li>
 <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-counts" onclick="currentTab='counts'; loadCurrent()"><i class="bi bi-clipboard-check text-warning"></i> الجرد</button></li>
+        <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-batches" onclick="currentTab='batches'; loadCurrent()"><i class="bi bi-calendar-check text-warning"></i> الدفعات</button></li>
 </ul>
 
 <div class="tab-content">
@@ -87,9 +265,9 @@
 <table class="table table-hover table-sm">
 <thead class="table-light"><tr>
 <th>رقم الحركة</th><th>التاريخ</th><th>المستودع</th><th>الصنف</th>
-<th>الوحدة</th><th>الكمية</th><th>الكمية الأساسية</th><th>التكلفة</th><th>المرجع</th>
+<th>الوحدة</th><th>الكمية</th><th>الكمية الأساسية</th><th>التكلفة</th><th>المرجع</th><th>رقم القيد</th>
 </tr></thead>
-<tbody id="receipts-body"><tr><td colspan="9" class="text-center">جاري التحميل...</td></tr></tbody>
+<tbody id="receipts-body"><tr><td colspan="10" class="text-center">جاري التحميل...</td></tr></tbody>
 </table>
 </div>
 </div>
@@ -102,9 +280,9 @@
 <table class="table table-hover table-sm">
 <thead class="table-light"><tr>
 <th>رقم الحركة</th><th>التاريخ</th><th>المستودع</th><th>الصنف</th>
-<th>الوحدة</th><th>الكمية</th><th>الكمية الأساسية</th><th>التكلفة</th><th>المرجع</th>
+<th>الوحدة</th><th>الكمية</th><th>الكمية الأساسية</th><th>التكلفة</th><th>المرجع</th><th>رقم القيد</th>
 </tr></thead>
-<tbody id="issues-body"><tr><td colspan="9" class="text-center">جاري التحميل...</td></tr></tbody>
+<tbody id="issues-body"><tr><td colspan="10" class="text-center">جاري التحميل...</td></tr></tbody>
 </table>
 </div>
 </div>
@@ -117,9 +295,9 @@
 <table class="table table-hover table-sm">
 <thead class="table-light"><tr>
 <th>رقم التحويل</th><th>التاريخ</th><th>من مستودع</th><th>إلى مستودع</th>
-<th>الصنف</th><th>الكمية</th><th>القيمة</th>
+<th>الصنف</th><th>الكمية</th><th>القيمة</th><th>رقم القيد</th>
 </tr></thead>
-<tbody id="transfers-body"><tr><td colspan="7" class="text-center">جاري التحميل...</td></tr></tbody>
+<tbody id="transfers-body"><tr><td colspan="8" class="text-center">جاري التحميل...</td></tr></tbody>
 </table>
 </div>
 </div>
@@ -132,13 +310,42 @@
 <table class="table table-hover table-sm">
 <thead class="table-light"><tr>
 <th>رقم الجرد</th><th>التاريخ</th><th>المستودع</th><th>الصنف</th>
-<th>الرصيد الدفتري</th><th>الكمية الفعلية</th><th>الفرق</th><th>قيمة الفرق</th><th>الحالة</th>
+<th>الرصيد الدفتري</th><th>الكمية الفعلية</th><th>الفرق</th><th>قيمة الفرق</th><th>الحالة</th><th>رقم القيد</th>
 </tr></thead>
-<tbody id="counts-body"><tr><td colspan="9" class="text-center">جاري التحميل...</td></tr></tbody>
+<tbody id="counts-body"><tr><td colspan="10" class="text-center">جاري التحميل...</td></tr></tbody>
 </table>
 </div>
 </div>
 </div>
+
+            <div class="tab-pane fade" id="tab-batches">
+                <div class="card p-3">
+                    <div class="d-flex justify-content-between mb-2">
+                        <h5><i class="bi bi-calendar-check"></i> تقارير الدفعات والصلاحية</h5>
+                        <a href="batches_report.html" class="btn btn-sm btn-outline-primary" target="_blank">
+                            <i class="bi bi-arrows-angle-expand"></i> عرض مفصّل
+                        </a>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover table-sm">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>الدفعة</th>
+                                    <th>الصنف</th>
+                                    <th>المستودع</th>
+                                    <th class="text-end">الكمية</th>
+                                    <th class="text-end">القيمة</th>
+                                    <th>تاريخ الانتهاء</th>
+                                    <th>الأيام المتبقية</th>
+                                </tr>
+                            </thead>
+                            <tbody id="batches-body">
+                                <tr><td colspan="7" class="text-center text-muted py-3">جاري التحميل...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
 </div>
 
 </div></div></div>
@@ -187,12 +394,48 @@ function resetFilters(){
  loadCurrent();
 }
 
+
+
+async function loadBatches(){
+ const r = await fetch(`${API}/reports/batches`).then(x=>x.json());
+ const rows = r.data||[];
+ const tbody = document.getElementById('batches-body');
+ if (!tbody) return;
+
+ if (!rows.length) {
+  tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-3">لا توجد دفعات</td></tr>';
+  return;
+ }
+
+ tbody.innerHTML = rows.map(x=>{
+  const days = x.days_to_expiry;
+  let badge = '—';
+  if (days !== null && days !== undefined) {
+   if (days < 0) badge = `<span class="badge bg-danger">منتهية (${Math.abs(days)} يوم)</span>`;
+   else if (days <= 30) badge = `<span class="badge bg-danger">${days} يوم</span>`;
+   else if (days <= 90) badge = `<span class="badge bg-warning text-dark">${days} يوم</span>`;
+   else badge = `<span class="badge bg-success">${days} يوم</span>`;
+  }
+  return `<tr>
+   <td><code>${x.batch_no}</code></td>
+   <td><code>${x.item_code}</code> ${x.item_name}</td>
+   <td>${x.warehouse_name}</td>
+   <td class="text-end">${parseFloat(x.quantity).toFixed(2)}</td>
+   <td class="text-end">${parseFloat(x.total_value||0).toFixed(2)}</td>
+   <td>${x.expiry_date||'—'}</td>
+   <td>${badge}</td>
+  </tr>`;
+ }).join('');
+}
+
+
 function loadCurrent(){
  if (currentTab === 'stock') loadStock();
  else if (currentTab === 'receipts') loadReceipts();
  else if (currentTab === 'issues') loadIssues();
  else if (currentTab === 'transfers') loadTransfers();
  else if (currentTab === 'counts') loadCounts();
+ else if (currentTab === 'batches') loadBatches();
 }
 
 async function loadStock(){
@@ -225,7 +468,8 @@ async function loadReceipts(){
    <td>${parseFloat(x.base_quantity||x.quantity).toFixed(2)}</td>
    <td>${parseFloat(x.total_cost||0).toFixed(2)}</td>
    <td><small>${x.reference_no||'-'}</small></td>
-  </tr>`).join('') : '<tr><td colspan="9" class="text-center text-muted">لا توجد حركات</td></tr>';
+   <td>${x.journal_entry_no ? '<a href="journal.html?id=' + x.journal_entry_id + '" class="badge bg-info text-decoration-none"><i class="bi bi-journal-text"></i> ' + x.journal_entry_no + '</a>' : '—'}</td>
+  </tr>`).join('') : '<tr><td colspan="10" class="text-center text-muted">لا توجد حركات</td></tr>';
 }
 
 async function loadIssues(){
@@ -242,7 +486,8 @@ async function loadIssues(){
    <td>${parseFloat(x.base_quantity||x.quantity).toFixed(2)}</td>
    <td>${parseFloat(x.total_cost||0).toFixed(2)}</td>
    <td><small>${x.reference_no||'-'}</small></td>
-  </tr>`).join('') : '<tr><td colspan="9" class="text-center text-muted">لا توجد حركات</td></tr>';
+   <td>${x.journal_entry_no ? '<a href="journal.html?id=' + x.journal_entry_id + '" class="badge bg-info text-decoration-none"><i class="bi bi-journal-text"></i> ' + x.journal_entry_no + '</a>' : '—'}</td>
+  </tr>`).join('') : '<tr><td colspan="10" class="text-center text-muted">لا توجد حركات</td></tr>';
 }
 
 async function loadTransfers(){
@@ -257,7 +502,8 @@ async function loadTransfers(){
    <td>${x.item_name}</td>
    <td>${parseFloat(x.quantity).toFixed(2)}</td>
    <td>${parseFloat(x.total_cost||0).toFixed(2)}</td>
-  </tr>`).join('') : '<tr><td colspan="7" class="text-center text-muted">لا توجد تحويلات</td></tr>';
+   <td>${x.journal_entry_no ? '<a href="journal.html?id=' + x.journal_entry_id + '" class="badge bg-info text-decoration-none" title="عرض القيد"><i class="bi bi-journal-text"></i> ' + x.journal_entry_no + '</a>' : '—'}</td>
+  </tr>`).join('') : '<tr><td colspan="8" class="text-center text-muted">لا توجد تحويلات</td></tr>';
 }
 
 async function loadCounts(){
@@ -277,9 +523,57 @@ async function loadCounts(){
    <td class="${vClass}"><strong>${v.toFixed(2)}</strong></td>
    <td class="${vClass}">${parseFloat(x.variance_value||0).toFixed(2)}</td>
    <td><span class="badge-status badge-${x.status}">${x.status}</span></td>
+   <td>${x.journal_entry_no ? '<a href="journal.html?id=' + x.journal_entry_id + '" class="badge bg-info text-decoration-none" title="عرض القيد"><i class="bi bi-journal-text"></i> ' + x.journal_entry_no + '</a>' : '—'}</td>
   </tr>`;
- }).join('') : '<tr><td colspan="9" class="text-center text-muted">لا توجد عمليات جرد</td></tr>';
+ }).join('') : '<tr><td colspan="10" class="text-center text-muted">لا توجد عمليات جرد</td></tr>';
 }
 
 (async()=>{ await loadLists(); loadCurrent(); })();
-</script></body></html>
+
+
+// ══════════════════════════════════════════
+// فتح شاشة الطباعة للتقرير الحالي
+// ══════════════════════════════════════════
+function printCurrentReport() {
+    // ربط اسم التاب بنوع التقرير في print_report.html
+    const typeMap = {
+        'stock': 'stock_balance',
+        'receipts': 'receipts',
+        'issues': 'issues',
+        'transfers': 'transfers',
+        'counts': 'stock_balance'  // الجرد → نستخدم stock_balance مؤقتًا
+    };
+
+    const type = typeMap[currentTab];
+    if (!type) {
+        alert('التقرير الحالي غير مدعوم للطباعة');
+        return;
+    }
+
+    // ناخد الفلاتر الحالية
+    let url = 'print_report.html?type=' + type;
+
+    const from = document.getElementById('f-from').value;
+    const to = document.getElementById('f-to').value;
+    const wh = document.getElementById('f-warehouse').value;
+    const it = document.getElementById('f-item').value;
+
+    if (from) url += '&date_from=' + from;
+    if (to) url += '&date_to=' + to;
+    if (wh) url += '&warehouse_id=' + wh;
+    if (it) url += '&item_id=' + it;
+
+    window.open(url, '_blank');
+}</script>
+<script>
+// دالة تصدير Excel
+function exportToExcel(templateKey) {
+    if (!templateKey) {
+        alert('مفيش قالب تصدير');
+        return;
+    }
+    window.location.href = '/api/v1/export/excel/export/' + templateKey;
+}
+</script>
+
+</body></html>

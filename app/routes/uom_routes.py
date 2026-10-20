@@ -1,6 +1,6 @@
-﻿from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify
 from app.database import db
-from app.utils import json_safe
+from app.utils import json_safe, enrich_with_user
 
 uom_bp = Blueprint('uom', __name__)
 
@@ -8,6 +8,7 @@ uom_bp = Blueprint('uom', __name__)
 @uom_bp.route('/', methods=['GET'])
 def list_uom():
     rows = db.query("SELECT * FROM units_of_measure ORDER BY id")
+    rows = enrich_with_user(rows)
     return jsonify({'success': True, 'data': json_safe(rows)})
 
 
@@ -58,3 +59,22 @@ def delete_uom(uid):
             return jsonify({'success': False, 'message': 'الوحدة مستخدمة في أصناف'}), 400
         conn.execute("DELETE FROM units_of_measure WHERE id=?", (uid,))
     return jsonify({'success': True, 'message': 'تم الحذف'})
+
+@uom_bp.route('/next-code', methods=['GET'])
+def next_code():
+    """جيب كود الوحدة التالي (UOM-001, UOM-002, ...)"""
+    row = db.query("""
+        SELECT code FROM units_of_measure 
+        WHERE code LIKE 'UOM-%' 
+        ORDER BY id DESC LIMIT 1
+    """, one=True)
+    
+    if row:
+        try:
+            num = int(row['code'].split('-')[-1]) + 1
+        except:
+            num = 1
+    else:
+        num = 1
+    
+    return jsonify({'success': True, 'code': f'UOM-{num:03d}'})

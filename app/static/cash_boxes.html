@@ -1,0 +1,1285 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>الخزائن والبنوك والبطاقات</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+body { font-family: 'Cairo','Segoe UI',Tahoma,sans-serif; background: #f5f6fa; padding: 20px; font-size: 13px; }
+.container-box { max-width: 1500px; margin: 0 auto; }
+h2 { color: #1e3c72; font-weight: 700; }
+
+.stat-card {
+    background: white; border-radius: 12px; padding: 15px 20px;
+    box-shadow: 0 1px 10px rgba(0,0,0,0.05);
+    display: flex; align-items: center; gap: 15px;
+    border-right: 4px solid;
+}
+.stat-card .icon { width: 50px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; color: white; }
+.stat-card .label { font-size: 0.78rem; color: #64748b; }
+.stat-card .value { font-size: 1.3rem; font-weight: 700; color: #1e3c72; }
+.stat-card .sub { font-size: 0.7rem; color: #94a3b8; }
+
+.nav-tabs { background: white; border-radius: 10px 10px 0 0; padding: 8px 14px 0; border-bottom: none; }
+.nav-tabs .nav-link { font-size: 0.9rem; font-weight: 600; color: #64748b; border: none; border-bottom: 3px solid transparent; padding: 10px 20px; }
+.nav-tabs .nav-link.active { color: #1e3c72; background: transparent; border-bottom-color: #eab308; }
+.tab-content { background: white; border-radius: 0 0 10px 10px; padding: 20px; box-shadow: 0 1px 6px rgba(0,0,0,0.05); }
+
+table { font-size: 0.85rem; }
+.badge-type-MAIN { background: #e3f2fd; color: #1565c0; }
+.badge-type-SUB { background: #fff3e0; color: #e65100; }
+.badge-DEBIT { background: #e8f5e9; color: #2e7d32; }
+.badge-CREDIT { background: #fce4ec; color: #c2185b; }
+.badge { padding: 4px 10px; border-radius: 12px; font-size: 0.72rem; font-weight: 600; }
+
+.box-row { border-bottom: 1px solid #f1f5f9; }
+.box-row:hover { background: #fafbfc; }
+.level-2 { padding-right: 30px; }
+.level-3 { padding-right: 60px; }
+
+/* ============================================
+   إلغاء أسهم input[type=number]
+   ============================================ */
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none !important;
+    margin: 0 !important;
+}
+input[type=number] {
+    -moz-appearance: textfield !important;
+    appearance: textfield !important;
+}
+input[type="number"] {
+    -moz-appearance: textfield !important;
+}
+
+</style>
+<script src="permissions.js"></script>
+
+<style>
+.upload-area {
+    border: 2px dashed #cbd5e1;
+    border-radius: 12px;
+    padding: 30px 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: #f8fafc;
+}
+.upload-area:hover {
+    border-color: #3b82f6;
+    background: #eff6ff;
+}
+.upload-area.dragover {
+    border-color: #10b981;
+    background: #ecfdf5;
+    transform: scale(1.02);
+}
+.upload-area i {
+    font-size: 2.5rem;
+    color: #94a3b8;
+    margin-bottom: 8px;
+}
+.upload-area .title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #475569;
+    margin-bottom: 4px;
+}
+.upload-area .sub {
+    font-size: 0.78rem;
+    color: #94a3b8;
+}
+.import-stats {
+    display: flex;
+    gap: 10px;
+    margin: 10px 0;
+}
+.import-stats .item {
+    flex: 1;
+    background: #f8fafc;
+    padding: 10px;
+    border-radius: 8px;
+    text-align: center;
+    border: 1px solid #e2e8f0;
+}
+.import-stats .num {
+    font-size: 1.4rem;
+    font-weight: 800;
+}
+.import-stats .lbl {
+    font-size: 0.72rem;
+    color: #64748b;
+}
+.preview-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.78rem;
+    margin-top: 8px;
+}
+.preview-table th {
+    background: #f1f5f9;
+    padding: 6px 8px;
+    text-align: right;
+    font-weight: 700;
+    color: #475569;
+    border-bottom: 1px solid #cbd5e1;
+}
+.preview-table td {
+    padding: 5px 8px;
+    border-bottom: 1px solid #f1f5f9;
+}
+</style>
+
+
+
+
+<style id="compact-spacing-global">
+/* ============================================
+   توحيد المسافات المضغوطة
+   ============================================ */
+
+.table td, .table th {
+    padding: 3px 6px !important;
+    font-size: 0.75rem !important;
+    vertical-align: middle !important;
+    line-height: 1.2 !important;
+}
+
+.table tbody tr {
+    height: auto !important;
+}
+
+.form-control, .form-select {
+    font-size: 0.75rem !important;
+    line-height: 1.2 !important;
+}
+
+.form-control-sm, .form-select-sm {
+    height: 26px !important;
+    padding: 2px 6px !important;
+    font-size: 0.72rem !important;
+    line-height: 1 !important;
+}
+
+.btn {
+    padding: 3px 8px !important;
+    font-size: 0.72rem !important;
+    line-height: 1.2 !important;
+}
+
+.btn-sm {
+    padding: 2px 6px !important;
+    font-size: 0.7rem !important;
+}
+
+.card {
+    margin-bottom: 6px !important;
+}
+
+.card-body, .card.p-2, .card.p-3, .card.p-4 {
+    padding: 6px 8px !important;
+}
+
+.modal-header {
+    padding: 6px 12px !important;
+}
+
+.modal-title {
+    font-size: 0.9rem !important;
+}
+
+.modal-body {
+    padding: 8px 12px !important;
+}
+
+.modal-footer {
+    padding: 6px 12px !important;
+}
+
+.modal-footer .btn {
+    padding: 4px 10px !important;
+    font-size: 0.75rem !important;
+}
+
+.mb-1, .mb-2, .mb-3, .mb-4 {
+    margin-bottom: 4px !important;
+}
+
+.mt-1, .mt-2, .mt-3, .mt-4 {
+    margin-top: 4px !important;
+}
+
+.ms-1, .ms-2, .ms-3 {
+    margin-right: 4px !important;
+}
+
+.me-1, .me-2, .me-3 {
+    margin-left: 4px !important;
+}
+
+.p-1, .p-2, .p-3, .p-4 {
+    padding: 4px !important;
+}
+
+.g-1, .g-2, .g-3 {
+    gap: 4px !important;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    line-height: 1.3 !important;
+}
+
+h1 { font-size: 1.2rem !important; margin-bottom: 6px !important; }
+h2 { font-size: 1.05rem !important; margin-bottom: 6px !important; }
+h3 { font-size: 0.95rem !important; margin-bottom: 4px !important; }
+h4 { font-size: 0.9rem !important; margin-bottom: 4px !important; }
+h5 { font-size: 0.85rem !important; margin-bottom: 4px !important; }
+h6 { font-size: 0.8rem !important; margin-bottom: 4px !important; }
+
+.alert {
+    padding: 6px 10px !important;
+    margin-bottom: 6px !important;
+    font-size: 0.78rem !important;
+}
+
+.badge {
+    padding: 2px 6px !important;
+    font-size: 0.68rem !important;
+}
+
+.nav-tabs .nav-link {
+    padding: 5px 12px !important;
+    font-size: 0.78rem !important;
+}
+
+hr {
+    margin: 6px 0 !important;
+}
+
+/* بطاقات الأعمار (aging) */
+.aging-card, .bucket-card, .stat-card {
+    padding: 6px 8px !important;
+    margin-bottom: 4px !important;
+}
+
+.aging-card .h4, .aging-card .h5,
+.bucket-card .h4, .bucket-card .h5 {
+    font-size: 1rem !important;
+    margin: 2px 0 !important;
+}
+
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none !important;
+    margin: 0 !important;
+}
+input[type=number] {
+    -moz-appearance: textfield !important;
+}
+</style>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 16 16%22><text y=%2214%22 font-size=%2214%22>📒</text></svg>">
+</head>
+<body>
+<div class="container-box">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="bi bi-safe-fill text-warning"></i> الخزائن والبنوك والبطاقات</h2>
+        <div>
+            <button class="btn btn-sm btn-outline-success" onclick="exportToExcel('cash_boxes')" title="تصدير Excel">
+                <i class="bi bi-file-earmark-excel"></i> Excel
+            </button>
+            <button class="btn btn-sm btn-outline-primary" onclick="openImportModal('cash_boxes')" title="استيراد Excel">
+                <i class="bi bi-file-earmark-arrow-up"></i> استيراد
+            </button>
+            <a href="settings_cash.html" class="btn btn-outline-warning"><i class="bi bi-gear"></i> السياسات</a>
+            <a href="cash_box_transactions.html" class="btn btn-outline-primary"><i class="bi bi-arrow-left-right"></i> الحركات</a>
+            <a href="index.html#accounting" class="btn btn-outline-secondary"><i class="bi bi-house"></i> الرئيسية</a>
+        </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-4">
+            <div class="stat-card" style="border-right-color: #4facfe;">
+                <div class="icon" style="background: linear-gradient(135deg, #4facfe, #00f2fe);"><i class="bi bi-safe2-fill"></i></div>
+                <div>
+                    <div class="label">إجمالي الخزائن</div>
+                    <div class="value" id="stat-boxes">-</div>
+                    <div class="sub" id="stat-boxes-total">0.00 ج.م</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stat-card" style="border-right-color: #43e97b;">
+                <div class="icon" style="background: linear-gradient(135deg, #43e97b, #38f9d7);"><i class="bi bi-bank2"></i></div>
+                <div>
+                    <div class="label">إجمالي البنوك</div>
+                    <div class="value" id="stat-banks">-</div>
+                    <div class="sub" id="stat-banks-total">0.00 ج.م</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="stat-card" style="border-right-color: #fa709a;">
+                <div class="icon" style="background: linear-gradient(135deg, #fa709a, #fee140);"><i class="bi bi-credit-card-2-front-fill"></i></div>
+                <div>
+                    <div class="label">إجمالي البطاقات</div>
+                    <div class="value" id="stat-cards">-</div>
+                    <div class="sub" id="stat-cards-total">0.00 ج.م</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabs -->
+    <ul class="nav nav-tabs" role="tablist">
+        <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-boxes"><i class="bi bi-safe2-fill"></i> الخزائن</button></li>
+        <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-banks"><i class="bi bi-bank2"></i> البنوك</button></li>
+        <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-cards"><i class="bi bi-credit-card-2-front-fill"></i> البطاقات</button></li>
+    </ul>
+
+    <div class="tab-content">
+        <!-- Tab: الخزائن -->
+        <div class="tab-pane fade show active" id="tab-boxes">
+            <div class="d-flex justify-content-between mb-3">
+                <h6 class="mb-0"><i class="bi bi-safe2-fill text-primary"></i> الخزائن النقدية</h6>
+                <button class="btn btn-primary btn-sm" onclick="openBoxModal()"><i class="bi bi-plus-circle"></i> خزينة جديدة</button>
+            </div>
+            <div id="boxesTree">
+                <div class="text-center text-muted p-4">جاري التحميل...</div>
+            </div>
+        </div>
+
+        <!-- Tab: البنوك -->
+        <div class="tab-pane fade" id="tab-banks">
+            <div class="d-flex justify-content-between mb-3">
+                <h6 class="mb-0"><i class="bi bi-bank2 text-success"></i> الحسابات البنكية</h6>
+                <button class="btn btn-success btn-sm" onclick="openBankModal()"><i class="bi bi-plus-circle"></i> بنك جديد</button>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>الكود</th>
+                            <th>البنك</th>
+                            <th>رقم الحساب</th>
+                            <th>IBAN</th>
+                            <th>الحساب المحاسبي</th>
+                            <th class="text-end">الرصيد</th>
+                            <th>إجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody id="banksTbl"><tr><td colspan="7" class="text-center text-muted">جاري التحميل...</td></tr></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Tab: البطاقات -->
+        <div class="tab-pane fade" id="tab-cards">
+            <div class="d-flex justify-content-between mb-3">
+                <h6 class="mb-0"><i class="bi bi-credit-card-2-front-fill text-danger"></i> البطاقات</h6>
+                <button class="btn btn-danger btn-sm" onclick="openCardModal()"><i class="bi bi-plus-circle"></i> بطاقة جديدة</button>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>الكود</th>
+                            <th>البطاقة</th>
+                            <th>النوع</th>
+                            <th>البنك</th>
+                            <th>آخر 4</th>
+                            <th>الحساب المحاسبي</th>
+                            <th class="text-end">الرصيد</th>
+                            <th>إجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody id="cardsTbl"><tr><td colspan="8" class="text-center text-muted">جاري التحميل...</td></tr></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- Box Modal -->
+<div class="modal fade" id="boxModal" tabindex="-1">
+<div class="modal-dialog modal-lg">
+<div class="modal-content">
+<div class="modal-header bg-primary text-white">
+    <h5 class="modal-title" id="boxModalTitle"><i class="bi bi-plus-circle"></i> خزينة جديدة</h5>
+    <button class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+</div>
+<div class="modal-body">
+    <div class="row g-3">
+        <div class="col-md-4">
+            <label class="form-label">الكود</label>
+            <input class="form-control" id="b-code" placeholder="تلقائي">
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">الاسم بالعربي *</label>
+            <input class="form-control" id="b-name_ar" required>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">الاسم بالإنجليزي</label>
+            <input class="form-control" id="b-name_en">
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">النوع *</label>
+            <select class="form-select" id="b-box_type" onchange="onBoxTypeChange()">
+                <option value="MAIN">رئيسية</option>
+                <option value="SUB">فرعية</option>
+            </select>
+        </div>
+        <div class="col-md-4" id="parent-wrap" style="display:none;">
+            <label class="form-label">الخزينة الأب</label>
+            <select class="form-select" id="b-parent_id"></select>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">الحساب المحاسبي *</label>
+            <select class="form-select" id="b-account_code">
+                <option value="">— اختر حساب —</option>
+            </select>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">الرصيد الافتتاحي</label>
+            <input type="number" class="form-control" id="b-opening_balance" value="0" step="0.01">
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">تاريخ الافتتاح</label>
+            <input type="date" class="form-control" id="b-opening_date">
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">العملة</label>
+            <select class="form-select" id="b-currency">
+                <option value="EGP">ج.م</option>
+                <option value="USD">USD</option>
+                <option value="EUR">EUR</option>
+                <option value="SAR">SAR</option>
+            </select>
+        </div>
+        <div class="col-12">
+            <label class="form-label">ملاحظات</label>
+            <textarea class="form-control" id="b-notes" rows="2"></textarea>
+        </div>
+    </div>
+</div>
+<div class="modal-footer">
+    <button class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+    <button class="btn btn-primary" onclick="saveBox()"><i class="bi bi-check-circle"></i> حفظ</button>
+</div>
+</div></div></div>
+
+<!-- Bank Modal -->
+<div class="modal fade" id="bankModal" tabindex="-1">
+<div class="modal-dialog modal-lg">
+<div class="modal-content">
+<div class="modal-header bg-success text-white">
+    <h5 class="modal-title" id="bankModalTitle"><i class="bi bi-plus-circle"></i> بنك جديد</h5>
+    <button class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+</div>
+<div class="modal-body">
+    <div class="row g-3">
+        <div class="col-md-4">
+            <label class="form-label">الكود</label>
+            <input class="form-control" id="bk-code" placeholder="تلقائي">
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">اسم البنك *</label>
+            <input class="form-control" id="bk-name_ar">
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">الاسم EN</label>
+            <input class="form-control" id="bk-name_en">
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">الحساب المحاسبي *</label>
+            <select class="form-select" id="bk-account_code"></select>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">رقم الحساب</label>
+            <input class="form-control" id="bk-account_number">
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">IBAN</label>
+            <input class="form-control" id="bk-iban">
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">SWIFT Code</label>
+            <input class="form-control" id="bk-swift_code">
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">الفرع</label>
+            <input class="form-control" id="bk-branch_name">
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">جهة الاتصال</label>
+            <input class="form-control" id="bk-contact_person">
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">الهاتف</label>
+            <input class="form-control" id="bk-phone">
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">الرصيد الافتتاحي</label>
+            <input type="number" class="form-control" id="bk-opening_balance" value="0" step="0.01">
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">تاريخ الافتتاح</label>
+            <input type="date" class="form-control" id="bk-opening_date">
+        </div>
+        <div class="col-12">
+            <label class="form-label">ملاحظات</label>
+            <textarea class="form-control" id="bk-notes" rows="2"></textarea>
+        </div>
+    </div>
+</div>
+<div class="modal-footer">
+    <button class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+    <button class="btn btn-success" onclick="saveBank()"><i class="bi bi-check-circle"></i> حفظ</button>
+</div>
+</div></div></div>
+
+<!-- Card Modal -->
+<div class="modal fade" id="cardModal" tabindex="-1">
+<div class="modal-dialog modal-lg">
+<div class="modal-content">
+<div class="modal-header bg-danger text-white">
+    <h5 class="modal-title" id="cardModalTitle"><i class="bi bi-plus-circle"></i> بطاقة جديدة</h5>
+    <button class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+</div>
+<div class="modal-body">
+    <div class="row g-3">
+        <div class="col-md-4">
+            <label class="form-label">الكود</label>
+            <input class="form-control" id="c-code" placeholder="تلقائي">
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">اسم البطاقة *</label>
+            <input class="form-control" id="c-name_ar">
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">النوع *</label>
+            <select class="form-select" id="c-card_type">
+                <option value="DEBIT">بطاقة خصم مباشر (Debit)</option>
+                <option value="CREDIT">بطاقة ائتمان (Credit)</option>
+            </select>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">البنك (للبطاقات Debit)</label>
+            <select class="form-select" id="c-bank_id">
+                <option value="">— بدون —</option>
+            </select>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">الحساب المحاسبي *</label>
+            <select class="form-select" id="c-account_code"></select>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">آخر 4 أرقام</label>
+            <input class="form-control" id="c-card_last4" maxlength="4">
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">حامل البطاقة</label>
+            <input class="form-control" id="c-card_holder">
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">تاريخ الانتهاء</label>
+            <input type="date" class="form-control" id="c-expiry_date">
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">حد الائتمان</label>
+            <input type="number" class="form-control" id="c-credit_limit" value="0" step="0.01">
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">الرصيد الافتتاحي</label>
+            <input type="number" class="form-control" id="c-opening_balance" value="0" step="0.01">
+        </div>
+        <div class="col-12">
+            <label class="form-label">ملاحظات</label>
+            <textarea class="form-control" id="c-notes" rows="2"></textarea>
+        </div>
+    </div>
+</div>
+<div class="modal-footer">
+    <button class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+    <button class="btn btn-danger" onclick="saveCard()"><i class="bi bi-check-circle"></i> حفظ</button>
+</div>
+</div></div></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+const API = '/api/v1';
+const boxModal = new bootstrap.Modal(document.getElementById('boxModal'));
+const bankModal = new bootstrap.Modal(document.getElementById('bankModal'));
+const cardModal = new bootstrap.Modal(document.getElementById('cardModal'));
+
+let boxes = [];
+let banks = [];
+let cards = [];
+let leaves = [];
+
+let editBoxId = null;
+let editBankId = null;
+let editCardId = null;
+
+// ============================================
+// Load
+// ============================================
+async function loadAll() {
+    try {
+        const [b, bk, c, a, s] = await Promise.all([
+            fetch(`${API}/cash-boxes/boxes/`).then(r => r.json()),
+            fetch(`${API}/cash-boxes/banks/`).then(r => r.json()),
+            fetch(`${API}/cash-boxes/cards/`).then(r => r.json()),
+            fetch(`${API}/cash-boxes/accounts/leaves`).then(r => r.json()),
+            fetch(`${API}/cash-boxes/stats`).then(r => r.json())
+        ]);
+        
+        boxes = b.data || [];
+        banks = bk.data || [];
+        cards = c.data || [];
+        leaves = a.data || [];
+        
+        // Stats
+        if (s.success) {
+            document.getElementById('stat-boxes').textContent = s.data.boxes.count;
+            document.getElementById('stat-boxes-total').textContent = s.data.boxes.total.toLocaleString('ar-EG', {minimumFractionDigits: 2}) + ' ج.م';
+            document.getElementById('stat-banks').textContent = s.data.banks.count;
+            document.getElementById('stat-banks-total').textContent = s.data.banks.total.toLocaleString('ar-EG', {minimumFractionDigits: 2}) + ' ج.م';
+            document.getElementById('stat-cards').textContent = s.data.cards.count;
+            document.getElementById('stat-cards-total').textContent = s.data.cards.total.toLocaleString('ar-EG', {minimumFractionDigits: 2}) + ' ج.م';
+        }
+        
+        renderBoxesTree();
+        renderBanks();
+        renderCards();
+    } catch(e) {
+        console.error(e);
+        alert('خطأ في تحميل البيانات');
+    }
+}
+
+// ============================================
+// Render Boxes Tree
+// ============================================
+function renderBoxesTree() {
+    if (!boxes.length) {
+        document.getElementById('boxesTree').innerHTML = '<div class="text-center text-muted p-4">لا توجد خزائن</div>';
+        return;
+    }
+    
+    const byId = {};
+    boxes.forEach(b => byId[b.id] = {...b, children: []});
+    const roots = [];
+    boxes.forEach(b => {
+        if (b.parent_id && byId[b.parent_id]) {
+            byId[b.parent_id].children.push(byId[b.id]);
+        } else {
+            roots.push(byId[b.id]);
+        }
+    });
+    
+    let html = '';
+    function renderNode(n, level = 1) {
+        const badge = n.box_type === 'MAIN' 
+            ? '<span class="badge badge-type-MAIN">رئيسية</span>' 
+            : '<span class="badge badge-type-SUB">فرعية</span>';
+        
+        html += `
+            <div class="box-row py-2 level-${level}">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <i class="bi bi-safe2-fill text-primary"></i>
+                        <code class="ms-1">${n.code}</code>
+                        <strong class="ms-2">${n.name_ar}</strong>
+                        ${badge}
+                        <small class="text-muted ms-2">${n.account_code} - ${n.account_name || ''}</small>
+                    </div>
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="fw-bold text-success">${parseFloat(n.current_balance || 0).toLocaleString('ar-EG', {minimumFractionDigits: 2})} ج.م</span>
+                        <button class="btn btn-sm btn-outline-warning" onclick="editBox(${n.id})"><i class="bi bi-pencil"></i></button>
+                        <button class="btn btn-sm btn-outline-danger" onclick="delBox(${n.id}, '${n.name_ar}')"><i class="bi bi-trash"></i></button>
+                    </div>
+                </div>
+            </div>
+        `;
+        n.children.forEach(c => renderNode(c, level + 1));
+    }
+    roots.forEach(r => renderNode(r));
+    
+    document.getElementById('boxesTree').innerHTML = html;
+}
+
+// ============================================
+// Render Banks
+// ============================================
+function renderBanks() {
+    if (!banks.length) {
+        document.getElementById('banksTbl').innerHTML = '<tr><td colspan="7" class="text-center text-muted">لا توجد بنوك</td></tr>';
+        return;
+    }
+    document.getElementById('banksTbl').innerHTML = banks.map(b => `
+        <tr>
+            <td><code>${b.code}</code></td>
+            <td><strong>${b.name_ar}</strong>${b.name_en ? `<br><small class="text-muted">${b.name_en}</small>` : ''}</td>
+            <td>${b.account_number || '-'}</td>
+            <td><small>${b.iban || '-'}</small></td>
+            <td><code>${b.account_code}</code> <small>${b.account_name || ''}</small></td>
+            <td class="text-end fw-bold text-success">${parseFloat(b.current_balance || 0).toLocaleString('ar-EG', {minimumFractionDigits: 2})}</td>
+            <td>
+                <button class="btn btn-sm btn-outline-warning" onclick="editBank(${b.id})"><i class="bi bi-pencil"></i></button>
+                <button class="btn btn-sm btn-outline-danger" onclick="delBank(${b.id}, '${b.name_ar}')"><i class="bi bi-trash"></i></button>
+            </td>
+        </tr>
+    `).join('');
+}
+
+// ============================================
+// Render Cards
+// ============================================
+function renderCards() {
+    if (!cards.length) {
+        document.getElementById('cardsTbl').innerHTML = '<tr><td colspan="8" class="text-center text-muted">لا توجد بطاقات</td></tr>';
+        return;
+    }
+    document.getElementById('cardsTbl').innerHTML = cards.map(c => `
+        <tr>
+            <td><code>${c.code}</code></td>
+            <td><strong>${c.name_ar}</strong></td>
+            <td><span class="badge badge-${c.card_type}">${c.card_type === 'DEBIT' ? 'خصم' : 'ائتمان'}</span></td>
+            <td>${c.bank_name || '-'}</td>
+            <td><code>****${c.card_last4 || '----'}</code></td>
+            <td><code>${c.account_code}</code> <small>${c.account_name || ''}</small></td>
+            <td class="text-end fw-bold text-success">${parseFloat(c.current_balance || 0).toLocaleString('ar-EG', {minimumFractionDigits: 2})}</td>
+            <td>
+                <button class="btn btn-sm btn-outline-warning" onclick="editCard(${c.id})"><i class="bi bi-pencil"></i></button>
+                <button class="btn btn-sm btn-outline-danger" onclick="delCard(${c.id}, '${c.name_ar}')"><i class="bi bi-trash"></i></button>
+            </td>
+        </tr>
+    `).join('');
+}
+
+// ============================================
+// Box Modal
+// ============================================
+function fillLeaves(selectId, defaultValue = '') {
+    const sel = document.getElementById(selectId);
+    sel.innerHTML = '<option value="">— اختر حساب —</option>' + 
+        leaves.map(a => `<option value="${a.code}" ${a.code === defaultValue ? 'selected' : ''}>${a.code} - ${a.name_ar}</option>`).join('');
+}
+
+function openBoxModal() {
+    editBoxId = null;
+    document.getElementById('boxModalTitle').innerHTML = '<i class="bi bi-plus-circle"></i> خزينة جديدة';
+    ['b-code','b-name_ar','b-name_en','b-notes'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('b-box_type').value = 'MAIN';
+    document.getElementById('b-opening_balance').value = 0;
+    document.getElementById('b-opening_date').value = new Date().toISOString().split('T')[0];
+    document.getElementById('b-currency').value = 'EGP';
+    document.getElementById('b-parent_id').value = '';
+    fillLeaves('b-account_code', '1211');
+    fillParents();
+    onBoxTypeChange();
+    boxModal.show();
+}
+
+function onBoxTypeChange() {
+    const type = document.getElementById('b-box_type').value;
+    document.getElementById('parent-wrap').style.display = type === 'SUB' ? 'block' : 'none';
+}
+
+function fillParents(excludeId = null) {
+    const sel = document.getElementById('b-parent_id');
+    const opts = boxes.filter(b => b.id !== excludeId).map(b => 
+        `<option value="${b.id}">${b.code} - ${b.name_ar}</option>`
+    );
+    sel.innerHTML = '<option value="">— اختر خزينة أب —</option>' + opts.join('');
+}
+
+function editBox(id) {
+    editBoxId = id;
+    const b = boxes.find(x => x.id === id);
+    if (!b) return;
+    document.getElementById('boxModalTitle').innerHTML = '<i class="bi bi-pencil"></i> تعديل الخزينة';
+    document.getElementById('b-code').value = b.code;
+    document.getElementById('b-name_ar').value = b.name_ar;
+    document.getElementById('b-name_en').value = b.name_en || '';
+    document.getElementById('b-box_type').value = b.box_type;
+    document.getElementById('b-opening_balance').value = b.opening_balance || 0;
+    document.getElementById('b-opening_date').value = b.opening_date || '';
+    document.getElementById('b-currency').value = b.currency || 'EGP';
+    document.getElementById('b-notes').value = b.notes || '';
+    fillLeaves('b-account_code', b.account_code);
+    fillParents(id);
+    document.getElementById('b-parent_id').value = b.parent_id || '';
+    onBoxTypeChange();
+    boxModal.show();
+}
+
+async function saveBox() {
+    const data = {
+        code: document.getElementById('b-code').value.trim(),
+        name_ar: document.getElementById('b-name_ar').value.trim(),
+        name_en: document.getElementById('b-name_en').value.trim(),
+        box_type: document.getElementById('b-box_type').value,
+        parent_id: document.getElementById('b-parent_id').value || null,
+        account_code: document.getElementById('b-account_code').value,
+        opening_balance: parseFloat(document.getElementById('b-opening_balance').value) || 0,
+        opening_date: document.getElementById('b-opening_date').value || null,
+        currency: document.getElementById('b-currency').value,
+        notes: document.getElementById('b-notes').value.trim()
+    };
+    
+    if (!data.name_ar) { alert('الاسم مطلوب'); return; }
+    if (!data.account_code) { alert('الحساب مطلوب'); return; }
+    if (data.box_type === 'SUB' && !data.parent_id) { alert('الخزينة الفرعية تحتاج خزينة أب'); return; }
+    
+    const url = editBoxId ? `${API}/cash-boxes/boxes/${editBoxId}` : `${API}/cash-boxes/boxes/`;
+    const method = editBoxId ? 'PUT' : 'POST';
+    
+    try {
+        const r = await fetch(url, {
+            method, headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(data)
+        }).then(x => x.json());
+        
+        if (r.success) {
+            boxModal.hide();
+            loadAll();
+        } else alert(r.message || 'خطأ');
+    } catch(e) { alert('خطأ في الاتصال'); }
+}
+
+async function delBox(id, name) {
+    if (!confirm(`حذف "${name}"؟`)) return;
+    const r = await fetch(`${API}/cash-boxes/boxes/${id}`, {method: 'DELETE'}).then(x => x.json());
+    if (r.success) loadAll();
+    else alert(r.message || 'خطأ');
+}
+
+// ============================================
+// Bank Modal
+// ============================================
+function openBankModal() {
+    editBankId = null;
+    document.getElementById('bankModalTitle').innerHTML = '<i class="bi bi-plus-circle"></i> بنك جديد';
+    ['bk-code','bk-name_ar','bk-name_en','bk-account_number','bk-iban','bk-swift_code',
+     'bk-branch_name','bk-contact_person','bk-phone','bk-notes'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('bk-opening_balance').value = 0;
+    document.getElementById('bk-opening_date').value = new Date().toISOString().split('T')[0];
+    fillLeaves('bk-account_code', '1212');
+    bankModal.show();
+}
+
+function editBank(id) {
+    editBankId = id;
+    const b = banks.find(x => x.id === id);
+    if (!b) return;
+    document.getElementById('bankModalTitle').innerHTML = '<i class="bi bi-pencil"></i> تعديل البنك';
+    document.getElementById('bk-code').value = b.code;
+    document.getElementById('bk-name_ar').value = b.name_ar;
+    document.getElementById('bk-name_en').value = b.name_en || '';
+    document.getElementById('bk-account_number').value = b.account_number || '';
+    document.getElementById('bk-iban').value = b.iban || '';
+    document.getElementById('bk-swift_code').value = b.swift_code || '';
+    document.getElementById('bk-branch_name').value = b.branch_name || '';
+    document.getElementById('bk-contact_person').value = b.contact_person || '';
+    document.getElementById('bk-phone').value = b.phone || '';
+    document.getElementById('bk-opening_balance').value = b.opening_balance || 0;
+    document.getElementById('bk-opening_date').value = b.opening_date || '';
+    document.getElementById('bk-notes').value = b.notes || '';
+    fillLeaves('bk-account_code', b.account_code);
+    bankModal.show();
+}
+
+async function saveBank() {
+    const data = {
+        code: document.getElementById('bk-code').value.trim(),
+        name_ar: document.getElementById('bk-name_ar').value.trim(),
+        name_en: document.getElementById('bk-name_en').value.trim(),
+        account_code: document.getElementById('bk-account_code').value,
+        account_number: document.getElementById('bk-account_number').value.trim(),
+        iban: document.getElementById('bk-iban').value.trim(),
+        swift_code: document.getElementById('bk-swift_code').value.trim(),
+        branch_name: document.getElementById('bk-branch_name').value.trim(),
+        contact_person: document.getElementById('bk-contact_person').value.trim(),
+        phone: document.getElementById('bk-phone').value.trim(),
+        opening_balance: parseFloat(document.getElementById('bk-opening_balance').value) || 0,
+        opening_date: document.getElementById('bk-opening_date').value || null,
+        notes: document.getElementById('bk-notes').value.trim()
+    };
+    
+    if (!data.name_ar) { alert('الاسم مطلوب'); return; }
+    if (!data.account_code) { alert('الحساب مطلوب'); return; }
+    
+    const url = editBankId ? `${API}/cash-boxes/banks/${editBankId}` : `${API}/cash-boxes/banks/`;
+    const method = editBankId ? 'PUT' : 'POST';
+    
+    try {
+        const r = await fetch(url, {
+            method, headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(data)
+        }).then(x => x.json());
+        
+        if (r.success) {
+            bankModal.hide();
+            loadAll();
+        } else alert(r.message || 'خطأ');
+    } catch(e) { alert('خطأ في الاتصال'); }
+}
+
+async function delBank(id, name) {
+    if (!confirm(`حذف "${name}"؟`)) return;
+    const r = await fetch(`${API}/cash-boxes/banks/${id}`, {method: 'DELETE'}).then(x => x.json());
+    if (r.success) loadAll();
+    else alert(r.message || 'خطأ');
+}
+
+// ============================================
+// Card Modal
+// ============================================
+function openCardModal() {
+    editCardId = null;
+    document.getElementById('cardModalTitle').innerHTML = '<i class="bi bi-plus-circle"></i> بطاقة جديدة';
+    ['c-code','c-name_ar','c-card_last4','c-card_holder','c-notes'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('c-card_type').value = 'DEBIT';
+    document.getElementById('c-bank_id').value = '';
+    document.getElementById('c-credit_limit').value = 0;
+    document.getElementById('c-opening_balance').value = 0;
+    document.getElementById('c-expiry_date').value = '';
+    fillLeaves('c-account_code', '1213');
+    fillBanksSelect();
+    cardModal.show();
+}
+
+function fillBanksSelect(defaultValue = '') {
+    const sel = document.getElementById('c-bank_id');
+    sel.innerHTML = '<option value="">— بدون —</option>' + 
+        banks.map(b => `<option value="${b.id}" ${b.id == defaultValue ? 'selected' : ''}>${b.code} - ${b.name_ar}</option>`).join('');
+}
+
+function editCard(id) {
+    editCardId = id;
+    const c = cards.find(x => x.id === id);
+    if (!c) return;
+    document.getElementById('cardModalTitle').innerHTML = '<i class="bi bi-pencil"></i> تعديل البطاقة';
+    document.getElementById('c-code').value = c.code;
+    document.getElementById('c-name_ar').value = c.name_ar;
+    document.getElementById('c-card_type').value = c.card_type;
+    document.getElementById('c-card_last4').value = c.card_last4 || '';
+    document.getElementById('c-card_holder').value = c.card_holder || '';
+    document.getElementById('c-expiry_date').value = c.expiry_date || '';
+    document.getElementById('c-credit_limit').value = c.credit_limit || 0;
+    document.getElementById('c-opening_balance').value = c.opening_balance || 0;
+    document.getElementById('c-notes').value = c.notes || '';
+    fillLeaves('c-account_code', c.account_code);
+    fillBanksSelect(c.bank_id);
+    cardModal.show();
+}
+
+async function saveCard() {
+    const data = {
+        code: document.getElementById('c-code').value.trim(),
+        name_ar: document.getElementById('c-name_ar').value.trim(),
+        card_type: document.getElementById('c-card_type').value,
+        bank_id: document.getElementById('c-bank_id').value || null,
+        account_code: document.getElementById('c-account_code').value,
+        card_last4: document.getElementById('c-card_last4').value.trim(),
+        card_holder: document.getElementById('c-card_holder').value.trim(),
+        expiry_date: document.getElementById('c-expiry_date').value || null,
+        credit_limit: parseFloat(document.getElementById('c-credit_limit').value) || 0,
+        opening_balance: parseFloat(document.getElementById('c-opening_balance').value) || 0,
+        notes: document.getElementById('c-notes').value.trim()
+    };
+    
+    if (!data.name_ar) { alert('الاسم مطلوب'); return; }
+    if (!data.account_code) { alert('الحساب مطلوب'); return; }
+    
+    const url = editCardId ? `${API}/cash-boxes/cards/${editCardId}` : `${API}/cash-boxes/cards/`;
+    const method = editCardId ? 'PUT' : 'POST';
+    
+    try {
+        const r = await fetch(url, {
+            method, headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(data)
+        }).then(x => x.json());
+        
+        if (r.success) {
+            cardModal.hide();
+            loadAll();
+        } else alert(r.message || 'خطأ');
+    } catch(e) { alert('خطأ في الاتصال'); }
+}
+
+async function delCard(id, name) {
+    if (!confirm(`حذف "${name}"؟`)) return;
+    const r = await fetch(`${API}/cash-boxes/cards/${id}`, {method: 'DELETE'}).then(x => x.json());
+    if (r.success) loadAll();
+    else alert(r.message || 'خطأ');
+}
+
+// ============================================
+// Init
+// ============================================
+loadAll();
+</script>
+
+<script>
+// دالة تصدير Excel
+function exportToExcel(templateKey) {
+    if (!templateKey) {
+        alert('مفيش قالب تصدير');
+        return;
+    }
+    window.location.href = '/api/v1/export/excel/export/' + templateKey;
+}
+</script>
+
+
+<!-- Import Modal -->
+<div class="modal fade" id="importExcelModal" tabindex="-1">
+<div class="modal-dialog modal-lg">
+<div class="modal-content">
+<div class="modal-header bg-primary text-white">
+    <h5 class="modal-title"><i class="bi bi-file-earmark-arrow-up"></i> استيراد من Excel</h5>
+    <button class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+</div>
+<div class="modal-body">
+    <!-- Step 1: Instructions -->
+    <div id="import-step-1">
+        <div class="alert alert-info">
+            <i class="bi bi-info-circle"></i>
+            <strong>الخطوات:</strong>
+            <ol class="mb-0 mt-2" style="padding-right: 20px;">
+                <li>حمّل القالب الفارغ</li>
+                <li>املأ البيانات</li>
+                <li>ارفع الملف</li>
+                <li>اضغط "معاينة" للتأكد</li>
+                <li>اضغط "استيراد" للحفظ</li>
+            </ol>
+        </div>
+        
+        <button class="btn btn-outline-primary w-100 mb-3" onclick="downloadImportTemplate()">
+            <i class="bi bi-download"></i> تحميل القالب الفارغ
+        </button>
+        
+        <div class="upload-area" id="import-upload-area" onclick="document.getElementById('import-file-input').click()">
+            <i class="bi bi-cloud-upload"></i>
+            <div class="title">اسحب الملف هنا أو اضغط للاختيار</div>
+            <div class="sub">ملفات Excel فقط (.xlsx, .xls)</div>
+        </div>
+        <input type="file" id="import-file-input" accept=".xlsx,.xls" style="display:none" onchange="handleImportFile(this.files[0])">
+        
+        <div id="import-file-info" style="display:none;" class="mt-3">
+            <div class="alert alert-success py-2 mb-0">
+                <i class="bi bi-file-earmark-excel"></i>
+                <span id="import-file-name"></span>
+                <button class="btn btn-sm btn-outline-danger float-end" onclick="clearImportFile()">
+                    <i class="bi bi-x"></i>
+                </button>
+            </div>
+            <div class="d-flex gap-2 mt-2">
+                <button class="btn btn-outline-info flex-fill" onclick="previewImport()">
+                    <i class="bi bi-eye"></i> معاينة
+                </button>
+                <button class="btn btn-primary flex-fill" onclick="confirmImport()">
+                    <i class="bi bi-upload"></i> استيراد
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Result -->
+    <div id="import-step-2" style="display:none;"></div>
+</div>
+<div class="modal-footer">
+    <button class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button>
+</div>
+</div>
+</div>
+</div>
+
+
+<script>
+// متغيرات
+let currentImportFile = null;
+let currentImportTemplate = null;
+
+// فتح نافذة الاستيراد
+function openImportModal(templateKey) {
+    currentImportTemplate = templateKey;
+    currentImportFile = null;
+    
+    document.getElementById('import-step-1').style.display = 'block';
+    document.getElementById('import-step-2').style.display = 'none';
+    document.getElementById('import-file-info').style.display = 'none';
+    document.getElementById('import-file-input').value = '';
+    
+    const modal = new bootstrap.Modal(document.getElementById('importExcelModal'));
+    modal.show();
+}
+
+// تحميل القالب
+function downloadImportTemplate() {
+    if (!currentImportTemplate) return;
+    window.location.href = '/api/v1/export/excel/import-template/' + currentImportTemplate;
+}
+
+// معالجة الملف
+function handleImportFile(file) {
+    if (!file) return;
+    if (!file.name.match(/\.(xlsx|xls)$/i)) {
+        alert('الملف يجب أن يكون Excel');
+        return;
+    }
+    currentImportFile = file;
+    document.getElementById('import-file-name').textContent = 
+        file.name + ' (' + (file.size / 1024).toFixed(1) + ' KB)';
+    document.getElementById('import-file-info').style.display = 'block';
+}
+
+// مسح الملف
+function clearImportFile() {
+    currentImportFile = null;
+    document.getElementById('import-file-input').value = '';
+    document.getElementById('import-file-info').style.display = 'none';
+}
+
+// معاينة
+async function previewImport() {
+    if (!currentImportFile) { alert('اختر ملف'); return; }
+    
+    const formData = new FormData();
+    formData.append('file', currentImportFile);
+    
+    const resultEl = document.getElementById('import-step-2');
+    resultEl.innerHTML = '<div class="alert alert-info"><i class="bi bi-hourglass-split"></i> جاري المعاينة...</div>';
+    resultEl.style.display = 'block';
+    document.getElementById('import-step-1').style.display = 'none';
+    
+    try {
+        const r = await fetch('/api/v1/export/excel/preview/' + currentImportTemplate, {
+            method: 'POST',
+            body: formData
+        }).then(x => x.json());
+        
+        if (r.success) {
+            const d = r.data;
+            let html = '<h6><i class="bi bi-eye text-info"></i> معاينة</h6>';
+            html += '<div class="import-stats">';
+            html += '<div class="item"><div class="num text-info">' + d.total_rows + '</div><div class="lbl">صفوف صحيحة</div></div>';
+            html += '<div class="item"><div class="num text-danger">' + ((d.errors || []).length) + '</div><div class="lbl">أخطاء</div></div>';
+            html += '</div>';
+            
+            if (d.preview && d.preview.length) {
+                html += '<div class="mt-3"><strong>عينة من البيانات:</strong>';
+                html += '<table class="preview-table"><thead><tr>';
+                Object.keys(d.preview[0].data).forEach(k => html += '<th>' + k + '</th>');
+                html += '</tr></thead><tbody>';
+                d.preview.forEach(row => {
+                    html += '<tr>';
+                    Object.values(row.data).forEach(v => html += '<td>' + (v || '-') + '</td>');
+                    html += '</tr>';
+                });
+                html += '</tbody></table></div>';
+            }
+            
+            if (d.errors && d.errors.length) {
+                html += '<div class="alert alert-warning mt-3 py-2 mb-0" style="font-size:0.82rem;">';
+                html += '<strong>أخطاء:</strong><ul class="mb-0">';
+                d.errors.forEach(e => html += '<li>' + e + '</li>');
+                html += '</ul></div>';
+            }
+            
+            html += '<div class="d-flex gap-2 mt-3">';
+            html += '<button class="btn btn-secondary flex-fill" onclick="backToImport()"><i class="bi bi-arrow-right"></i> رجوع</button>';
+            html += '<button class="btn btn-primary flex-fill" onclick="confirmImport()"><i class="bi bi-upload"></i> تأكيد الاستيراد</button>';
+            html += '</div>';
+            
+            resultEl.innerHTML = html;
+        } else {
+            resultEl.innerHTML = '<div class="alert alert-danger"><i class="bi bi-x-circle"></i> ' + r.message + '</div>' +
+                '<button class="btn btn-secondary" onclick="backToImport()"><i class="bi bi-arrow-right"></i> رجوع</button>';
+        }
+    } catch (e) {
+        resultEl.innerHTML = '<div class="alert alert-danger">خطأ في الاتصال</div>' +
+            '<button class="btn btn-secondary" onclick="backToImport()"><i class="bi bi-arrow-right"></i> رجوع</button>';
+    }
+}
+
+// رجوع
+function backToImport() {
+    document.getElementById('import-step-1').style.display = 'block';
+    document.getElementById('import-step-2').style.display = 'none';
+}
+
+// استيراد
+async function confirmImport() {
+    if (!currentImportFile) { alert('اختر ملف'); return; }
+    
+    const formData = new FormData();
+    formData.append('file', currentImportFile);
+    
+    const resultEl = document.getElementById('import-step-2');
+    resultEl.innerHTML = '<div class="alert alert-info"><i class="bi bi-hourglass-split"></i> جاري الاستيراد...</div>';
+    resultEl.style.display = 'block';
+    document.getElementById('import-step-1').style.display = 'none';
+    
+    try {
+        const r = await fetch('/api/v1/export/excel/import/' + currentImportTemplate, {
+            method: 'POST',
+            body: formData
+        }).then(x => x.json());
+        
+        if (r.success) {
+            const d = r.data;
+            let html = '<div class="alert alert-success"><h5><i class="bi bi-check-circle-fill"></i> تم الاستيراد بنجاح</h5></div>';
+            html += '<div class="import-stats">';
+            html += '<div class="item"><div class="num text-success">' + (d.imported || 0) + '</div><div class="lbl">جديد</div></div>';
+            html += '<div class="item"><div class="num text-primary">' + (d.updated || 0) + '</div><div class="lbl">محدث</div></div>';
+            html += '<div class="item"><div class="num">' + (d.total || 0) + '</div><div class="lbl">الإجمالي</div></div>';
+            html += '</div>';
+            
+            if (d.errors && d.errors.length) {
+                html += '<div class="alert alert-warning py-2 mt-3 mb-0" style="font-size:0.82rem;">';
+                html += '<strong>أخطاء (' + d.errors.length + '):</strong><ul class="mb-0">';
+                d.errors.forEach(e => html += '<li>' + e + '</li>');
+                html += '</ul></div>';
+            }
+            
+            html += '<div class="d-flex gap-2 mt-3">';
+            html += '<button class="btn btn-success flex-fill" onclick="location.reload()"><i class="bi bi-arrow-clockwise"></i> تحديث الصفحة</button>';
+            html += '</div>';
+            
+            resultEl.innerHTML = html;
+        } else {
+            resultEl.innerHTML = '<div class="alert alert-danger"><i class="bi bi-x-circle"></i> ' + r.message + '</div>' +
+                '<button class="btn btn-secondary" onclick="backToImport()"><i class="bi bi-arrow-right"></i> رجوع</button>';
+        }
+    } catch (e) {
+        resultEl.innerHTML = '<div class="alert alert-danger">خطأ في الاتصال</div>' +
+            '<button class="btn btn-secondary" onclick="backToImport()"><i class="bi bi-arrow-right"></i> رجوع</button>';
+    }
+}
+
+// Drag & Drop
+document.addEventListener('DOMContentLoaded', function() {
+    const area = document.getElementById('import-upload-area');
+    if (!area) return;
+    
+    area.addEventListener('dragover', e => { e.preventDefault(); area.classList.add('dragover'); });
+    area.addEventListener('dragleave', () => area.classList.remove('dragover'));
+    area.addEventListener('drop', e => {
+        e.preventDefault();
+        area.classList.remove('dragover');
+        if (e.dataTransfer.files.length) handleImportFile(e.dataTransfer.files[0]);
+    });
+});
+</script>
+
+</body>
+</html>

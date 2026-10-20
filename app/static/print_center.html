@@ -1,0 +1,712 @@
+﻿<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>مركز الطباعة</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+* { font-family: 'Cairo','Segoe UI',Tahoma,sans-serif; box-sizing: border-box; }
+body { background: #f5f6fa; padding: 12px; font-size: 13px; color: #1e293b; line-height: 1.5; }
+.container-box { max-width: 1400px; margin: 0 auto; }
+
+.page-head {
+    background: white; border-radius: 10px; padding: 14px 18px;
+    margin-bottom: 14px; box-shadow: 0 1px 6px rgba(0,0,0,0.05);
+    display: flex; justify-content: space-between; align-items: center;
+    flex-wrap: wrap; gap: 10px;
+}
+.page-head h2 {
+    margin: 0; font-size: 1.15rem; font-weight: 700; color: #1e3c72;
+    display: flex; align-items: center; gap: 8px;
+}
+.page-head h2 i { color: #06b6d4; }
+.page-head .btn { font-size: 0.82rem; padding: 6px 14px; border-radius: 7px; }
+
+.search-box {
+    background: white; border-radius: 10px; padding: 12px 18px;
+    margin-bottom: 14px; box-shadow: 0 1px 6px rgba(0,0,0,0.05);
+}
+.search-box input {
+    font-size: 0.9rem; padding: 8px 14px; border-radius: 8px;
+    border: 1px solid #e2e8f0;
+}
+.search-box input:focus {
+    border-color: #06b6d4;
+    box-shadow: 0 0 0 3px rgba(6,182,212,0.15);
+}
+
+.tabs-nav {
+    background: white; border-radius: 10px 10px 0 0;
+    padding: 8px 14px 0; margin-bottom: 0;
+    display: flex; gap: 4px; flex-wrap: wrap;
+    border-bottom: 1.5px solid #f1f5f9;
+}
+.tab-btn {
+    padding: 8px 16px;
+    border: none;
+    background: transparent;
+    color: #64748b;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    transition: all 0.15s;
+    border-radius: 8px 8px 0 0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.tab-btn:hover { color: #06b6d4; background: #f0f9ff; }
+.tab-btn.active {
+    color: #1e3c72;
+    border-bottom-color: #06b6d4;
+    background: #f0f9ff;
+}
+
+.tab-content-box {
+    background: white; border-radius: 0 0 10px 10px;
+    padding: 20px; box-shadow: 0 1px 6px rgba(0,0,0,0.05);
+    margin-bottom: 14px;
+}
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+.templates-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 12px;
+}
+
+.template-card {
+    background: white;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 14px 16px;
+    text-decoration: none;
+    color: inherit;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: all 0.15s;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+}
+.template-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.08);
+    border-color: #06b6d4;
+    color: inherit;
+}
+.template-card.hidden { display: none; }
+
+.template-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.3rem;
+    color: white;
+    flex-shrink: 0;
+}
+.template-body { flex: 1; min-width: 0; }
+.template-name {
+    font-weight: 700;
+    font-size: 0.88rem;
+    color: #1e293b;
+    margin-bottom: 2px;
+}
+.template-desc {
+    font-size: 0.72rem;
+    color: #64748b;
+    line-height: 1.4;
+}
+.template-action {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #cbd5e1;
+    font-size: 0.9rem;
+    transition: color 0.15s;
+}
+.template-card:hover .template-action { color: #06b6d4; }
+
+/* Category Colors */
+.cat-doc .template-icon { background: linear-gradient(135deg, #4facfe, #00f2fe); }
+.cat-inv .template-icon { background: linear-gradient(135deg, #43e97b, #38f9d7); }
+.cat-fin .template-icon { background: linear-gradient(135deg, #a18cd1, #fbc2eb); }
+.cat-cust .template-icon { background: linear-gradient(135deg, #f59e0b, #fbbf24); }
+
+.section-title {
+    font-size: 0.9rem;
+    font-weight: 700;
+    color: #1e3c72;
+    margin: 20px 0 12px;
+    padding-bottom: 8px;
+    border-bottom: 1.5px solid #f1f5f9;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.section-title i { color: #06b6d4; }
+
+.empty-search {
+    text-align: center;
+    padding: 40px 20px;
+    color: #94a3b8;
+}
+.empty-search i { font-size: 3rem; opacity: 0.35; display: block; margin-bottom: 10px; }
+
+@media (max-width: 768px) {
+    .templates-grid { grid-template-columns: 1fr; }
+    .tab-btn { font-size: 0.78rem; padding: 6px 10px; }
+}
+
+/* ============================================
+   إلغاء أسهم input[type=number]
+   ============================================ */
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none !important;
+    margin: 0 !important;
+}
+input[type=number] {
+    -moz-appearance: textfield !important;
+    appearance: textfield !important;
+}
+input[type="number"] {
+    -moz-appearance: textfield !important;
+}
+
+</style>
+<script src="permissions.js"></script>
+
+
+
+<style id="compact-spacing-global">
+/* ============================================
+   توحيد المسافات المضغوطة
+   ============================================ */
+
+.table td, .table th {
+    padding: 3px 6px !important;
+    font-size: 0.75rem !important;
+    vertical-align: middle !important;
+    line-height: 1.2 !important;
+}
+
+.table tbody tr {
+    height: auto !important;
+}
+
+.form-control, .form-select {
+    font-size: 0.75rem !important;
+    line-height: 1.2 !important;
+}
+
+.form-control-sm, .form-select-sm {
+    height: 26px !important;
+    padding: 2px 6px !important;
+    font-size: 0.72rem !important;
+    line-height: 1 !important;
+}
+
+.btn {
+    padding: 3px 8px !important;
+    font-size: 0.72rem !important;
+    line-height: 1.2 !important;
+}
+
+.btn-sm {
+    padding: 2px 6px !important;
+    font-size: 0.7rem !important;
+}
+
+.card {
+    margin-bottom: 6px !important;
+}
+
+.card-body, .card.p-2, .card.p-3, .card.p-4 {
+    padding: 6px 8px !important;
+}
+
+.modal-header {
+    padding: 6px 12px !important;
+}
+
+.modal-title {
+    font-size: 0.9rem !important;
+}
+
+.modal-body {
+    padding: 8px 12px !important;
+}
+
+.modal-footer {
+    padding: 6px 12px !important;
+}
+
+.modal-footer .btn {
+    padding: 4px 10px !important;
+    font-size: 0.75rem !important;
+}
+
+.mb-1, .mb-2, .mb-3, .mb-4 {
+    margin-bottom: 4px !important;
+}
+
+.mt-1, .mt-2, .mt-3, .mt-4 {
+    margin-top: 4px !important;
+}
+
+.ms-1, .ms-2, .ms-3 {
+    margin-right: 4px !important;
+}
+
+.me-1, .me-2, .me-3 {
+    margin-left: 4px !important;
+}
+
+.p-1, .p-2, .p-3, .p-4 {
+    padding: 4px !important;
+}
+
+.g-1, .g-2, .g-3 {
+    gap: 4px !important;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    line-height: 1.3 !important;
+}
+
+h1 { font-size: 1.2rem !important; margin-bottom: 6px !important; }
+h2 { font-size: 1.05rem !important; margin-bottom: 6px !important; }
+h3 { font-size: 0.95rem !important; margin-bottom: 4px !important; }
+h4 { font-size: 0.9rem !important; margin-bottom: 4px !important; }
+h5 { font-size: 0.85rem !important; margin-bottom: 4px !important; }
+h6 { font-size: 0.8rem !important; margin-bottom: 4px !important; }
+
+.alert {
+    padding: 6px 10px !important;
+    margin-bottom: 6px !important;
+    font-size: 0.78rem !important;
+}
+
+.badge {
+    padding: 2px 6px !important;
+    font-size: 0.68rem !important;
+}
+
+.nav-tabs .nav-link {
+    padding: 5px 12px !important;
+    font-size: 0.78rem !important;
+}
+
+hr {
+    margin: 6px 0 !important;
+}
+
+/* بطاقات الأعمار (aging) */
+.aging-card, .bucket-card, .stat-card {
+    padding: 6px 8px !important;
+    margin-bottom: 4px !important;
+}
+
+.aging-card .h4, .aging-card .h5,
+.bucket-card .h4, .bucket-card .h5 {
+    font-size: 1rem !important;
+    margin: 2px 0 !important;
+}
+
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none !important;
+    margin: 0 !important;
+}
+input[type=number] {
+    -moz-appearance: textfield !important;
+}
+</style>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 16 16%22><text y=%2214%22 font-size=%2214%22>📒</text></svg>">
+</head>
+<body>
+
+<div class="container-box">
+
+    <!-- Page Header -->
+    <div class="page-head no-print">
+        <h2><i class="bi bi-printer-fill"></i> مركز الطباعة</h2>
+        <div class="d-flex gap-2">
+            <a href="index.html#settings" class="btn btn-outline-secondary">
+                <i class="bi bi-house-fill"></i> الرئيسية
+            </a>
+            <a href="reports.html" class="btn btn-outline-info">
+                <i class="bi bi-bar-chart-fill"></i> التقارير
+            </a>
+        </div>
+    </div>
+
+    <!-- Search -->
+    <div class="search-box">
+        <div class="input-group">
+            <span class="input-group-text bg-white border-end-0">
+                <i class="bi bi-search text-muted"></i>
+            </span>
+            <input type="text" class="form-control border-start-0"
+                   id="search-input" placeholder="ابحث عن قالب... (مثلاً: فاتورة، تقرير، تسوية)"
+                   oninput="filterTemplates()">
+        </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs-nav">
+        <button class="tab-btn active" onclick="switchTab('all')">
+            <i class="bi bi-grid-3x3-gap-fill"></i> الكل
+        </button>
+        <button class="tab-btn" onclick="switchTab('documents')">
+            <i class="bi bi-file-earmark-text-fill"></i> المستندات
+        </button>
+        <button class="tab-btn" onclick="switchTab('inventory-reports')">
+            <i class="bi bi-box-seam-fill"></i> تقارير المخزون
+        </button>
+        <button class="tab-btn" onclick="switchTab('financial-reports')">
+            <i class="bi bi-cash-coin"></i> التقارير المالية
+        </button>
+        <button class="tab-btn" onclick="switchTab('statements')">
+            <i class="bi bi-people-fill"></i> كشوف الحسابات
+        </button>
+    </div>
+
+    <div class="tab-content-box">
+
+        <!-- All / Documents -->
+        <div class="tab-panel active" data-panel="all">
+            <div class="section-title"><i class="bi bi-file-earmark-text-fill"></i> المستندات الرسمية</div>
+            <div class="templates-grid">
+                <a href="purchase_invoices.html" class="template-card cat-doc" data-cat="documents">
+                    <div class="template-icon"><i class="bi bi-receipt"></i></div>
+                    <div class="template-body">
+                        <div class="template-name">فاتورة شراء</div>
+                        <div class="template-desc">اختر فاتورة من القائمة واطبعها</div>
+                    </div>
+                    <i class="bi bi-arrow-left template-action"></i>
+                </a>
+
+                <a href="sales_invoices.html" class="template-card cat-doc" data-cat="documents">
+                    <div class="template-icon"><i class="bi bi-cart-check"></i></div>
+                    <div class="template-body">
+                        <div class="template-name">فاتورة بيع</div>
+                        <div class="template-desc">اختر فاتورة من القائمة واطبعها</div>
+                    </div>
+                    <i class="bi bi-arrow-left template-action"></i>
+                </a>
+
+                <a href="purchase_orders.html" class="template-card cat-doc" data-cat="documents">
+                    <div class="template-icon"><i class="bi bi-file-earmark-text"></i></div>
+                    <div class="template-body">
+                        <div class="template-name">أمر شراء</div>
+                        <div class="template-desc">اطبع أمر شراء معتمد</div>
+                    </div>
+                    <i class="bi bi-arrow-left template-action"></i>
+                </a>
+
+                <a href="receipts.html" class="template-card cat-doc" data-cat="documents">
+                    <div class="template-icon"><i class="bi bi-arrow-down-circle"></i></div>
+                    <div class="template-body">
+                        <div class="template-name">إذن استلام</div>
+                        <div class="template-desc">إيصال استلام بضاعة</div>
+                    </div>
+                    <i class="bi bi-arrow-left template-action"></i>
+                </a>
+
+                <a href="issues.html" class="template-card cat-doc" data-cat="documents">
+                    <div class="template-icon"><i class="bi bi-arrow-up-circle"></i></div>
+                    <div class="template-body">
+                        <div class="template-name">إذن صرف</div>
+                        <div class="template-desc">إيصال صرف مخزني</div>
+                    </div>
+                    <i class="bi bi-arrow-left template-action"></i>
+                </a>
+
+                <a href="transfers.html" class="template-card cat-doc" data-cat="documents">
+                    <div class="template-icon"><i class="bi bi-arrow-left-right"></i></div>
+                    <div class="template-body">
+                        <div class="template-name">تحويل مخزني</div>
+                        <div class="template-desc">إيصال تحويل بين مستودعين</div>
+                    </div>
+                    <i class="bi bi-arrow-left template-action"></i>
+                </a>
+
+                <a href="stock_adjustments.html" class="template-card cat-doc" data-cat="documents">
+                    <div class="template-icon"><i class="bi bi-sliders"></i></div>
+                    <div class="template-body">
+                        <div class="template-name">إيصال تسوية</div>
+                        <div class="template-desc">إيصال تسوية مخزنية</div>
+                    </div>
+                    <i class="bi bi-arrow-left template-action"></i>
+                </a>
+            </div>
+        </div>
+
+        <!-- Inventory Reports -->
+        <div class="tab-panel" data-panel="inventory-reports">
+            <div class="section-title"><i class="bi bi-box-seam-fill"></i> تقارير المخزون</div>
+            <div class="templates-grid">
+                <a href="reports.html" class="template-card cat-inv" data-cat="inventory-reports">
+                    <div class="template-icon"><i class="bi bi-file-earmark-bar-graph"></i></div>
+                    <div class="template-body">
+                        <div class="template-name">تقارير المخازن الرئيسية</div>
+                        <div class="template-desc">الرصيد الفعلي + الحركات</div>
+                    </div>
+                    <i class="bi bi-arrow-left template-action"></i>
+                </a>
+
+                <a href="item_movement.html" class="template-card cat-inv" data-cat="inventory-reports">
+                    <div class="template-icon"><i class="bi bi-graph-up"></i></div>
+                    <div class="template-body">
+                        <div class="template-name">حركة الصنف (كارت الصنف)</div>
+                        <div class="template-desc">كل حركات صنف مع الرصيد التراكمي</div>
+                    </div>
+                    <i class="bi bi-arrow-left template-action"></i>
+                </a>
+
+                <a href="adjustments_report.html" class="template-card cat-inv" data-cat="inventory-reports">
+                    <div class="template-icon"><i class="bi bi-bar-chart-fill"></i></div>
+                    <div class="template-body">
+                        <div class="template-name">تقرير التسويات</div>
+                        <div class="template-desc">تحليل التسويات المخزنية</div>
+                    </div>
+                    <i class="bi bi-arrow-left template-action"></i>
+                </a>
+
+                <a href="inventory_by_warehouse.html" class="template-card cat-inv" data-cat="inventory-reports">
+                    <div class="template-icon"><i class="bi bi-building"></i></div>
+                    <div class="template-body">
+                        <div class="template-name">المخزون حسب المستودع</div>
+                        <div class="template-desc">تصنيف المخزون لكل مستودع</div>
+                    </div>
+                    <i class="bi bi-arrow-left template-action"></i>
+                </a>
+
+                <a href="reports.html" class="template-card cat-inv" data-cat="inventory-reports">
+                    <div class="template-icon"><i class="bi bi-cash-stack"></i></div>
+                    <div class="template-body">
+                        <div class="template-name">تقييم المخزون</div>
+                        <div class="template-desc">قيمة المخزون حسب التصنيف</div>
+                    </div>
+                    <i class="bi bi-arrow-left template-action"></i>
+                </a>
+
+                <a href="reports.html" class="template-card cat-inv" data-cat="inventory-reports">
+                    <div class="template-icon"><i class="bi bi-exclamation-triangle"></i></div>
+                    <div class="template-body">
+                        <div class="template-name">أصناف تحت الحد الأدنى</div>
+                        <div class="template-desc">قائمة إعادة الطلب</div>
+                    </div>
+                    <i class="bi bi-arrow-left template-action"></i>
+                </a>
+
+                <a href="price_comparison.html" class="template-card cat-inv" data-cat="inventory-reports">
+                    <div class="template-icon"><i class="bi bi-bar-chart-line-fill"></i></div>
+                    <div class="template-body">
+                        <div class="template-name">مقارنة أسعار الموردين</div>
+                        <div class="template-desc">أفضل الأسعار لكل صنف</div>
+                    </div>
+                    <i class="bi bi-arrow-left template-action"></i>
+                </a>
+
+                <a href="supplier_rating.html" class="template-card cat-inv" data-cat="inventory-reports">
+                    <div class="template-icon"><i class="bi bi-star-fill"></i></div>
+                    <div class="template-body">
+                        <div class="template-name">تقييم الموردين</div>
+                        <div class="template-desc">ترتيب الموردين بالنقاط</div>
+                    </div>
+                    <i class="bi bi-arrow-left template-action"></i>
+                </a>
+            </div>
+        </div>
+
+        <!-- Financial Reports -->
+        <div class="tab-panel" data-panel="financial-reports">
+            <div class="section-title"><i class="bi bi-cash-coin"></i> التقارير المالية</div>
+            <div class="templates-grid">
+                <a href="financial_reports.html" class="template-card cat-fin" data-cat="financial-reports">
+                    <div class="template-icon"><i class="bi bi-clipboard-data"></i></div>
+                    <div class="template-body">
+                        <div class="template-name">التقارير المالية الرئيسية</div>
+                        <div class="template-desc">ميزان + دخل + مركز مالي</div>
+                    </div>
+                    <i class="bi bi-arrow-left template-action"></i>
+                </a>
+
+                <a href="journal.html" class="template-card cat-fin" data-cat="financial-reports">
+                    <div class="template-icon"><i class="bi bi-journal-text"></i></div>
+                    <div class="template-body">
+                        <div class="template-name">دفتر اليومية</div>
+                        <div class="template-desc">كل القيود المحاسبية</div>
+                    </div>
+                    <i class="bi bi-arrow-left template-action"></i>
+                </a>
+
+                <a href="financial_reports.html" class="template-card cat-fin" data-cat="financial-reports">
+                    <div class="template-icon"><i class="bi bi-list-check"></i></div>
+                    <div class="template-body">
+                        <div class="template-name">ميزان المراجعة</div>
+                        <div class="template-desc">أرصدة كل الحسابات</div>
+                    </div>
+                    <i class="bi bi-arrow-left template-action"></i>
+                </a>
+
+                <a href="financial_reports.html" class="template-card cat-fin" data-cat="financial-reports">
+                    <div class="template-icon"><i class="bi bi-graph-up-arrow"></i></div>
+                    <div class="template-body">
+                        <div class="template-name">قائمة الدخل</div>
+                        <div class="template-desc">الإيرادات - المصروفات</div>
+                    </div>
+                    <i class="bi bi-arrow-left template-action"></i>
+                </a>
+
+                <a href="financial_reports.html" class="template-card cat-fin" data-cat="financial-reports">
+                    <div class="template-icon"><i class="bi bi-building-gear"></i></div>
+                    <div class="template-body">
+                        <div class="template-name">المركز المالي</div>
+                        <div class="template-desc">الأصول = الخصوم + الملكية</div>
+                    </div>
+                    <i class="bi bi-arrow-left template-action"></i>
+                </a>
+
+                <a href="financial_reports.html" class="template-card cat-fin" data-cat="financial-reports">
+                    <div class="template-icon"><i class="bi bi-hourglass-split"></i></div>
+                    <div class="template-body">
+                        <div class="template-name">أعمار الذمم (AR/AP)</div>
+                        <div class="template-desc">العملاء والموردين</div>
+                    </div>
+                    <i class="bi bi-arrow-left template-action"></i>
+                </a>
+            </div>
+        </div>
+
+        <!-- Statements -->
+        <div class="tab-panel" data-panel="statements">
+            <div class="section-title"><i class="bi bi-people-fill"></i> كشوف الحسابات</div>
+            <div class="templates-grid">
+                <a href="customer_statement.html" class="template-card cat-cust" data-cat="statements">
+                    <div class="template-icon"><i class="bi bi-person-lines-fill"></i></div>
+                    <div class="template-body">
+                        <div class="template-name">كشف حساب عميل</div>
+                        <div class="template-desc">حركات عميل مع الرصيد</div>
+                    </div>
+                    <i class="bi bi-arrow-left template-action"></i>
+                </a>
+
+                <a href="supplier_statement.html" class="template-card cat-cust" data-cat="statements">
+                    <div class="template-icon"><i class="bi bi-truck"></i></div>
+                    <div class="template-body">
+                        <div class="template-name">كشف حساب مورد</div>
+                        <div class="template-desc">حركات مورد مع الرصيد</div>
+                    </div>
+                    <i class="bi bi-arrow-left template-action"></i>
+                </a>
+
+                <a href="customer_balances.html" class="template-card cat-cust" data-cat="statements">
+                    <div class="template-icon"><i class="bi bi-wallet2"></i></div>
+                    <div class="template-body">
+                        <div class="template-name">أرصدة العملاء</div>
+                        <div class="template-desc">كل العملاء وأرصدتهم</div>
+                    </div>
+                    <i class="bi bi-arrow-left template-action"></i>
+                </a>
+
+                <a href="supplier_balances.html" class="template-card cat-cust" data-cat="statements">
+                    <div class="template-icon"><i class="bi bi-wallet2"></i></div>
+                    <div class="template-body">
+                        <div class="template-name">أرصدة الموردين</div>
+                        <div class="template-desc">كل الموردين وأرصدتهم</div>
+                    </div>
+                    <i class="bi bi-arrow-left template-action"></i>
+                </a>
+            </div>
+        </div>
+
+        <!-- Empty Search Result -->
+        <div id="empty-search" class="empty-search" style="display:none;">
+            <i class="bi bi-search"></i>
+            لا توجد نتائج مطابقة للبحث
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+let currentTab = 'all';
+
+
+function switchTab(tab) {
+    currentTab = tab;
+
+    // Update tabs nav
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.getAttribute('onclick').includes(`'${tab}'`));
+    });
+
+    // Update panels
+    if (tab === 'all') {
+        // إظهار كل الأقسام
+        document.querySelectorAll('.tab-panel').forEach(p => {
+            p.classList.add('active');
+        });
+    } else {
+        // إظهار قسم واحد
+        document.querySelectorAll('.tab-panel').forEach(p => {
+            p.classList.toggle('active', p.dataset.panel === tab);
+        });
+    }
+
+    filterTemplates();
+}
+
+
+function filterTemplates() {
+    const query = document.getElementById('search-input').value.trim().toLowerCase();
+    let anyVisible = false;
+
+    document.querySelectorAll('.template-card').forEach(card => {
+        const name = card.querySelector('.template-name').textContent.toLowerCase();
+        const desc = card.querySelector('.template-desc').textContent.toLowerCase();
+        const match = !query || name.includes(query) || desc.includes(query);
+
+        // الفلتر حسب الـ tab
+        let tabMatch = true;
+        if (currentTab !== 'all') {
+            tabMatch = card.dataset.cat === currentTab;
+        }
+
+        const visible = match && tabMatch;
+        card.classList.toggle('hidden', !visible);
+        if (visible) anyVisible = true;
+    });
+
+    // إخفاء/إظهار الأقسام الفارغة
+    document.querySelectorAll('.tab-panel').forEach(panel => {
+        const hasVisible = panel.querySelector('.template-card:not(.hidden)');
+        if (currentTab === 'all') {
+            panel.classList.toggle('active', !!hasVisible);
+        }
+    });
+
+    document.getElementById('empty-search').style.display = anyVisible ? 'none' : 'block';
+}
+
+
+// تفعيل tab الكل في البداية
+switchTab('all');
+</script>
+</body>
+</html>

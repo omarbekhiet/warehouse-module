@@ -1,22 +1,454 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ar" dir="rtl">
-<head><meta charset="UTF-8"><title>مجموعات الأصناف</title>
+<head>
+<meta charset="UTF-8">
+<title>مجموعات الأصناف</title>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
 <link href="style.css" rel="stylesheet">
+
+<!-- ✅ Select2 للبحث في القوائم -->
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet">
+
 <style>
-.tree-node { padding: 8px 12px; border-bottom: 1px solid #eee; }
-.tree-node:hover { background: #f8f9fa; }
-.tree-level-1 { font-weight: 700; background: #e8f5e9; }
-.tree-level-2 { padding-right: 40px; }
-.tree-level-3 { padding-right: 80px; }
+/* ============ الجدول ============ */
+.groups-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    font-size: 0.8rem;
+    background: #fff;
+    border-radius: 10px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+.groups-table thead th {
+    background: linear-gradient(135deg, #4472C4, #355EA8);
+    color: #fff;
+    padding: 10px 6px;
+    text-align: center;
+    font-weight: 700;
+    font-size: 0.75rem;
+    white-space: nowrap;
+    border-bottom: 2px solid #2a4a8a;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+.groups-table thead th:first-child { border-top-right-radius: 10px; }
+.groups-table thead th:last-child { border-top-left-radius: 10px; }
+
+.groups-table tbody tr {
+    transition: all 0.15s;
+    border-bottom: 1px solid #eef2f7;
+}
+.groups-table tbody tr:hover { background: #f8fafc; }
+.groups-table tbody tr.level-1 { background: #e8f5e9; font-weight: 700; }
+.groups-table tbody tr.level-1:hover { background: #d4ebd6; }
+.groups-table tbody tr.level-2 { background: #fff8e1; }
+.groups-table tbody tr.level-2:hover { background: #fdf0c8; }
+.groups-table tbody tr.level-3 { background: #e3f2fd; }
+.groups-table tbody tr.level-3:hover { background: #cfe8fc; }
+
+.groups-table tbody td {
+    padding: 6px 4px;
+    vertical-align: middle;
+    text-align: center;
+    border-left: 1px solid #f1f5f9;
+    white-space: nowrap;
+}
+
+.col-tree {
+    text-align: right !important;
+    min-width: 200px;
+    max-width: 280px;
+    white-space: normal !important;
+}
+.tree-indent {
+    display: inline-block;
+    color: #94a3b8;
+    font-size: 0.85rem;
+    letter-spacing: 1px;
+}
+.group-name {
+    font-weight: 700;
+    color: #1e293b;
+    margin-right: 4px;
+    font-size: 0.82rem;
+}
+.group-code {
+    color: #64748b;
+    font-size: 0.72rem;
+    font-family: monospace;
+}
+
+.acc-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    padding: 2px 5px;
+    border-radius: 4px;
+    font-size: 0.68rem;
+    font-weight: 600;
+    white-space: nowrap;
+    border: 1px solid transparent;
+}
+.acc-inventory  { background: #e0e7ff; color: #3730a3; border-color: #c7d2fe; }
+.acc-cost       { background: #fef3c7; color: #92400e; border-color: #fde68a; }
+.acc-revenue    { background: #d1fae5; color: #065f46; border-color: #a7f3d0; }
+.acc-purchase   { background: #dbeafe; color: #1e40af; border-color: #bfdbfe; }
+.acc-adjustment { background: #fce7f3; color: #9d174d; border-color: #fbcfe8; }
+.acc-waste      { background: #fee2e2; color: #991b1b; border-color: #fecaca; }
+.acc-clearing   { background: #fef9c3; color: #854d0e; border-color: #fef08a; }
+.acc-return     { background: #e0f2fe; color: #075985; border-color: #bae6fd; }
+.acc-discount   { background: #f3e8ff; color: #6b21a8; border-color: #e9d5ff; }
+
+.acc-code {
+    font-family: monospace;
+    font-weight: 700;
+    font-size: 0.68rem;
+}
+
+.col-actions {
+    position: sticky;
+    left: 0;
+    background: inherit;
+    box-shadow: 2px 0 4px rgba(0,0,0,0.08);
+    z-index: 5;
+    min-width: 110px;
+    padding: 6px 4px !important;
+}
+tr.level-1 .col-actions { background: #e8f5e9; }
+tr.level-2 .col-actions { background: #fff8e1; }
+tr.level-3 .col-actions { background: #e3f2fd; }
+
+.action-btns {
+    display: flex;
+    gap: 3px;
+    justify-content: center;
+}
+.action-btns .btn {
+    padding: 3px 6px;
+    font-size: 0.7rem;
+    line-height: 1;
+}
+
+.level-badge {
+    display: inline-block;
+    padding: 2px 6px;
+    border-radius: 8px;
+    font-size: 0.68rem;
+    font-weight: 700;
+}
+.level-1 .level-badge { background: #10b981; color: #fff; }
+.level-2 .level-badge { background: #f59e0b; color: #fff; }
+.level-3 .level-badge { background: #3b82f6; color: #fff; }
+
+.stat-card {
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+.stat-card .label {
+    font-size: 0.8rem;
+    color: #64748b;
+    margin-bottom: 4px;
+}
+.stat-card .value {
+    font-size: 1.6rem;
+    font-weight: 800;
+}
+
+.form-label {
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: #334155;
+}
+
+/* ============ Select2 تخصيص ============ */
+.select2-container--bootstrap-5 .select2-selection {
+    min-height: 38px;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+}
+.select2-container--bootstrap-5 .select2-selection--single .select2-selection__rendered {
+    line-height: 36px;
+    padding-right: 12px;
+    color: #1e293b;
+}
+.select2-container--bootstrap-5 .select2-selection--single .select2-selection__arrow {
+    height: 36px;
+}
+.select2-dropdown {
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+.select2-results__option {
+    padding: 8px 12px;
+    font-size: 0.85rem;
+}
+.select2-results__option--highlighted {
+    background: #4472C4 !important;
+    color: #fff !important;
+}
+.select2-search--dropdown .select2-search__field {
+    border: 1px solid #cbd5e1;
+    border-radius: 4px;
+    padding: 6px 10px;
+    font-size: 0.85rem;
+}
+.select2-results__option .acc-code-badge {
+    display: inline-block;
+    background: #e0e7ff;
+    color: #3730a3;
+    font-family: monospace;
+    font-weight: 700;
+    font-size: 0.72rem;
+    padding: 1px 6px;
+    border-radius: 3px;
+    margin-left: 6px;
+}
+
+/* ============ Import ============ */
+.upload-area {
+    border: 2px dashed #cbd5e1;
+    border-radius: 12px;
+    padding: 30px 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: #f8fafc;
+}
+.upload-area:hover { border-color: #3b82f6; background: #eff6ff; }
+.upload-area.dragover { border-color: #10b981; background: #ecfdf5; transform: scale(1.02); }
+.upload-area i { font-size: 2.5rem; color: #94a3b8; margin-bottom: 8px; }
+.upload-area .title { font-size: 0.95rem; font-weight: 600; color: #475569; margin-bottom: 4px; }
+.upload-area .sub { font-size: 0.78rem; color: #94a3b8; }
+
+.import-stats { display: flex; gap: 10px; margin: 10px 0; }
+.import-stats .item {
+    flex: 1;
+    background: #f8fafc;
+    padding: 10px;
+    border-radius: 8px;
+    text-align: center;
+    border: 1px solid #e2e8f0;
+}
+.import-stats .num { font-size: 1.4rem; font-weight: 800; }
+.import-stats .lbl { font-size: 0.72rem; color: #64748b; }
+
+.preview-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.78rem;
+    margin-top: 8px;
+}
+.preview-table th {
+    background: #f1f5f9;
+    padding: 6px 8px;
+    text-align: right;
+    font-weight: 700;
+    color: #475569;
+    border-bottom: 1px solid #cbd5e1;
+}
+.preview-table td { padding: 5px 8px; border-bottom: 1px solid #f1f5f9; }
+
+.empty-state { text-align: center; padding: 60px 20px; color: #94a3b8; }
+.empty-state i { font-size: 4rem; margin-bottom: 15px; opacity: 0.5; }
+
+.table-wrapper {
+    overflow-x: auto;
+    max-height: 70vh;
+    overflow-y: auto;
+    border-radius: 10px;
+}
+
+/* Select2 داخل المودال */
+.select2-container {
+    width: 100% !important;
+}
+
+/* ============================================
+   إلغاء أسهم input[type=number]
+   ============================================ */
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none !important;
+    margin: 0 !important;
+}
+input[type=number] {
+    -moz-appearance: textfield !important;
+    appearance: textfield !important;
+}
+input[type="number"] {
+    -moz-appearance: textfield !important;
+}
+
 </style>
+<script src="permissions.js"></script>
+
+
+
+<style id="compact-spacing-global">
+/* ============================================
+   توحيد المسافات المضغوطة
+   ============================================ */
+
+.table td, .table th {
+    padding: 3px 6px !important;
+    font-size: 0.75rem !important;
+    vertical-align: middle !important;
+    line-height: 1.2 !important;
+}
+
+.table tbody tr {
+    height: auto !important;
+}
+
+.form-control, .form-select {
+    font-size: 0.75rem !important;
+    line-height: 1.2 !important;
+}
+
+.form-control-sm, .form-select-sm {
+    height: 26px !important;
+    padding: 2px 6px !important;
+    font-size: 0.72rem !important;
+    line-height: 1 !important;
+}
+
+.btn {
+    padding: 3px 8px !important;
+    font-size: 0.72rem !important;
+    line-height: 1.2 !important;
+}
+
+.btn-sm {
+    padding: 2px 6px !important;
+    font-size: 0.7rem !important;
+}
+
+.card {
+    margin-bottom: 6px !important;
+}
+
+.card-body, .card.p-2, .card.p-3, .card.p-4 {
+    padding: 6px 8px !important;
+}
+
+.modal-header {
+    padding: 6px 12px !important;
+}
+
+.modal-title {
+    font-size: 0.9rem !important;
+}
+
+.modal-body {
+    padding: 8px 12px !important;
+}
+
+.modal-footer {
+    padding: 6px 12px !important;
+}
+
+.modal-footer .btn {
+    padding: 4px 10px !important;
+    font-size: 0.75rem !important;
+}
+
+.mb-1, .mb-2, .mb-3, .mb-4 {
+    margin-bottom: 4px !important;
+}
+
+.mt-1, .mt-2, .mt-3, .mt-4 {
+    margin-top: 4px !important;
+}
+
+.ms-1, .ms-2, .ms-3 {
+    margin-right: 4px !important;
+}
+
+.me-1, .me-2, .me-3 {
+    margin-left: 4px !important;
+}
+
+.p-1, .p-2, .p-3, .p-4 {
+    padding: 4px !important;
+}
+
+.g-1, .g-2, .g-3 {
+    gap: 4px !important;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    line-height: 1.3 !important;
+}
+
+h1 { font-size: 1.2rem !important; margin-bottom: 6px !important; }
+h2 { font-size: 1.05rem !important; margin-bottom: 6px !important; }
+h3 { font-size: 0.95rem !important; margin-bottom: 4px !important; }
+h4 { font-size: 0.9rem !important; margin-bottom: 4px !important; }
+h5 { font-size: 0.85rem !important; margin-bottom: 4px !important; }
+h6 { font-size: 0.8rem !important; margin-bottom: 4px !important; }
+
+.alert {
+    padding: 6px 10px !important;
+    margin-bottom: 6px !important;
+    font-size: 0.78rem !important;
+}
+
+.badge {
+    padding: 2px 6px !important;
+    font-size: 0.68rem !important;
+}
+
+.nav-tabs .nav-link {
+    padding: 5px 12px !important;
+    font-size: 0.78rem !important;
+}
+
+hr {
+    margin: 6px 0 !important;
+}
+
+/* بطاقات الأعمار (aging) */
+.aging-card, .bucket-card, .stat-card {
+    padding: 6px 8px !important;
+    margin-bottom: 4px !important;
+}
+
+.aging-card .h4, .aging-card .h5,
+.bucket-card .h4, .bucket-card .h5 {
+    font-size: 1rem !important;
+    margin: 2px 0 !important;
+}
+
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none !important;
+    margin: 0 !important;
+}
+input[type=number] {
+    -moz-appearance: textfield !important;
+}
+</style>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 16 16%22><text y=%2214%22 font-size=%2214%22>📒</text></svg>">
 </head>
-<body><div class="container-fluid"><div class="row">
+<body>
+<div class="container-fluid">
+<div class="row">
+
+<!-- Sidebar -->
 <div class="col-md-2 sidebar p-0">
-<div class="brand"><i class="bi bi-box-seam" style="font-size:2rem;"></i><h5 class="mt-2 mb-0">موديول المخازن</h5></div>
+<div class="brand">
+    <i class="bi bi-box-seam" style="font-size:2rem;"></i>
+    <h5 class="mt-2 mb-0">موديول المخازن</h5>
+</div>
 <nav class="mt-3">
-<a href="index.html"><i class="bi bi-speedometer2"></i> لوحة التحكم</a>
+<a href="index.html#warehouse"><i class="bi bi-house-fill"></i> المخازن والأصناف</a>
 <a href="notifications.html"><i class="bi bi-bell"></i> الإشعارات</a>
 <a href="accounts.html"><i class="bi bi-book"></i> الدليل المحاسبي</a>
 <a href="warehouses.html"><i class="bi bi-building"></i> المستودعات</a>
@@ -42,219 +474,686 @@
 <a href="financial_reports.html"><i class="bi bi-graph-up"></i> التقارير المالية</a>
 <a href="reports.html"><i class="bi bi-file-earmark-bar-graph"></i> التقارير</a>
 <a href="journal.html"><i class="bi bi-journal-text"></i> القيود</a>
-</nav></div>
+</nav>
+</div>
+
+<!-- Main Content -->
 <div class="col-md-10 p-4">
-<div class="d-flex justify-content-between mb-4">
-<h2><i class="bi bi-diagram-3"></i> مجموعات الأصناف</h2>
-<div>
-<button class="btn btn-outline-secondary" onclick="load()"><i class="bi bi-arrow-clockwise"></i> تحديث</button>
-<button class="btn btn-primary" onclick="openAdd()"><i class="bi bi-plus-circle"></i> مجموعة جديدة</button>
+<div class="d-flex justify-content-between mb-4 flex-wrap gap-2">
+<h2 class="mb-0"><i class="bi bi-diagram-3"></i> مجموعات الأصناف</h2>
+<div class="d-flex gap-2 flex-wrap">
+<button class="btn btn-sm btn-outline-success" onclick="exportToExcel('item_groups')" title="تصدير Excel">
+    <i class="bi bi-file-earmark-excel"></i> Excel
+</button>
+<button class="btn btn-sm btn-outline-primary" onclick="openImportModal('item_groups')" title="استيراد Excel">
+    <i class="bi bi-file-earmark-arrow-up"></i> استيراد
+</button>
+<button class="btn btn-sm btn-outline-secondary" onclick="load()"><i class="bi bi-arrow-clockwise"></i> تحديث</button>
+<button class="btn btn-sm btn-primary" onclick="openAdd()"><i class="bi bi-plus-circle"></i> مجموعة جديدة</button>
 </div>
 </div>
+
+<!-- إحصائيات -->
 <div class="row g-3 mb-3">
 <div class="col-md-3"><div class="stat-card card p-3"><div class="label">إجمالي المجموعات</div><div class="value text-primary" id="stat-total">-</div></div></div>
 <div class="col-md-3"><div class="stat-card card p-3"><div class="label">مستوى 1</div><div class="value text-success" id="stat-l1">-</div></div></div>
 <div class="col-md-3"><div class="stat-card card p-3"><div class="label">مستوى 2</div><div class="value text-warning" id="stat-l2">-</div></div></div>
 <div class="col-md-3"><div class="stat-card card p-3"><div class="label">مستوى 3</div><div class="value text-info" id="stat-l3">-</div></div></div>
 </div>
-<div class="card p-3"><div id="tree"><div class="text-center text-muted p-4">جاري التحميل...</div></div></div>
-</div></div></div>
 
+<!-- الجدول -->
+<div class="card p-0">
+<div class="table-wrapper">
+<table class="groups-table">
+<thead>
+<tr>
+    <th style="min-width:220px;">المجموعة</th>
+    <th style="width:70px;">المستوى</th>
+    <th>📦 المخزون</th>
+    <th>💰 التكلفة</th>
+    <th>💵 الإيراد</th>
+    <th>🛒 المشتريات</th>
+    <th>⚖️ التسوية</th>
+    <th>🗑️ الهالك</th>
+    <th>🔄 الوسيط</th>
+    <th>↩️ مردودات</th>
+    <th>🏷️ خصم</th>
+    <th class="col-actions" style="width:110px;">الإجراءات</th>
+</tr>
+</thead>
+<tbody id="groups-tbody">
+<tr><td colspan="12" class="text-center text-muted p-4">جاري التحميل...</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+
+</div>
+</div>
+</div>
+
+<!-- Modal: Group Add/Edit -->
 <div class="modal fade" id="groupModal" tabindex="-1">
 <div class="modal-dialog modal-lg">
 <div class="modal-content">
-<div class="modal-header bg-primary text-white"><h5 class="modal-title" id="modal-title"><i class="bi bi-plus-circle"></i> مجموعة جديدة</h5><button class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
+<div class="modal-header bg-primary text-white">
+<h5 class="modal-title" id="modal-title"><i class="bi bi-plus-circle"></i> مجموعة جديدة</h5>
+<button class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+</div>
 <div class="modal-body">
+
 <div class="row g-3">
 <div class="col-md-4"><label class="form-label">الكود *</label><input class="form-control" id="f-code"></div>
 <div class="col-md-4"><label class="form-label">الاسم بالعربي *</label><input class="form-control" id="f-name_ar"></div>
 <div class="col-md-4"><label class="form-label">الاسم بالإنجليزي</label><input class="form-control" id="f-name_en"></div>
-<div class="col-md-6"><label class="form-label">المجموعة الأب</label><select class="form-select" id="f-parent_id"><option value="">— بدون (مستوى أول) —</option></select></div>
-<div class="col-md-6"><label class="form-label">الوحدة الافتراضية</label><select class="form-select" id="f-default_uom_id"><option value="">— بدون —</option></select></div>
+<div class="col-md-6"><label class="form-label">المجموعة الأب</label>
+    <select class="form-select" id="f-parent_id"><option value="">— بدون (مستوى أول) —</option></select>
 </div>
+<div class="col-md-6"><label class="form-label">الوحدة الافتراضية</label>
+    <select class="form-select" id="f-default_uom_id"><option value="">— بدون —</option></select>
+</div>
+</div>
+
 <hr>
+
 <h6 class="text-primary"><i class="bi bi-book"></i> الحسابات من الدليل</h6>
-<div class="alert alert-info small py-2">الحسابات تُورَث للأصناف التابعة.</div>
+<div class="alert alert-info small py-2"><i class="bi bi-info-circle"></i> الحسابات تُورَث للأصناف التابعة.</div>
+
 <div class="row g-3">
-<div class="col-md-3"><label class="form-label">حساب المخزون</label><select class="form-select" id="f-inventory_account"><option value="">— بدون —</option></select></div>
-<div class="col-md-3"><label class="form-label">حساب التكلفة</label><select class="form-select" id="f-cost_account"><option value="">— بدون —</option></select></div>
-<div class="col-md-3"><label class="form-label">حساب الإيراد</label><select class="form-select" id="f-revenue_account"><option value="">— بدون —</option></select></div>
-<div class="col-md-3"><label class="form-label">حساب الوسيط</label><select class="form-select" id="f-clearing_account"><option value="">— بدون —</option></select></div>
+<div class="col-md-4"><label class="form-label">📦 حساب المخزون</label><select class="form-select" id="f-inventory_account"><option value="">— بدون —</option></select></div>
+<div class="col-md-4"><label class="form-label">💰 حساب التكلفة</label><select class="form-select" id="f-cost_account"><option value="">— بدون —</option></select></div>
+<div class="col-md-4"><label class="form-label">💵 حساب الإيراد</label><select class="form-select" id="f-revenue_account"><option value="">— بدون —</option></select></div>
+</div>
+<div class="row g-3 mt-1">
+<div class="col-md-4"><label class="form-label">🛒 حساب المشتريات</label><select class="form-select" id="f-purchase_account"><option value="">— بدون —</option></select></div>
+<div class="col-md-4"><label class="form-label">⚖️ حساب التسوية</label><select class="form-select" id="f-adjustment_account"><option value="">— بدون —</option></select></div>
+<div class="col-md-4"><label class="form-label">🗑️ حساب الهالك</label><select class="form-select" id="f-waste_account"><option value="">— بدون —</option></select></div>
+</div>
+<div class="row g-3 mt-1">
+<div class="col-md-4"><label class="form-label">🔄 حساب الوسيط</label><select class="form-select" id="f-clearing_account"><option value="">— بدون —</option></select></div>
+<div class="col-md-4"><label class="form-label">↩️ مردودات الإيراد</label><select class="form-select" id="f-revenue_return_account"><option value="">— بدون —</option></select></div>
+<div class="col-md-4"><label class="form-label">🏷️ الخصم المسموح</label><select class="form-select" id="f-discount_account"><option value="">— بدون —</option></select></div>
+</div>
+
+<div class="row g-3 mt-3">
 <div class="col-md-4"><label class="form-label">طريقة التكلفة</label>
-<select class="form-select" id="f-default_cost_method">
-<option value="WEIGHTED_AVERAGE">المتوسط المرجح</option>
-<option value="FIFO">FIFO</option>
-<option value="LIFO">LIFO</option>
-</select></div>
+    <select class="form-select" id="f-default_cost_method">
+        <option value="WEIGHTED_AVERAGE">المتوسط المرجح</option>
+        <option value="FIFO">FIFO (الوارد أولاً يصرف أولاً)</option>
+        <option value="LIFO">LIFO (الوارد أخيراً يصرف أولاً)</option>
+        <option value="STANDARD">التكلفة المعيارية</option>
+        <option value="ACTUAL">التكلفة الفعلية</option>
+    </select>
+</div>
 <div class="col-md-8"><label class="form-label">ملاحظات</label><input class="form-control" id="f-notes"></div>
 </div>
+
 </div>
 <div class="modal-footer">
 <button class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
 <button class="btn btn-primary" onclick="save()"><i class="bi bi-check-circle"></i> حفظ</button>
 </div>
-</div></div></div>
+</div>
+</div>
+</div>
 
+<!-- Modal: Import Excel -->
+<div class="modal fade" id="importExcelModal" tabindex="-1">
+<div class="modal-dialog modal-lg">
+<div class="modal-content">
+<div class="modal-header bg-primary text-white">
+<h5 class="modal-title"><i class="bi bi-file-earmark-arrow-up"></i> استيراد من Excel</h5>
+<button class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+</div>
+<div class="modal-body">
+
+<div id="import-step-1">
+<div class="alert alert-info">
+<i class="bi bi-info-circle"></i>
+<strong>الخطوات:</strong>
+<ol class="mb-0 mt-2" style="padding-right: 20px;">
+<li>حمّل القالب الفارغ</li>
+<li>املأ البيانات</li>
+<li>ارفع الملف</li>
+<li>اضغط "معاينة" للتأكد</li>
+<li>اضغط "استيراد" للحفظ</li>
+</ol>
+</div>
+
+<button class="btn btn-outline-primary w-100 mb-3" onclick="downloadImportTemplate()">
+<i class="bi bi-download"></i> تحميل القالب الفارغ
+</button>
+
+<div class="upload-area" id="import-upload-area" onclick="document.getElementById('import-file-input').click()">
+<i class="bi bi-cloud-upload"></i>
+<div class="title">اسحب الملف هنا أو اضغط للاختيار</div>
+<div class="sub">ملفات Excel فقط (.xlsx, .xls)</div>
+</div>
+<input type="file" id="import-file-input" accept=".xlsx,.xls" style="display:none" onchange="handleImportFile(this.files[0])">
+
+<div id="import-file-info" style="display:none;" class="mt-3">
+<div class="alert alert-success py-2 mb-0">
+<i class="bi bi-file-earmark-excel"></i>
+<span id="import-file-name"></span>
+<button class="btn btn-sm btn-outline-danger float-end" onclick="clearImportFile()"><i class="bi bi-x"></i></button>
+</div>
+<div class="d-flex gap-2 mt-2">
+<button class="btn btn-outline-info flex-fill" onclick="previewImport()"><i class="bi bi-eye"></i> معاينة</button>
+<button class="btn btn-primary flex-fill" onclick="confirmImport()"><i class="bi bi-upload"></i> استيراد</button>
+</div>
+</div>
+</div>
+
+<div id="import-step-2" style="display:none;"></div>
+
+</div>
+<div class="modal-footer">
+<button class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button>
+</div>
+</div>
+</div>
+</div>
+
+<!-- JS Libraries -->
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
 <script>
-const API='http://localhost:5000/api/v1';
+const API = 'http://localhost:5000/api/v1';
 const modal = new bootstrap.Modal(document.getElementById('groupModal'));
 let allGroups = [], uomList = [], leafAccounts = [];
 let editId = null;
 
-async function loadRefs(){
- const [u,a] = await Promise.all([
-  fetch(`${API}/uom/`).then(r=>r.json()),
-  fetch(`${API}/accounts/leaf`).then(r=>r.json())]);
- uomList = u.data||[];
- leafAccounts = a.data||[];
- 
- document.getElementById('f-default_uom_id').innerHTML = '<option value="">— بدون —</option>' +
-  uomList.map(u=>`<option value="${u.id}">${u.name_ar} (${u.code})</option>`).join('');
- 
- const accOpts = '<option value="">— بدون —</option>' + 
-  leafAccounts.map(a=>`<option value="${a.code}">${a.code} - ${a.name_ar}</option>`).join('');
- document.getElementById('f-inventory_account').innerHTML = accOpts;
- document.getElementById('f-cost_account').innerHTML = accOpts;
- document.getElementById('f-revenue_account').innerHTML = accOpts;
- document.getElementById('f-clearing_account').innerHTML = accOpts;
+// ============================================================
+// Select2 - تفعيل البحث
+// ============================================================
+function initSearchableSelect(selector, placeholder) {
+    if (typeof $ === 'undefined') return;
+    
+    // لو مفعّل قبل كده، دمره
+    if ($(selector).data('select2')) {
+        $(selector).select2('destroy');
+    }
+    
+    $(selector).select2({
+        theme: 'bootstrap-5',
+        placeholder: placeholder || 'اكتب كود أو اسم...',
+        allowClear: true,
+        width: '100%',
+        dropdownParent: $('#groupModal'),  // عشان يشتغل جوه المودال
+        language: {
+            noResults: () => "لا توجد نتائج",
+            searching: () => "جاري البحث...",
+            inputTooShort: () => "اكتب حرفين على الأقل..."
+        },
+        matcher: function(params, data) {
+            // لو مفيش بحث، اعرض الكل
+            if ($.trim(params.term) === '') return data;
+            
+            // ابحث في النص الكامل (كود + اسم)
+            const term = params.term.toLowerCase();
+            const text = (data.text || '').toLowerCase();
+            
+            if (text.indexOf(term) > -1) return data;
+            return null;
+        }
+    });
 }
 
+function initAllSearchable() {
+    // الحسابات
+    const accountIds = [
+        '#f-inventory_account',
+        '#f-cost_account',
+        '#f-revenue_account',
+        '#f-purchase_account',
+        '#f-adjustment_account',
+        '#f-waste_account',
+        '#f-clearing_account',
+        '#f-revenue_return_account',
+        '#f-discount_account'
+    ];
+    accountIds.forEach(id => initSearchableSelect(id, 'اكتب كود أو اسم الحساب...'));
+    
+    // الأب
+    initSearchableSelect('#f-parent_id', 'اكتب كود أو اسم المجموعة...');
+    
+    // الوحدة
+    initSearchableSelect('#f-default_uom_id', 'اكتب كود أو اسم الوحدة...');
+}
+
+// ================== Refs ==================
+async function loadRefs(){
+    try {
+        const [u, a] = await Promise.all([
+            fetch(`${API}/uom/`).then(r => r.json()),
+            fetch(`${API}/accounts/leaf`).then(r => r.json())
+        ]);
+        uomList = u.data || [];
+        leafAccounts = a.data || [];
+
+        document.getElementById('f-default_uom_id').innerHTML =
+            '<option value="">— بدون —</option>' +
+            uomList.map(u => `<option value="${u.id}">${u.name_ar} (${u.code})</option>`).join('');
+
+        const accOpts = '<option value="">— بدون —</option>' +
+            leafAccounts.map(a => `<option value="${a.code}">${a.code} - ${a.name_ar}</option>`).join('');
+
+        ['f-inventory_account','f-cost_account','f-revenue_account',
+         'f-purchase_account','f-adjustment_account','f-waste_account',
+         'f-clearing_account','f-revenue_return_account','f-discount_account']
+        .forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.innerHTML = accOpts;
+        });
+    } catch(e) { console.error('loadRefs:', e); }
+}
+
+// ================== Load ==================
 async function load(){
- const r = await fetch(`${API}/groups/`).then(x=>x.json());
- allGroups = r.data||[];
- renderTree();
- renderStats();
+    try {
+        const r = await fetch(`${API}/groups/`).then(x => x.json());
+        allGroups = r.data || [];
+        renderTable();
+        renderStats();
+    } catch(e) {
+        document.getElementById('groups-tbody').innerHTML =
+            '<tr><td colspan="12" class="text-center text-danger p-4">خطأ: ' + e.message + '</td></tr>';
+    }
 }
 
 function renderStats(){
- document.getElementById('stat-total').textContent = allGroups.length;
- document.getElementById('stat-l1').textContent = allGroups.filter(g=>g.level===1).length;
- document.getElementById('stat-l2').textContent = allGroups.filter(g=>g.level===2).length;
- document.getElementById('stat-l3').textContent = allGroups.filter(g=>g.level===3).length;
+    document.getElementById('stat-total').textContent = allGroups.length;
+    document.getElementById('stat-l1').textContent = allGroups.filter(g => g.level === 1).length;
+    document.getElementById('stat-l2').textContent = allGroups.filter(g => g.level === 2).length;
+    document.getElementById('stat-l3').textContent = allGroups.filter(g => g.level === 3).length;
 }
 
-function renderTree(){
- const byParent = {};
- allGroups.forEach(g=>{
-  const p = g.parent_id || 0;
-  if (!byParent[p]) byParent[p] = [];
-  byParent[p].push(g);
- });
- 
- let html = '';
- function renderNode(g, depth=1){
-  const levelClass = `tree-level-${Math.min(depth,3)}`;
-  const accounts = [];
-  if (g.inventory_account) accounts.push(`<span class="badge bg-secondary" title="حساب المخزون">📦 ${g.inventory_account}</span>`);
-  if (g.cost_account) accounts.push(`<span class="badge bg-secondary" title="حساب التكلفة">💰 ${g.cost_account}</span>`);
-  if (g.revenue_account) accounts.push(`<span class="badge bg-secondary" title="حساب الإيراد">💵 ${g.revenue_account}</span>`);
-  if (g.clearing_account) accounts.push(`<span class="badge bg-warning text-dark" title="حساب الوسيط">🔄 ${g.clearing_account}</span>`);
-  
-  html += `<div class="tree-node ${levelClass}">
-   <div class="d-flex justify-content-between align-items-center">
-    <div>
-     <i class="bi bi-folder-fill text-warning"></i>
-     <strong>${g.name_ar}</strong>
-     <small class="text-muted">(${g.code})</small>
-     <span class="badge bg-info ms-2">L${g.level}</span>
-     ${accounts.join(' ')}
-    </div>
-    <div>
-     <button class="btn btn-sm btn-outline-success" onclick="openAdd(${g.id})" title="إضافة فرع"><i class="bi bi-plus"></i></button>
-     <button class="btn btn-sm btn-outline-warning" onclick="openEdit(${g.id})" title="تعديل"><i class="bi bi-pencil"></i></button>
-     <button class="btn btn-sm btn-outline-danger" onclick="del(${g.id},'${g.name_ar}')" title="حذف"><i class="bi bi-trash"></i></button>
-    </div>
-   </div>
-  </div>`;
-  (byParent[g.id] || []).forEach(c=>renderNode(c, depth+1));
- }
- (byParent[0]||[]).forEach(g=>renderNode(g,1));
- 
- if (!html) html = '<div class="text-center text-muted p-4">لا توجد مجموعات.</div>';
- document.getElementById('tree').innerHTML = html;
+// ================== Table ==================
+function renderTable(){
+    const tbody = document.getElementById('groups-tbody');
+    
+    if (!allGroups.length) {
+        tbody.innerHTML = `<tr><td colspan="12">
+            <div class="empty-state">
+                <i class="bi bi-diagram-3"></i>
+                <h5>لا توجد مجموعات</h5>
+                <p>اضغط "مجموعة جديدة" للبدء</p>
+            </div>
+        </td></tr>`;
+        return;
+    }
+
+    const byParent = {};
+    allGroups.forEach(g => {
+        const p = g.parent_id || 0;
+        if (!byParent[p]) byParent[p] = [];
+        byParent[p].push(g);
+    });
+
+    let html = '';
+    function renderRow(g, depth = 1){
+        const level = g.level || depth;
+        const indent = '&nbsp;&nbsp;&nbsp;&nbsp;'.repeat(depth - 1);
+        const treeIcon = depth === 1 ? '📁' : (depth === 2 ? '📂' : '📄');
+
+        const acc = (code, cls, icon, title) => 
+            code ? `<span class="acc-badge ${cls}" title="${title}">${icon}<span class="acc-code">${code}</span></span>` 
+                 : '<span class="text-muted">—</span>';
+
+        html += `<tr class="level-${level}">
+            <td class="col-tree">
+                ${indent}<span class="tree-indent">${treeIcon}</span>
+                <span class="group-name">${g.name_ar}</span>
+                <span class="group-code">(${g.code})</span>
+            </td>
+            <td><span class="level-badge">L${level}</span></td>
+            <td>${acc(g.inventory_account, 'acc-inventory', '📦', 'حساب المخزون')}</td>
+            <td>${acc(g.cost_account, 'acc-cost', '💰', 'حساب التكلفة')}</td>
+            <td>${acc(g.revenue_account, 'acc-revenue', '💵', 'حساب الإيراد')}</td>
+            <td>${acc(g.purchase_account, 'acc-purchase', '🛒', 'حساب المشتريات')}</td>
+            <td>${acc(g.adjustment_account, 'acc-adjustment', '⚖️', 'حساب التسوية')}</td>
+            <td>${acc(g.waste_account, 'acc-waste', '🗑️', 'حساب الهالك')}</td>
+            <td>${acc(g.clearing_account, 'acc-clearing', '🔄', 'حساب الوسيط')}</td>
+            <td>${acc(g.revenue_return_account, 'acc-return', '↩️', 'مردودات الإيراد')}</td>
+            <td>${acc(g.discount_account, 'acc-discount', '🏷️', 'الخصم المسموح')}</td>
+            <td class="col-actions">
+                <div class="action-btns">
+                    <button class="btn btn-sm btn-outline-success" onclick="openAdd(${g.id})" title="إضافة فرع"><i class="bi bi-plus"></i></button>
+                    <button class="btn btn-sm btn-outline-warning" onclick="openEdit(${g.id})" title="تعديل"><i class="bi bi-pencil"></i></button>
+                    <button class="btn btn-sm btn-outline-danger" onclick="del(${g.id},'${g.name_ar}')" title="حذف"><i class="bi bi-trash"></i></button>
+                </div>
+            </td>
+        </tr>`;
+        (byParent[g.id] || []).forEach(c => renderRow(c, depth + 1));
+    }
+    (byParent[0] || []).forEach(g => renderRow(g, 1));
+    tbody.innerHTML = html;
 }
 
-function refreshParentOptions(excludeId=null){
- const opts = ['<option value="">— بدون (مستوى أول) —</option>'];
- allGroups.filter(g=>g.id !== excludeId && g.level < 3).forEach(g=>{
-  const indent = '　'.repeat(g.level-1);
-  opts.push(`<option value="${g.id}">${indent}${g.code} — ${g.name_ar}</option>`);
- });
- document.getElementById('f-parent_id').innerHTML = opts.join('');
+// ================== Parents ==================
+function refreshParentOptions(excludeId = null){
+    const opts = ['<option value="">— بدون (مستوى أول) —</option>'];
+    allGroups
+        .filter(g => g.id !== excludeId && g.level < 3)
+        .forEach(g => {
+            const indent = '　'.repeat((g.level || 1) - 1);
+            opts.push(`<option value="${g.id}">${indent}${g.code} — ${g.name_ar}</option>`);
+        });
+    
+    // دمر Select2 القديم
+    if ($('#f-parent_id').data('select2')) {
+        $('#f-parent_id').select2('destroy');
+    }
+    
+    document.getElementById('f-parent_id').innerHTML = opts.join('');
+    
+    // أعد تفعيل Select2
+    initSearchableSelect('#f-parent_id', 'اكتب كود أو اسم المجموعة...');
 }
 
+// ================== Helper للقيم ==================
+function getVal(id) {
+    const el = document.getElementById(id);
+    if (!el) return '';
+    // Select2 بيحفظ القيمة في el.value عادي
+    return el.value;
+}
+
+function setVal(id, value) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    
+    // لو Select2 مفعّل، استخدم الطريقة بتاعته
+    if ($(el).data('select2')) {
+        $(el).val(value || '').trigger('change.select2');
+    } else {
+        el.value = value || '';
+    }
+}
+
+// ================== Clear ==================
 function clearForm(){
- ['f-code','f-name_ar','f-name_en','f-notes'].forEach(id=>document.getElementById(id).value='');
- ['f-inventory_account','f-cost_account','f-revenue_account','f-clearing_account'].forEach(id=>document.getElementById(id).value='');
- document.getElementById('f-parent_id').value = '';
- document.getElementById('f-default_uom_id').value = '';
- document.getElementById('f-default_cost_method').value = 'WEIGHTED_AVERAGE';
- document.getElementById('f-code').disabled = false;
+    ['f-code','f-name_ar','f-name_en','f-notes'].forEach(id => 
+        document.getElementById(id).value = ''
+    );
+    
+    ['f-inventory_account','f-cost_account','f-revenue_account',
+     'f-purchase_account','f-adjustment_account','f-waste_account',
+     'f-clearing_account','f-revenue_return_account','f-discount_account',
+     'f-parent_id','f-default_uom_id']
+    .forEach(id => setVal(id, ''));
+    
+    document.getElementById('f-default_cost_method').value = 'WEIGHTED_AVERAGE';
+    document.getElementById('f-code').disabled = false;
 }
 
-function openAdd(parentId=null){
- editId = null; clearForm();
- refreshParentOptions();
- if (parentId) document.getElementById('f-parent_id').value = parentId;
- document.getElementById('modal-title').innerHTML = '<i class="bi bi-plus-circle"></i> مجموعة جديدة';
- modal.show();
+// ================== Add ==================
+function openAdd(parentId = null){
+    editId = null;
+    clearForm();
+    refreshParentOptions();
+    if (parentId) setVal('f-parent_id', String(parentId));
+    document.getElementById('modal-title').innerHTML = '<i class="bi bi-plus-circle"></i> مجموعة جديدة';
+    
+    // أعد تفعيل Select2 بعد ما المودال يفتح
+    modal.show();
+    setTimeout(() => {
+        initAllSearchable();
+    }, 300);
 }
 
+// ================== Edit ==================
 function openEdit(id){
- editId = id;
- const g = allGroups.find(x=>x.id===id);
- if (!g) return;
- refreshParentOptions(id);
- document.getElementById('f-code').value = g.code;
- document.getElementById('f-code').disabled = true;
- document.getElementById('f-name_ar').value = g.name_ar;
- document.getElementById('f-name_en').value = g.name_en||'';
- document.getElementById('f-parent_id').value = g.parent_id||'';
- document.getElementById('f-default_uom_id').value = g.default_uom_id||'';
- document.getElementById('f-inventory_account').value = g.inventory_account||'';
- document.getElementById('f-cost_account').value = g.cost_account||'';
- document.getElementById('f-revenue_account').value = g.revenue_account||'';
- document.getElementById('f-clearing_account').value = g.clearing_account||'';
- document.getElementById('f-default_cost_method').value = g.default_cost_method||'WEIGHTED_AVERAGE';
- document.getElementById('f-notes').value = g.notes||'';
- document.getElementById('modal-title').innerHTML = '<i class="bi bi-pencil"></i> تعديل المجموعة';
- modal.show();
+    editId = id;
+    const g = allGroups.find(x => x.id === id);
+    if (!g) return;
+
+    refreshParentOptions(id);
+    document.getElementById('f-code').value = g.code;
+    document.getElementById('f-code').disabled = true;
+    document.getElementById('f-name_ar').value = g.name_ar;
+    document.getElementById('f-name_en').value = g.name_en || '';
+    
+    // افتح المودال الأول عشان Select2 يشتغل
+    document.getElementById('modal-title').innerHTML = '<i class="bi bi-pencil"></i> تعديل المجموعة';
+    modal.show();
+    
+    setTimeout(() => {
+        // فعّل Select2 الأول
+        initAllSearchable();
+        
+        // بعدين حدد القيم
+        setVal('f-parent_id', g.parent_id ? String(g.parent_id) : '');
+        setVal('f-default_uom_id', g.default_uom_id ? String(g.default_uom_id) : '');
+        
+        setVal('f-inventory_account', g.inventory_account || '');
+        setVal('f-cost_account', g.cost_account || '');
+        setVal('f-revenue_account', g.revenue_account || '');
+        setVal('f-purchase_account', g.purchase_account || '');
+        setVal('f-adjustment_account', g.adjustment_account || '');
+        setVal('f-waste_account', g.waste_account || '');
+        setVal('f-clearing_account', g.clearing_account || '');
+        setVal('f-revenue_return_account', g.revenue_return_account || '');
+        setVal('f-discount_account', g.discount_account || '');
+        
+        document.getElementById('f-default_cost_method').value = g.default_cost_method || 'WEIGHTED_AVERAGE';
+        document.getElementById('f-notes').value = g.notes || '';
+    }, 300);
 }
 
+// ================== Save ==================
 async function save(){
- const parent_id = document.getElementById('f-parent_id').value;
- const data = {
-  name_ar: document.getElementById('f-name_ar').value.trim(),
-  name_en: document.getElementById('f-name_en').value.trim(),
-  parent_id: parent_id ? parseInt(parent_id) : null,
-  default_uom_id: document.getElementById('f-default_uom_id').value ? parseInt(document.getElementById('f-default_uom_id').value) : null,
-  inventory_account: document.getElementById('f-inventory_account').value || null,
-  cost_account: document.getElementById('f-cost_account').value || null,
-  revenue_account: document.getElementById('f-revenue_account').value || null,
-  clearing_account: document.getElementById('f-clearing_account').value || null,
-  default_cost_method: document.getElementById('f-default_cost_method').value,
-  notes: document.getElementById('f-notes').value.trim()
- };
- if (!data.name_ar) { alert('الاسم مطلوب'); return; }
- 
- if (editId) {
-  const r = await fetch(`${API}/groups/${editId}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)}).then(x=>x.json());
-  if (r.success) { modal.hide(); load(); } else alert(r.message||'خطأ');
- } else {
-  data.code = document.getElementById('f-code').value.trim();
-  if (!data.code) { alert('الكود مطلوب'); return; }
-  const r = await fetch(`${API}/groups/`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)}).then(x=>x.json());
-  if (r.success) { modal.hide(); load(); } else alert(r.message||'خطأ');
- }
+    const parent_id = getVal('f-parent_id');
+    const data = {
+        name_ar: document.getElementById('f-name_ar').value.trim(),
+        name_en: document.getElementById('f-name_en').value.trim(),
+        parent_id: parent_id ? parseInt(parent_id) : null,
+        default_uom_id: getVal('f-default_uom_id') ? parseInt(getVal('f-default_uom_id')) : null,
+        inventory_account: getVal('f-inventory_account') || null,
+        cost_account: getVal('f-cost_account') || null,
+        revenue_account: getVal('f-revenue_account') || null,
+        purchase_account: getVal('f-purchase_account') || null,
+        adjustment_account: getVal('f-adjustment_account') || null,
+        waste_account: getVal('f-waste_account') || null,
+        clearing_account: getVal('f-clearing_account') || null,
+        revenue_return_account: getVal('f-revenue_return_account') || null,
+        discount_account: getVal('f-discount_account') || null,
+        default_cost_method: document.getElementById('f-default_cost_method').value,
+        notes: document.getElementById('f-notes').value.trim()
+    };
+
+    if (!data.name_ar) { alert('الاسم مطلوب'); return; }
+
+    try {
+        if (editId) {
+            const r = await fetch(`${API}/groups/${editId}`, {
+                method: 'PUT',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(data)
+            }).then(x => x.json());
+            if (r.success) { modal.hide(); load(); } 
+            else alert(r.message || 'خطأ');
+        } else {
+            data.code = document.getElementById('f-code').value.trim();
+            if (!data.code) { alert('الكود مطلوب'); return; }
+            const r = await fetch(`${API}/groups/`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(data)
+            }).then(x => x.json());
+            if (r.success) { modal.hide(); load(); } 
+            else alert(r.message || 'خطأ');
+        }
+    } catch(e) { alert('خطأ: ' + e.message); }
 }
 
-async function del(id,name){
- if (!confirm(`حذف المجموعة "${name}"؟`)) return;
- const r = await fetch(`${API}/groups/${id}`,{method:'DELETE'}).then(x=>x.json());
- if (r.success) load();
- else alert(r.message||'خطأ');
+// ================== Delete ==================
+async function del(id, name){
+    if (!confirm(`حذف المجموعة "${name}"؟`)) return;
+    try {
+        const r = await fetch(`${API}/groups/${id}`, {method: 'DELETE'}).then(x => x.json());
+        if (r.success) load();
+        else alert(r.message || 'خطأ');
+    } catch(e) { alert('خطأ: ' + e.message); }
 }
 
-(async()=>{ await loadRefs(); await load(); })();
-</script></body></html>
+// ================== Export ==================
+function exportToExcel(templateKey){
+    if (!templateKey) { alert('مفيش قالب'); return; }
+    window.location.href = '/api/v1/export/excel/export/' + templateKey;
+}
+
+// ================== Import ==================
+let currentImportFile = null;
+let currentImportTemplate = null;
+
+function openImportModal(templateKey){
+    currentImportTemplate = templateKey;
+    currentImportFile = null;
+    document.getElementById('import-step-1').style.display = 'block';
+    document.getElementById('import-step-2').style.display = 'none';
+    document.getElementById('import-file-info').style.display = 'none';
+    document.getElementById('import-file-input').value = '';
+    const m = new bootstrap.Modal(document.getElementById('importExcelModal'));
+    m.show();
+}
+
+function downloadImportTemplate(){
+    if (!currentImportTemplate) return;
+    window.location.href = '/api/v1/export/excel/import-template/' + currentImportTemplate;
+}
+
+function handleImportFile(file){
+    if (!file) return;
+    if (!file.name.match(/\.(xlsx|xls)$/i)) { alert('الملف يجب أن يكون Excel'); return; }
+    currentImportFile = file;
+    document.getElementById('import-file-name').textContent =
+        file.name + ' (' + (file.size / 1024).toFixed(1) + ' KB)';
+    document.getElementById('import-file-info').style.display = 'block';
+}
+
+function clearImportFile(){
+    currentImportFile = null;
+    document.getElementById('import-file-input').value = '';
+    document.getElementById('import-file-info').style.display = 'none';
+}
+
+async function previewImport(){
+    if (!currentImportFile) { alert('اختر ملف'); return; }
+    const formData = new FormData();
+    formData.append('file', currentImportFile);
+    const resultEl = document.getElementById('import-step-2');
+    resultEl.innerHTML = '<div class="alert alert-info"><i class="bi bi-hourglass-split"></i> جاري المعاينة...</div>';
+    resultEl.style.display = 'block';
+    document.getElementById('import-step-1').style.display = 'none';
+    try {
+        const r = await fetch('/api/v1/export/excel/preview/' + currentImportTemplate, {
+            method: 'POST', body: formData
+        }).then(x => x.json());
+        if (r.success) {
+            const d = r.data;
+            let html = '<h6><i class="bi bi-eye text-info"></i> معاينة</h6>';
+            html += '<div class="import-stats">';
+            html += '<div class="item"><div class="num text-info">' + d.total_rows + '</div><div class="lbl">صفوف</div></div>';
+            html += '<div class="item"><div class="num text-danger">' + ((d.errors || []).length) + '</div><div class="lbl">أخطاء</div></div>';
+            html += '</div>';
+            if (d.preview && d.preview.length) {
+                html += '<div class="mt-3"><strong>عينة:</strong>';
+                html += '<table class="preview-table"><thead><tr>';
+                Object.keys(d.preview[0].data).forEach(k => html += '<th>' + k + '</th>');
+                html += '</tr></thead><tbody>';
+                d.preview.forEach(row => {
+                    html += '<tr>';
+                    Object.values(row.data).forEach(v => html += '<td>' + (v || '-') + '</td>');
+                    html += '</tr>';
+                });
+                html += '</tbody></table></div>';
+            }
+            if (d.errors && d.errors.length) {
+                html += '<div class="alert alert-warning mt-3 py-2 mb-0" style="font-size:0.82rem;">';
+                html += '<strong>أخطاء:</strong><ul class="mb-0">';
+                d.errors.forEach(e => html += '<li>' + e + '</li>');
+                html += '</ul></div>';
+            }
+            html += '<div class="d-flex gap-2 mt-3">';
+            html += '<button class="btn btn-secondary flex-fill" onclick="backToImport()"><i class="bi bi-arrow-right"></i> رجوع</button>';
+            html += '<button class="btn btn-primary flex-fill" onclick="confirmImport()"><i class="bi bi-upload"></i> تأكيد</button>';
+            html += '</div>';
+            resultEl.innerHTML = html;
+        } else {
+            resultEl.innerHTML = '<div class="alert alert-danger">' + r.message + '</div>' +
+                '<button class="btn btn-secondary" onclick="backToImport()"><i class="bi bi-arrow-right"></i> رجوع</button>';
+        }
+    } catch (e) {
+        resultEl.innerHTML = '<div class="alert alert-danger">خطأ: ' + e.message + '</div>' +
+            '<button class="btn btn-secondary" onclick="backToImport()"><i class="bi bi-arrow-right"></i> رجوع</button>';
+    }
+}
+
+function backToImport(){
+    document.getElementById('import-step-1').style.display = 'block';
+    document.getElementById('import-step-2').style.display = 'none';
+}
+
+async function confirmImport(){
+    if (!currentImportFile) { alert('اختر ملف'); return; }
+    const formData = new FormData();
+    formData.append('file', currentImportFile);
+    const resultEl = document.getElementById('import-step-2');
+    resultEl.innerHTML = '<div class="alert alert-info"><i class="bi bi-hourglass-split"></i> جاري الاستيراد...</div>';
+    resultEl.style.display = 'block';
+    document.getElementById('import-step-1').style.display = 'none';
+    try {
+        const r = await fetch('/api/v1/export/excel/import/' + currentImportTemplate, {
+            method: 'POST', body: formData
+        }).then(x => x.json());
+        if (r.success) {
+            const d = r.data;
+            let html = '<div class="alert alert-success"><h5><i class="bi bi-check-circle-fill"></i> تم الاستيراد</h5></div>';
+            html += '<div class="import-stats">';
+            html += '<div class="item"><div class="num text-success">' + (d.imported || 0) + '</div><div class="lbl">جديد</div></div>';
+            html += '<div class="item"><div class="num text-primary">' + (d.updated || 0) + '</div><div class="lbl">محدث</div></div>';
+            html += '<div class="item"><div class="num">' + (d.total || 0) + '</div><div class="lbl">الإجمالي</div></div>';
+            html += '</div>';
+            if (d.errors && d.errors.length) {
+                html += '<div class="alert alert-warning py-2 mt-3 mb-0" style="font-size:0.82rem;">';
+                html += '<strong>أخطاء (' + d.errors.length + '):</strong><ul class="mb-0">';
+                d.errors.forEach(e => html += '<li>' + e + '</li>');
+                html += '</ul></div>';
+            }
+            html += '<div class="d-flex gap-2 mt-3">';
+            html += '<button class="btn btn-success flex-fill" onclick="location.reload()"><i class="bi bi-arrow-clockwise"></i> تحديث</button>';
+            html += '</div>';
+            resultEl.innerHTML = html;
+        } else {
+            resultEl.innerHTML = '<div class="alert alert-danger">' + r.message + '</div>' +
+                '<button class="btn btn-secondary" onclick="backToImport()"><i class="bi bi-arrow-right"></i> رجوع</button>';
+        }
+    } catch (e) {
+        resultEl.innerHTML = '<div class="alert alert-danger">خطأ: ' + e.message + '</div>' +
+            '<button class="btn btn-secondary" onclick="backToImport()"><i class="bi bi-arrow-right"></i> رجوع</button>';
+    }
+}
+
+document.addEventListener('DOMContentLoaded', function(){
+    const area = document.getElementById('import-upload-area');
+    if (!area) return;
+    area.addEventListener('dragover', e => { e.preventDefault(); area.classList.add('dragover'); });
+    area.addEventListener('dragleave', () => area.classList.remove('dragover'));
+    area.addEventListener('drop', e => {
+        e.preventDefault();
+        area.classList.remove('dragover');
+        if (e.dataTransfer.files.length) handleImportFile(e.dataTransfer.files[0]);
+    });
+});
+
+(async () => {
+    await loadRefs();
+    await load();
+})();
+</script>
+
+</body>
+</html>

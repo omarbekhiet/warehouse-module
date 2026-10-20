@@ -1,14 +1,218 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ar" dir="rtl">
-<head><meta charset="UTF-8"><title>الموردون</title>
+<head>
+<meta charset="UTF-8">
+<title>الموردون</title>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
-<link href="style.css" rel="stylesheet"></head>
-<body><div class="container-fluid"><div class="row">
+<link href="style.css" rel="stylesheet">
+<script src="permissions.js"></script>
+<style>
+.section-label {
+    background: linear-gradient(135deg, #eef2ff, #e0e7ff);
+    color: #4f46e5;
+    padding: 4px 12px;
+    border-radius: 6px;
+    font-size: 0.78rem;
+    font-weight: 800;
+    margin-top: 6px;
+    border-right: 3px solid #6366f1;
+}
+.modal-body .form-label {
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: #64748b;
+    margin-bottom: 2px;
+}
+.modal-body .form-control-sm,
+.modal-body .form-select-sm {
+    font-size: 0.8rem;
+    font-weight: 700;
+    padding: 4px 8px;
+    border: 1.5px solid #e2e8f0;
+}
+.modal-body .form-control-sm:focus,
+.modal-body .form-select-sm:focus {
+    border-color: #6366f1;
+    box-shadow: 0 0 0 3px rgba(99,102,241,0.1);
+}
+.table { font-size: 0.78rem; }
+.table thead th { padding: 5px 6px; font-size: 0.72rem; font-weight: 800; white-space: nowrap; }
+.table tbody td { padding: 4px 6px; font-size: 0.76rem; font-weight: 700; vertical-align: middle; }
+
+/* ============================================
+   إلغاء أسهم input[type=number]
+   ============================================ */
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none !important;
+    margin: 0 !important;
+}
+input[type=number] {
+    -moz-appearance: textfield !important;
+    appearance: textfield !important;
+}
+input[type="number"] {
+    -moz-appearance: textfield !important;
+}
+
+</style>
+
+
+
+<style id="compact-spacing-global">
+/* ============================================
+   توحيد المسافات المضغوطة
+   ============================================ */
+
+.table td, .table th {
+    padding: 3px 6px !important;
+    font-size: 0.75rem !important;
+    vertical-align: middle !important;
+    line-height: 1.2 !important;
+}
+
+.table tbody tr {
+    height: auto !important;
+}
+
+.form-control, .form-select {
+    font-size: 0.75rem !important;
+    line-height: 1.2 !important;
+}
+
+.form-control-sm, .form-select-sm {
+    height: 26px !important;
+    padding: 2px 6px !important;
+    font-size: 0.72rem !important;
+    line-height: 1 !important;
+}
+
+.btn {
+    padding: 3px 8px !important;
+    font-size: 0.72rem !important;
+    line-height: 1.2 !important;
+}
+
+.btn-sm {
+    padding: 2px 6px !important;
+    font-size: 0.7rem !important;
+}
+
+.card {
+    margin-bottom: 6px !important;
+}
+
+.card-body, .card.p-2, .card.p-3, .card.p-4 {
+    padding: 6px 8px !important;
+}
+
+.modal-header {
+    padding: 6px 12px !important;
+}
+
+.modal-title {
+    font-size: 0.9rem !important;
+}
+
+.modal-body {
+    padding: 8px 12px !important;
+}
+
+.modal-footer {
+    padding: 6px 12px !important;
+}
+
+.modal-footer .btn {
+    padding: 4px 10px !important;
+    font-size: 0.75rem !important;
+}
+
+.mb-1, .mb-2, .mb-3, .mb-4 {
+    margin-bottom: 4px !important;
+}
+
+.mt-1, .mt-2, .mt-3, .mt-4 {
+    margin-top: 4px !important;
+}
+
+.ms-1, .ms-2, .ms-3 {
+    margin-right: 4px !important;
+}
+
+.me-1, .me-2, .me-3 {
+    margin-left: 4px !important;
+}
+
+.p-1, .p-2, .p-3, .p-4 {
+    padding: 4px !important;
+}
+
+.g-1, .g-2, .g-3 {
+    gap: 4px !important;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    line-height: 1.3 !important;
+}
+
+h1 { font-size: 1.2rem !important; margin-bottom: 6px !important; }
+h2 { font-size: 1.05rem !important; margin-bottom: 6px !important; }
+h3 { font-size: 0.95rem !important; margin-bottom: 4px !important; }
+h4 { font-size: 0.9rem !important; margin-bottom: 4px !important; }
+h5 { font-size: 0.85rem !important; margin-bottom: 4px !important; }
+h6 { font-size: 0.8rem !important; margin-bottom: 4px !important; }
+
+.alert {
+    padding: 6px 10px !important;
+    margin-bottom: 6px !important;
+    font-size: 0.78rem !important;
+}
+
+.badge {
+    padding: 2px 6px !important;
+    font-size: 0.68rem !important;
+}
+
+.nav-tabs .nav-link {
+    padding: 5px 12px !important;
+    font-size: 0.78rem !important;
+}
+
+hr {
+    margin: 6px 0 !important;
+}
+
+/* بطاقات الأعمار (aging) */
+.aging-card, .bucket-card, .stat-card {
+    padding: 6px 8px !important;
+    margin-bottom: 4px !important;
+}
+
+.aging-card .h4, .aging-card .h5,
+.bucket-card .h4, .bucket-card .h5 {
+    font-size: 1rem !important;
+    margin: 2px 0 !important;
+}
+
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none !important;
+    margin: 0 !important;
+}
+input[type=number] {
+    -moz-appearance: textfield !important;
+}
+</style>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 16 16%22><text y=%2214%22 font-size=%2214%22>📒</text></svg>">
+</head>
+<body>
+<div class="container-fluid">
+<div class="row">
 <div class="col-md-2 sidebar p-0">
 <div class="brand"><i class="bi bi-box-seam" style="font-size:2rem;"></i><h5 class="mt-2 mb-0">موديول المخازن</h5></div>
 <nav class="mt-3">
-<a href="index.html"><i class="bi bi-speedometer2"></i> لوحة التحكم</a>
+<a href="index.html#suppliers"><i class="bi bi-house-fill"></i> الموردين</a>
 <a href="notifications.html"><i class="bi bi-bell"></i> الإشعارات</a>
 <a href="accounts.html"><i class="bi bi-book"></i> الدليل المحاسبي</a>
 <a href="warehouses.html"><i class="bi bi-building"></i> المستودعات</a>
@@ -16,159 +220,325 @@
 <a href="items.html"><i class="bi bi-box"></i> الأصناف</a>
 <a href="uom.html"><i class="bi bi-rulers"></i> وحدات القياس</a>
 <a href="suppliers.html" class="active"><i class="bi bi-truck"></i> الموردون</a>
+<a href="customer_groups.html"><i class="bi bi-diagram-3-fill"></i> مجموعات العملاء</a>
 <a href="customers.html"><i class="bi bi-people"></i> العملاء</a>
-<a href="requisitions.html"><i class="bi bi-clipboard-check"></i> طلبات الاحتياج</a>
-<a href="purchase_orders.html"><i class="bi bi-file-earmark-text"></i> أوامر الشراء</a>
 <a href="purchase_invoices.html"><i class="bi bi-receipt"></i> فواتير الشراء</a>
 <a href="sales_invoices.html"><i class="bi bi-cart-check"></i> فواتير البيع</a>
-<a href="purchase_returns.html"><i class="bi bi-arrow-return-left"></i> مرتجع شراء</a>
-<a href="sales_returns.html"><i class="bi bi-arrow-return-right"></i> مرتجع بيع</a>
-<a href="payments.html"><i class="bi bi-cash-coin"></i> مدفوعات الموردين</a>
-<a href="customer_receipts.html"><i class="bi bi-cash-stack"></i> تحصيلات العملاء</a>
 <a href="receipts.html"><i class="bi bi-arrow-down-circle"></i> الاستلام</a>
-<a href="material_requests.html"><i class="bi bi-clipboard-plus"></i> طلبات الصرف</a>
 <a href="issues.html"><i class="bi bi-arrow-up-circle"></i> الصرف</a>
-<a href="transfers.html"><i class="bi bi-arrow-left-right"></i> التحويلات</a>
 <a href="counts.html"><i class="bi bi-clipboard-check"></i> الجرد</a>
-<a href="clearing.html"><i class="bi bi-shuffle"></i> الحسابات الوسيطة</a>
-<a href="financial_reports.html"><i class="bi bi-graph-up"></i> التقارير المالية</a>
 <a href="reports.html"><i class="bi bi-file-earmark-bar-graph"></i> التقارير</a>
-<a href="journal.html"><i class="bi bi-journal-text"></i> القيود</a>
 </nav></div>
-<div class="col-md-10 p-4">
-<div class="d-flex justify-content-between mb-4">
+
+<div class="col-md-10 p-3">
+<div class="d-flex justify-content-between mb-3">
 <h2><i class="bi bi-truck"></i> الموردون</h2>
-<button class="btn btn-primary" onclick="openAdd()"><i class="bi bi-plus-circle"></i> مورد جديد</button>
+<div class="d-flex gap-2">
+<a href="supplier_groups.html" class="btn btn-outline-primary btn-sm"><i class="bi bi-diagram-3-fill"></i> مجموعات الموردين</a>
+<a href="supplier_aging_report.html" class="btn btn-outline-info btn-sm"><i class="bi bi-clock-history"></i> أعمار الديون</a>
+<button class="btn btn-sm btn-outline-success" onclick="exportToExcel('suppliers')"><i class="bi bi-file-earmark-excel"></i> Excel</button>
+<a href="index.html#suppliers" class="btn btn-outline-secondary btn-sm"><i class="bi bi-house-fill"></i> الرئيسية</a>
+<button class="btn btn-primary btn-sm" onclick="openAdd()"><i class="bi bi-plus-circle"></i> مورد جديد</button>
 </div>
+</div>
+
 <div class="card p-3">
 <table class="table table-hover">
 <thead><tr>
-<th>الكود</th><th>الاسم</th><th>الهاتف</th><th>البريد</th>
-<th>الرقم الضريبي</th><th>حساب المورد</th><th>إجراءات</th>
+<th>الكود</th><th>الاسم</th><th>نوع الشركة</th><th>الرقم الضريبي</th><th>السجل التجاري</th><th>الهاتف</th><th>البريد</th>
+<th>فترة الائتمان</th><th>المجموعة</th><th>حساب المورد</th><th>المستخدم</th><th>إجراءات</th>
 </tr></thead>
-<tbody id="tbl"><tr><td colspan="7" class="text-center">جاري التحميل...</td></tr></tbody>
-</table></div></div></div></div>
+<tbody id="tbl"><tr><td colspan="12" class="text-center">جاري التحميل...</td></tr></tbody>
+</table></div>
+</div>
+</div>
+</div>
 
+<!-- Modal -->
 <div class="modal fade" id="supModal" tabindex="-1">
 <div class="modal-dialog modal-lg">
 <div class="modal-content">
-<div class="modal-header bg-primary text-white"><h5 class="modal-title" id="modal-title"><i class="bi bi-plus-circle"></i> مورد جديد</h5><button class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
-<div class="modal-body">
-<div class="row g-3">
-<div class="col-md-4"><label class="form-label">الكود *</label><input class="form-control" id="f-code"></div>
-<div class="col-md-4"><label class="form-label">الاسم بالعربي *</label><input class="form-control" id="f-name_ar"></div>
-<div class="col-md-4"><label class="form-label">الاسم بالإنجليزي</label><input class="form-control" id="f-name_en"></div>
-<div class="col-md-4"><label class="form-label">الهاتف</label><input class="form-control" id="f-phone"></div>
-<div class="col-md-4"><label class="form-label">البريد الإلكتروني</label><input type="email" class="form-control" id="f-email"></div>
-<div class="col-md-4"><label class="form-label">الرقم الضريبي</label><input class="form-control" id="f-tax_number"></div>
-<div class="col-md-8"><label class="form-label">العنوان</label><input class="form-control" id="f-address"></div>
-<div class="col-md-4"><label class="form-label">حساب المورد</label><input class="form-control" id="f-account_code" value="2211"></div>
-<div class="col-md-4"><label class="form-label">مدة السداد (يوم)</label><input type="number" class="form-control" id="f-payment_terms" value="30"></div>
-<div class="col-md-4"><label class="form-label">الحالة</label>
-<select class="form-select" id="f-is_active"><option value="1">نشط</option><option value="0">موقوف</option></select>
+<div class="modal-header bg-primary text-white">
+<h5 class="modal-title" id="modal-title"><i class="bi bi-plus-circle"></i> مورد جديد</h5>
+<button class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
 </div>
-<div class="col-md-12"><label class="form-label">ملاحظات</label><input class="form-control" id="f-notes"></div>
+<div class="modal-body">
+<div class="row g-2">
+
+<div class="col-12"><div class="section-label"><i class="bi bi-info-circle"></i> البيانات الأساسية</div></div>
+<div class="col-md-3"><label class="form-label">الكود *</label><input class="form-control form-control-sm" id="f-code"></div>
+<div class="col-md-5"><label class="form-label">الاسم بالعربي *</label><input class="form-control form-control-sm" id="f-name_ar"></div>
+<div class="col-md-4"><label class="form-label">الاسم بالإنجليزي</label><input class="form-control form-control-sm" id="f-name_en"></div>
+<div class="col-md-3"><label class="form-label">📞 الهاتف</label><input class="form-control form-control-sm" id="f-phone"></div>
+<div class="col-md-5"><label class="form-label">📧 البريد</label><input type="email" class="form-control form-control-sm" id="f-email"></div>
+<div class="col-md-4"><label class="form-label">📍 العنوان</label><input class="form-control form-control-sm" id="f-address"></div>
+
+<div class="col-12 mt-2"><div class="section-label"><i class="bi bi-briefcase"></i> البيانات التجارية والضريبية</div></div>
+<div class="col-md-3"><label class="form-label">🏢 نوع الشركة</label>
+<select class="form-select form-select-sm" id="f-company_type">
+<option value="">— اختر —</option>
+<option value="INDIVIDUAL">👤 فرد</option>
+<option value="LLC">🏢 شركة ذ.م.م</option>
+<option value="JSC">🏛️ شركة مساهمة</option>
+<option value="SOLE">🏪 مؤسسة فردية</option>
+<option value="PARTNERSHIP">🤝 شركة تضامن</option>
+<option value="GOVERNMENT">🏛️ جهة حكومية</option>
+<option value="MED_SUPPLIER">🏥 مورد طبي</option>
+<option value="TRADER">📦 تاجر</option>
+<option value="NGO">❤️ منظمة</option>
+</select></div>
+<div class="col-md-3"><label class="form-label">📋 الشكل القانوني</label>
+<select class="form-select form-select-sm" id="f-legal_form">
+<option value="">— اختر —</option>
+<option value="INDIVIDUAL">فردي</option>
+<option value="SOLE_PROPRIETORSHIP">ملكية فردية</option>
+<option value="LLC">ذات مسؤولية محدودة</option>
+<option value="JSC">مساهمة</option>
+<option value="PARTNERSHIP">تضامن</option>
+<option value="GOVERNMENT">حكومي</option>
+</select></div>
+<div class="col-md-3"><label class="form-label">🔢 الرقم الضريبي</label><input class="form-control form-control-sm" id="f-tax_number"></div>
+<div class="col-md-3"><label class="form-label">📄 السجل التجاري</label><input class="form-control form-control-sm" id="f-commercial_register"></div>
+<div class="col-md-4"><label class="form-label">🆔 الرقم القومي</label><input class="form-control form-control-sm" id="f-national_id"></div>
+<div class="col-md-4"><label class="form-label">🏛️ مكتب الضرائب</label><input class="form-control form-control-sm" id="f-tax_office"></div>
+<div class="col-md-4"><label class="form-label">📊 المجموعة</label>
+<select class="form-select form-select-sm" id="f-group_id"><option value="">— اختر —</option></select></div>
+
+<div class="col-12 mt-2"><div class="section-label"><i class="bi bi-credit-card"></i> الائتمان والحساب</div></div>
+<div class="col-md-3"><label class="form-label">💰 حساب المورد</label><input class="form-control form-control-sm" id="f-account_code" value="2211001"></div>
+<div class="col-md-3"><label class="form-label">⏰ حد الائتمان</label><input type="number" class="form-control form-control-sm" id="f-credit_limit" value="0"></div>
+<div class="col-md-3"><label class="form-label">📅 فترة الائتمان (يوم)</label><input type="number" class="form-control form-control-sm" id="f-payment_terms" value="30"></div>
+<div class="col-md-3"><label class="form-label">الحالة</label>
+<select class="form-select form-select-sm" id="f-is_active">
+<option value="1">✅ نشط</option>
+<option value="0">❌ موقوف</option>
+</select></div>
+
+<div class="col-md-12"><label class="form-label">📝 ملاحظات</label><input class="form-control form-control-sm" id="f-notes"></div>
+
 </div>
 </div>
 <div class="modal-footer">
-<button class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
-<button class="btn btn-primary" onclick="save()"><i class="bi bi-check-circle"></i> حفظ</button>
+<button class="btn btn-secondary btn-sm" data-bs-dismiss="modal">إلغاء</button>
+<button class="btn btn-primary btn-sm" onclick="save()"><i class="bi bi-check-circle"></i> حفظ</button>
 </div>
 </div></div></div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-const API='http://localhost:5000/api/v1';
+const API = '/api/v1';
 const modal = new bootstrap.Modal(document.getElementById('supModal'));
 let editId = null;
 
-async function load(){
- const r = await fetch(`${API}/suppliers/`).then(x=>x.json());
- const rows = r.data||[];
- document.getElementById('tbl').innerHTML = rows.length ? rows.map(s=>`
-  <tr>
-   <td><code>${s.code}</code></td>
-   <td><strong>${s.name_ar}</strong>${s.name_en?'<br><small class="text-muted">'+s.name_en+'</small>':''}</td>
-   <td>${s.phone||'-'}</td>
-   <td>${s.email||'-'}</td>
-   <td>${s.tax_number||'-'}</td>
-   <td><code>${s.account_code||'-'}</code></td>
-   <td>
-    <button class="btn btn-sm btn-outline-warning" onclick="openEdit(${s.id})" title="تعديل"><i class="bi bi-pencil"></i></button>
-    <button class="btn btn-sm btn-outline-danger" onclick="del(${s.id},'${s.name_ar}')" title="حذف"><i class="bi bi-trash"></i></button>
-   </td>
-  </tr>`).join('') : '<tr><td colspan="7" class="text-center text-muted">لا يوجد موردون</td></tr>';
+// ============================================================
+// Helpers
+// ============================================================
+const COMPANY_TYPES = {
+    'INDIVIDUAL': {label: '👤 فرد', color: '#10b981'},
+    'LLC': {label: '🏢 شركة ذ.م.م', color: '#6366f1'},
+    'JSC': {label: '🏛️ شركة مساهمة', color: '#8b5cf6'},
+    'SOLE': {label: '🏪 مؤسسة فردية', color: '#f59e0b'},
+    'PARTNERSHIP': {label: '🤝 شركة تضامن', color: '#ec4899'},
+    'GOVERNMENT': {label: '🏛️ جهة حكومية', color: '#64748b'},
+    'MED_SUPPLIER': {label: '🏥 مورد طبي', color: '#ef4444'},
+    'TRADER': {label: '📦 تاجر', color: '#0ea5e9'},
+    'NGO': {label: '❤️ منظمة', color: '#dc2626'},
+};
+
+function getCompanyTypeBadge(type) {
+    if (!type) return '<span class="text-muted">—</span>';
+    const info = COMPANY_TYPES[type] || {label: type, color: '#64748b'};
+    return '<span style="background: ' + info.color + '; color: white; padding: 2px 6px; border-radius: 4px; font-size: 0.68rem; font-weight: 700;">' + info.label + '</span>';
 }
 
-function clearForm(){
- ['f-code','f-name_ar','f-name_en','f-phone','f-email','f-tax_number','f-address','f-notes'].forEach(id=>document.getElementById(id).value='');
- document.getElementById('f-account_code').value = '2211';
- document.getElementById('f-payment_terms').value = 30;
- document.getElementById('f-is_active').value = '1';
- document.getElementById('f-code').disabled = false;
+function getGroupBadge(name, color) {
+    if (!name) return '<span class="text-muted">—</span>';
+    const c = color || '#64748b';
+    return '<span style="background: ' + c + '; color: white; padding: 2px 6px; border-radius: 4px; font-size: 0.68rem; font-weight: 700;">' + name + '</span>';
 }
 
-function openAdd(){
- editId = null; clearForm();
- document.getElementById('modal-title').innerHTML = '<i class="bi bi-plus-circle"></i> مورد جديد';
- modal.show();
+// ============================================================
+// تحميل مجموعات الموردين
+// ============================================================
+async function loadGroups() {
+    try {
+        const r = await fetch(`${API}/supplier-groups/`).then(x => x.json());
+        const groups = r.data || [];
+        const sel = document.getElementById('f-group_id');
+        if (sel) {
+            sel.innerHTML = '<option value="">— اختر —</option>' + 
+                groups.map(g => '<option value="' + g.id + '">' + g.name_ar + ' (' + g.credit_days + ' يوم)</option>').join('');
+            console.log('✅ تم تحميل ' + groups.length + ' مجموعة');
+        }
+    } catch(e) { console.error('loadGroups:', e); }
 }
 
-async function openEdit(id){
- editId = id;
- const r = await fetch(`${API}/suppliers/${id}`).then(x=>x.json());
- if (!r.success) return;
- const s = r.data;
- document.getElementById('f-code').value = s.code;
- document.getElementById('f-code').disabled = true;
- document.getElementById('f-name_ar').value = s.name_ar;
- document.getElementById('f-name_en').value = s.name_en||'';
- document.getElementById('f-phone').value = s.phone||'';
- document.getElementById('f-email').value = s.email||'';
- document.getElementById('f-tax_number').value = s.tax_number||'';
- document.getElementById('f-address').value = s.address||'';
- document.getElementById('f-account_code').value = s.account_code||'2211';
- document.getElementById('f-payment_terms').value = s.payment_terms||30;
- document.getElementById('f-is_active').value = s.is_active ? '1' : '0';
- document.getElementById('f-notes').value = s.notes||'';
- document.getElementById('modal-title').innerHTML = '<i class="bi bi-pencil"></i> تعديل المورد';
- modal.show();
+// ============================================================
+// تحميل الموردين
+// ============================================================
+async function load() {
+    try {
+        const r = await fetch(`${API}/suppliers/`).then(x => x.json());
+        const rows = r.data || [];
+        
+        if (!rows.length) {
+            document.getElementById('tbl').innerHTML = '<tr><td colspan="12" class="text-center text-muted">لا يوجد موردون</td></tr>';
+            return;
+        }
+        
+        document.getElementById('tbl').innerHTML = rows.map(s => `
+            <tr>
+                <td><code>${s.code}</code></td>
+                <td><strong>${s.name_ar}</strong>${s.name_en ? '<br><small class="text-muted">'+s.name_en+'</small>' : ''}</td>
+                <td>${getCompanyTypeBadge(s.company_type)}</td>
+                <td>${s.tax_number ? '<code style="font-size:0.7rem;">'+s.tax_number+'</code>' : '<span class="text-muted">—</span>'}</td>
+                <td>${s.commercial_register ? '<code style="font-size:0.7rem;">'+s.commercial_register+'</code>' : '<span class="text-muted">—</span>'}</td>
+                <td>${s.phone || '-'}</td>
+                <td>${s.email || '-'}</td>
+                <td><strong>${s.payment_terms || s.credit_days || 30} يوم</strong></td>
+                <td>${getGroupBadge(s.group_name, s.group_color)}</td>
+                <td><code>${s.account_code || '-'}</code></td>
+                <td>${s.created_by_name || '—'}</td>
+                <td>
+                    <button class="btn btn-sm btn-outline-warning" onclick="openEdit(${s.id})" title="تعديل"><i class="bi bi-pencil"></i></button>
+                    <button class="btn btn-sm btn-outline-danger" onclick="del(${s.id}, '${s.name_ar.replace(/'/g, "\\'")}')" title="حذف"><i class="bi bi-trash"></i></button>
+                </td>
+            </tr>
+        `).join('');
+    } catch(e) {
+        console.error('load:', e);
+        document.getElementById('tbl').innerHTML = '<tr><td colspan="12" class="text-center text-danger">خطأ في التحميل</td></tr>';
+    }
 }
 
-async function save(){
- const data = {
-  name_ar: document.getElementById('f-name_ar').value.trim(),
-  name_en: document.getElementById('f-name_en').value.trim(),
-  phone: document.getElementById('f-phone').value.trim(),
-  email: document.getElementById('f-email').value.trim(),
-  tax_number: document.getElementById('f-tax_number').value.trim(),
-  address: document.getElementById('f-address').value.trim(),
-  account_code: document.getElementById('f-account_code').value.trim(),
-  payment_terms: parseInt(document.getElementById('f-payment_terms').value)||30,
-  is_active: parseInt(document.getElementById('f-is_active').value),
-  notes: document.getElementById('f-notes').value.trim()
- };
- if (!data.name_ar) { alert('الاسم مطلوب'); return; }
- 
- if (editId) {
-  const r = await fetch(`${API}/suppliers/${editId}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)}).then(x=>x.json());
-  if (r.success) { modal.hide(); load(); }
-  else alert(r.message||'خطأ');
- } else {
-  data.code = document.getElementById('f-code').value.trim();
-  if (!data.code) { alert('الكود مطلوب'); return; }
-  const r = await fetch(`${API}/suppliers/`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)}).then(x=>x.json());
-  if (r.success) { modal.hide(); load(); }
-  else alert(r.message||'خطأ');
- }
+// ============================================================
+// Modal Functions
+// ============================================================
+function clearForm() {
+    ['f-code','f-name_ar','f-name_en','f-phone','f-email','f-tax_number','f-commercial_register','f-national_id','f-tax_office','f-address','f-notes'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = '';
+    });
+    document.getElementById('f-company_type').value = '';
+    document.getElementById('f-legal_form').value = '';
+    document.getElementById('f-group_id').value = '';
+    document.getElementById('f-account_code').value = '2211001';
+    document.getElementById('f-credit_limit').value = 0;
+    document.getElementById('f-payment_terms').value = 30;
+    document.getElementById('f-is_active').value = '1';
+    document.getElementById('f-code').disabled = false;
 }
 
-async function del(id,name){
- if (!confirm(`حذف المورد "${name}"؟`)) return;
- const r = await fetch(`${API}/suppliers/${id}`,{method:'DELETE'}).then(x=>x.json());
- if (r.success) load();
- else alert(r.message||'خطأ');
+function openAdd() {
+    editId = null;
+    clearForm();
+    document.getElementById('modal-title').innerHTML = '<i class="bi bi-plus-circle"></i> مورد جديد';
+    modal.show();
 }
 
+async function openEdit(id) {
+    editId = id;
+    const r = await fetch(`${API}/suppliers/${id}`).then(x => x.json());
+    if (!r.success) return;
+    const s = r.data;
+    
+    document.getElementById('f-code').value = s.code || '';
+    document.getElementById('f-code').disabled = true;
+    document.getElementById('f-name_ar').value = s.name_ar || '';
+    document.getElementById('f-name_en').value = s.name_en || '';
+    document.getElementById('f-phone').value = s.phone || '';
+    document.getElementById('f-email').value = s.email || '';
+    document.getElementById('f-tax_number').value = s.tax_number || '';
+    document.getElementById('f-commercial_register').value = s.commercial_register || '';
+    document.getElementById('f-national_id').value = s.national_id || '';
+    document.getElementById('f-tax_office').value = s.tax_office || '';
+    document.getElementById('f-address').value = s.address || '';
+    document.getElementById('f-company_type').value = s.company_type || '';
+    document.getElementById('f-legal_form').value = s.legal_form || '';
+    document.getElementById('f-group_id').value = s.group_id || '';
+    document.getElementById('f-account_code').value = s.account_code || '2211001';
+    document.getElementById('f-credit_limit').value = s.credit_limit || 0;
+    document.getElementById('f-payment_terms').value = s.payment_terms || 30;
+    document.getElementById('f-is_active').value = s.is_active ? '1' : '0';
+    document.getElementById('f-notes').value = s.notes || '';
+    
+    document.getElementById('modal-title').innerHTML = '<i class="bi bi-pencil"></i> تعديل المورد';
+    modal.show();
+}
+
+async function save() {
+    const data = {
+        name_ar: document.getElementById('f-name_ar').value.trim(),
+        name_en: document.getElementById('f-name_en').value.trim(),
+        phone: document.getElementById('f-phone').value.trim(),
+        email: document.getElementById('f-email').value.trim(),
+        tax_number: document.getElementById('f-tax_number').value.trim(),
+        commercial_register: document.getElementById('f-commercial_register').value.trim(),
+        national_id: document.getElementById('f-national_id').value.trim(),
+        tax_office: document.getElementById('f-tax_office').value.trim(),
+        address: document.getElementById('f-address').value.trim(),
+        company_type: document.getElementById('f-company_type').value,
+        legal_form: document.getElementById('f-legal_form').value,
+        group_id: document.getElementById('f-group_id').value ? parseInt(document.getElementById('f-group_id').value) : null,
+        account_code: document.getElementById('f-account_code').value.trim(),
+        credit_limit: parseFloat(document.getElementById('f-credit_limit').value) || 0,
+        payment_terms: parseInt(document.getElementById('f-payment_terms').value) || 30,
+        is_active: parseInt(document.getElementById('f-is_active').value),
+        notes: document.getElementById('f-notes').value.trim()
+    };
+    
+    if (!data.name_ar) { alert('الاسم مطلوب'); return; }
+    
+    try {
+        let r;
+        if (editId) {
+            r = await fetch(`${API}/suppliers/${editId}`, {
+                method: 'PUT',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(data)
+            }).then(x => x.json());
+        } else {
+            data.code = document.getElementById('f-code').value.trim();
+            if (!data.code) { alert('الكود مطلوب'); return; }
+            r = await fetch(`${API}/suppliers/`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(data)
+            }).then(x => x.json());
+        }
+        
+        if (r.success) {
+            modal.hide();
+            load();
+        } else {
+            alert(r.message || 'خطأ');
+        }
+    } catch(e) {
+        alert('خطأ: ' + e.message);
+    }
+}
+
+async function del(id, name) {
+    if (!confirm(`حذف المورد "${name}"؟`)) return;
+    try {
+        const r = await fetch(`${API}/suppliers/${id}`, { method: 'DELETE' }).then(x => x.json());
+        if (r.success) load();
+        else alert(r.message || 'خطأ');
+    } catch(e) {
+        alert('خطأ: ' + e.message);
+    }
+}
+
+function exportToExcel(templateKey) {
+    if (!templateKey) { alert('مفيش قالب تصدير'); return; }
+    window.location.href = '/api/v1/export/excel/export/' + templateKey;
+}
+
+// ============================================================
+// Init
+// ============================================================
 load();
-</script></body></html>
+loadGroups();
+</script>
+</body>
+</html>

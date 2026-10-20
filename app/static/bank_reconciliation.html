@@ -1,0 +1,418 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>التسوية البنكية</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+body { font-family: 'Cairo','Segoe UI',Tahoma,sans-serif; background: #f5f6fa; padding: 20px; font-size: 13px; }
+.container-box { max-width: 1400px; margin: 0 auto; }
+h2 { color: #1e3c72; font-weight: 700; }
+.card-box { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 1px 10px rgba(0,0,0,0.05); margin-bottom: 20px; }
+.badge-status-DRAFT { background: #fff3e0; color: #e65100; }
+.badge-status-DONE { background: #e8f5e9; color: #2e7d32; }
+.badge { padding: 4px 10px; border-radius: 12px; font-size: 0.72rem; font-weight: 600; }
+.amount-positive { color: #16a34a; font-weight: 700; }
+.amount-negative { color: #dc2626; font-weight: 700; }
+
+/* ============================================
+   إلغاء أسهم input[type=number]
+   ============================================ */
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none !important;
+    margin: 0 !important;
+}
+input[type=number] {
+    -moz-appearance: textfield !important;
+    appearance: textfield !important;
+}
+input[type="number"] {
+    -moz-appearance: textfield !important;
+}
+
+</style>
+<script src="permissions.js"></script>
+
+<style id="compact-spacing-global">
+/* ============================================
+   توحيد المسافات المضغوطة — كل المشروع
+   ============================================ */
+
+/* الجداول */
+.table td,
+.table th {
+    padding: 3px 6px !important;
+    font-size: 0.75rem !important;
+    vertical-align: middle !important;
+    line-height: 1.2 !important;
+}
+
+.table tbody tr {
+    height: auto !important;
+}
+
+/* الـ inputs */
+.form-control,
+.form-select {
+    font-size: 0.75rem !important;
+    line-height: 1.2 !important;
+}
+
+.form-control-sm,
+.form-select-sm {
+    height: 26px !important;
+    padding: 2px 6px !important;
+    font-size: 0.72rem !important;
+    line-height: 1 !important;
+}
+
+/* الأزرار */
+.btn {
+    padding: 3px 8px !important;
+    font-size: 0.72rem !important;
+    line-height: 1.2 !important;
+}
+
+.btn-sm {
+    padding: 2px 6px !important;
+    font-size: 0.7rem !important;
+}
+
+/* البطاقات */
+.card {
+    margin-bottom: 6px !important;
+}
+
+.card-body,
+.card.p-2,
+.card.p-3,
+.card.p-4 {
+    padding: 6px 8px !important;
+}
+
+/* الـ Modal */
+.modal-header {
+    padding: 6px 12px !important;
+}
+
+.modal-title {
+    font-size: 0.9rem !important;
+}
+
+.modal-body {
+    padding: 8px 12px !important;
+}
+
+.modal-footer {
+    padding: 6px 12px !important;
+}
+
+.modal-footer .btn {
+    padding: 4px 10px !important;
+    font-size: 0.75rem !important;
+}
+
+/* المسافات */
+.mb-1, .mb-2, .mb-3, .mb-4 {
+    margin-bottom: 4px !important;
+}
+
+.mt-1, .mt-2, .mt-3, .mt-4 {
+    margin-top: 4px !important;
+}
+
+.ms-1, .ms-2, .ms-3 {
+    margin-right: 4px !important;
+}
+
+.me-1, .me-2, .me-3 {
+    margin-left: 4px !important;
+}
+
+.p-1, .p-2, .p-3, .p-4 {
+    padding: 4px !important;
+}
+
+.g-1, .g-2, .g-3 {
+    gap: 4px !important;
+}
+
+/* العناوين */
+h1, h2, h3, h4, h5, h6 {
+    line-height: 1.3 !important;
+}
+
+h1 { font-size: 1.2rem !important; margin-bottom: 6px !important; }
+h2 { font-size: 1.05rem !important; margin-bottom: 6px !important; }
+h3 { font-size: 0.95rem !important; margin-bottom: 4px !important; }
+h4 { font-size: 0.9rem !important; margin-bottom: 4px !important; }
+h5 { font-size: 0.85rem !important; margin-bottom: 4px !important; }
+h6 { font-size: 0.8rem !important; margin-bottom: 4px !important; }
+
+/* الـ alerts */
+.alert {
+    padding: 6px 10px !important;
+    margin-bottom: 6px !important;
+    font-size: 0.78rem !important;
+}
+
+/* الـ badges */
+.badge {
+    padding: 2px 6px !important;
+    font-size: 0.68rem !important;
+}
+
+/* الـ tabs */
+.nav-tabs .nav-link {
+    padding: 5px 12px !important;
+    font-size: 0.78rem !important;
+}
+
+/* الـ dropdown */
+.dropdown-menu {
+    font-size: 0.78rem !important;
+    padding: 4px !important;
+}
+
+.dropdown-item {
+    padding: 4px 8px !important;
+    font-size: 0.75rem !important;
+}
+
+/* الـ hr */
+hr {
+    margin: 6px 0 !important;
+}
+
+/* الـ Modal dialog */
+.modal-dialog {
+    margin: 6px auto !important;
+}
+
+/* ============================================
+   إخفاء أسهم input[type=number]
+   ============================================ */
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none !important;
+    margin: 0 !important;
+}
+input[type=number] {
+    -moz-appearance: textfield !important;
+}
+</style>
+
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 16 16%22><text y=%2214%22 font-size=%2214%22>📒</text></svg>">
+</head>
+<body>
+<div class="container-box">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="bi bi-clipboard-check text-primary"></i> التسوية البنكية</h2>
+        <div>
+            <a href="cash_boxes.html" class="btn btn-outline-info"><i class="bi bi-safe2-fill"></i> الخزائن</a>
+            <a href="index.html" class="btn btn-outline-secondary"><i class="bi bi-house"></i> الرئيسية</a>
+            <button class="btn btn-primary" onclick="openAdd()"><i class="bi bi-plus-circle"></i> تسوية جديدة</button>
+        </div>
+    </div>
+
+    <div class="card-box">
+        <table class="table table-hover">
+            <thead class="table-light">
+                <tr>
+                    <th>التاريخ</th>
+                    <th>البنك</th>
+                    <th class="text-end">رصيد البنك</th>
+                    <th class="text-end">رصيد النظام</th>
+                    <th class="text-end">الفرق</th>
+                    <th>الحالة</th>
+                    <th>إجراءات</th>
+                </tr>
+            </thead>
+            <tbody id="tbl"><tr><td colspan="7" class="text-center text-muted">جاري التحميل...</td></tr></tbody>
+        </table>
+    </div>
+
+</div>
+
+<!-- Add Modal -->
+<div class="modal fade" id="reconModal" tabindex="-1">
+<div class="modal-dialog">
+<div class="modal-content">
+<div class="modal-header bg-primary text-white">
+    <h5 class="modal-title"><i class="bi bi-plus-circle"></i> تسوية جديدة</h5>
+    <button class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+</div>
+<div class="modal-body">
+    <div class="row g-3">
+        <div class="col-12">
+            <label class="form-label">البنك *</label>
+            <select class="form-select" id="f-bank"></select>
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">التاريخ *</label>
+            <input type="date" class="form-control" id="f-date">
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">رصيد كشف البنك *</label>
+            <input type="number" class="form-control" id="f-statement" step="0.01">
+        </div>
+        <div class="col-12">
+            <label class="form-label">ملاحظات</label>
+            <textarea class="form-control" id="f-notes" rows="2"></textarea>
+        </div>
+    </div>
+</div>
+<div class="modal-footer">
+    <button class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+    <button class="btn btn-primary" onclick="save()"><i class="bi bi-check-circle"></i> حفظ</button>
+</div>
+</div></div></div>
+
+<!-- View Modal -->
+<div class="modal fade" id="viewModal" tabindex="-1">
+<div class="modal-dialog modal-lg">
+<div class="modal-content">
+<div class="modal-header bg-info text-white">
+    <h5 class="modal-title"><i class="bi bi-eye"></i> تفاصيل التسوية</h5>
+    <button class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+</div>
+<div class="modal-body" id="viewBody"></div>
+</div>
+</div></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+const API = '/api/v1';
+const reconModal = new bootstrap.Modal(document.getElementById('reconModal'));
+const viewModal = new bootstrap.Modal(document.getElementById('viewModal'));
+
+let banksList = [];
+
+async function loadRefs() {
+    const r = await fetch(`${API}/cash-boxes/banks/`).then(x => x.json());
+    banksList = r.data || [];
+    document.getElementById('f-bank').innerHTML = '<option value="">— اختر بنك —</option>' +
+        banksList.map(b => `<option value="${b.id}">${b.code} - ${b.name_ar} (${parseFloat(b.current_balance || 0).toFixed(2)})</option>`).join('');
+}
+
+async function load() {
+    const r = await fetch(`${API}/cash-boxes/reconciliations/`).then(x => x.json());
+    const rows = r.data || [];
+    
+    document.getElementById('tbl').innerHTML = rows.length ? rows.map(r => `
+        <tr>
+            <td>${r.reconciliation_date}</td>
+            <td><strong>${r.bank_name || '-'}</strong></td>
+            <td class="text-end">${parseFloat(r.statement_balance).toFixed(2)}</td>
+            <td class="text-end">${parseFloat(r.system_balance).toFixed(2)}</td>
+            <td class="text-end ${parseFloat(r.difference) >= 0 ? 'amount-positive' : 'amount-negative'}">
+                ${parseFloat(r.difference).toFixed(2)}
+            </td>
+            <td><span class="badge badge-status-${r.status}">${r.status === 'DRAFT' ? 'مسودة' : 'مكتملة'}</span></td>
+            <td>
+                <button class="btn btn-sm btn-outline-info" onclick="viewRecon(${r.id})"><i class="bi bi-eye"></i></button>
+                <button class="btn btn-sm btn-outline-success" onclick="autoMatch(${r.id})" title="مطابقة"><i class="bi bi-check-circle"></i></button>
+                <button class="btn btn-sm btn-outline-danger" onclick="del(${r.id})"><i class="bi bi-trash"></i></button>
+            </td>
+        </tr>
+    `).join('') : '<tr><td colspan="7" class="text-center text-muted py-4">لا توجد تسويات</td></tr>';
+}
+
+function openAdd() {
+    document.getElementById('f-bank').value = '';
+    document.getElementById('f-date').value = new Date().toISOString().split('T')[0];
+    document.getElementById('f-statement').value = '';
+    document.getElementById('f-notes').value = '';
+    reconModal.show();
+}
+
+async function save() {
+    const data = {
+        bank_id: parseInt(document.getElementById('f-bank').value),
+        reconciliation_date: document.getElementById('f-date').value,
+        statement_balance: parseFloat(document.getElementById('f-statement').value) || 0,
+        notes: document.getElementById('f-notes').value.trim()
+    };
+    
+    if (!data.bank_id) { alert('اختر بنك'); return; }
+    if (!data.reconciliation_date) { alert('اختر تاريخ'); return; }
+    
+    const r = await fetch(`${API}/cash-boxes/reconciliations/`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(data)
+    }).then(x => x.json());
+    
+    if (r.success) {
+        alert(`تم إنشاء التسوية. الفرق: ${r.data.difference.toFixed(2)}`);
+        reconModal.hide();
+        load();
+    } else alert(r.message || 'خطأ');
+}
+
+async function viewRecon(id) {
+    const r = await fetch(`${API}/cash-boxes/reconciliations/${id}`).then(x => x.json());
+    if (!r.success) return;
+    const d = r.data;
+    
+    let html = `
+        <div class="row mb-3">
+            <div class="col-md-6"><strong>البنك:</strong> ${d.bank_name}</div>
+            <div class="col-md-6"><strong>التاريخ:</strong> ${d.reconciliation_date}</div>
+            <div class="col-md-6"><strong>رصيد البنك:</strong> ${parseFloat(d.statement_balance).toFixed(2)}</div>
+            <div class="col-md-6"><strong>رصيد النظام:</strong> ${parseFloat(d.system_balance).toFixed(2)}</div>
+            <div class="col-md-6"><strong>الفرق:</strong> <strong class="${parseFloat(d.difference) >= 0 ? 'amount-positive' : 'amount-negative'}">${parseFloat(d.difference).toFixed(2)}</strong></div>
+            <div class="col-md-6"><strong>الحالة:</strong> ${d.status === 'DRAFT' ? 'مسودة' : 'مكتملة'}</div>
+        </div>
+    `;
+    
+    if (d.items && d.items.length) {
+        html += `<h6>الحركات (${d.items.length}):</h6>
+            <table class="table table-sm table-bordered">
+                <thead class="table-light"><tr>
+                    <th>التاريخ</th><th>المرجع</th><th>النوع</th><th class="text-end">المبلغ</th>
+                </tr></thead><tbody>`;
+        d.items.forEach(i => {
+            html += `<tr>
+                <td>${i.txn_date}</td>
+                <td><code>${i.reference_no}</code></td>
+                <td>${i.txn_type}</td>
+                <td class="text-end">${parseFloat(i.amount).toFixed(2)}</td>
+            </tr>`;
+        });
+        html += '</tbody></table>';
+    } else {
+        html += '<div class="alert alert-info">اضغط "مطابقة" لجلب حركات البنك</div>';
+    }
+    
+    document.getElementById('viewBody').innerHTML = html;
+    viewModal.show();
+}
+
+async function autoMatch(id) {
+    if (!confirm('جلب كل حركات البنك ومطابقتها؟')) return;
+    const r = await fetch(`${API}/cash-boxes/reconciliations/${id}/auto-match`, {method: 'POST'}).then(x => x.json());
+    if (r.success) {
+        alert(`تم مطابقة ${r.data.matched} حركة`);
+        load();
+    } else alert(r.message || 'خطأ');
+}
+
+async function del(id) {
+    if (!confirm('حذف التسوية؟')) return;
+    const r = await fetch(`${API}/cash-boxes/reconciliations/${id}`, {method: 'DELETE'}).then(x => x.json());
+    if (r.success) load();
+    else alert(r.message || 'خطأ');
+}
+
+(async () => {
+    await loadRefs();
+    await load();
+})();
+</script>
+</body>
+</html>

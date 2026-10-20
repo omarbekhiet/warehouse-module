@@ -1,0 +1,811 @@
+﻿﻿<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>قائمة الدخل - IFRS 18</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="style.css" rel="stylesheet">
+<script src="permissions.js"></script>
+<style>
+* { font-family: 'IBM Plex Sans Arabic', 'Cairo', 'Segoe UI', Tahoma, sans-serif; box-sizing: border-box; }
+body { background: #f0f2f5; padding: 6px; font-size: 13px; margin: 0; }
+.container-fluid { padding: 0 !important; }
+.col-md-10 { padding: 6px 10px !important; }
+
+h2 { font-size: 1.05rem; margin: 0 !important; font-weight: 700; }
+.is-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px; margin-bottom: 6px; }
+
+.card { border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); border: none; margin-bottom: 6px; }
+.card.p-3 { padding: 8px !important; }
+
+/* Filters */
+.filters-row {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 6px;
+    align-items: flex-start;
+    width: 100%;
+}
+.date-field { display: flex; flex-direction: column; min-width: 0; }
+.filter-field-date { flex: 0 0 180px; min-width: 150px; }
+
+.date-field .form-label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    font-size: 0.72rem;
+    font-weight: 800;
+    margin-bottom: 3px;
+    height: 18px;
+}
+.date-field input {
+    height: 30px;
+    width: 100%;
+    font-size: 0.76rem;
+    padding: 3px 6px;
+    text-align: center;
+    border-width: 2px !important;
+    font-family: 'Consolas', monospace;
+    font-weight: 700;
+    border-radius: 5px;
+}
+.date-from .form-label { color: #2563eb; }
+.date-from input { border-color: #93c5fd !important; background: #eff6ff !important; }
+.date-to .form-label { color: #059669; }
+.date-to input { border-color: #6ee7b7 !important; background: #ecfdf5 !important; }
+
+.filter-buttons {
+    flex: 0 0 auto;
+    display: flex;
+    gap: 4px;
+    margin-top: 21px;
+}
+.filter-buttons .btn { height: 30px; font-size: 0.74rem; padding: 3px 10px; font-weight: 700; }
+
+/* KPI Cards */
+.kpi-cards {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 6px;
+    margin-bottom: 8px;
+}
+.kpi-card {
+    background: white;
+    border-radius: 8px;
+    padding: 8px 10px;
+    text-align: center;
+    border-right: 4px solid;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+.kpi-label { font-size: 0.65rem; color: #64748b; font-weight: 700; margin-bottom: 3px; }
+.kpi-value { font-size: 1rem; font-weight: 900; font-family: 'Consolas', monospace; }
+.kpi-card.revenue { border-color: #10b981; }
+.kpi-card.revenue .kpi-value { color: #059669; }
+.kpi-card.cogs { border-color: #ef4444; }
+.kpi-card.cogs .kpi-value { color: #dc2626; }
+.kpi-card.gross { border-color: #2a5298; }
+.kpi-card.gross .kpi-value { color: #1e3c72; }
+.kpi-card.operating { border-color: #7c3aed; }
+.kpi-card.operating .kpi-value { color: #7c3aed; }
+.kpi-card.net { border-color: #10b981; }
+.kpi-card.net .kpi-value { color: #059669; }
+.kpi-card.net.loss { border-color: #dc2626; }
+.kpi-card.net.loss .kpi-value { color: #dc2626; }
+
+/* IFRS 18 Badge */
+.ifrs-badge {
+    display: inline-block;
+    font-size: 0.58rem;
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-weight: 700;
+    margin-right: 4px;
+    vertical-align: middle;
+}
+.ifrs-badge.operating { background: #dbeafe; color: #1e40af; }
+.ifrs-badge.investing { background: #fef3c7; color: #92400e; }
+.ifrs-badge.financing { background: #ede9fe; color: #5b21b6; }
+.ifrs-badge.tax { background: #f3f4f6; color: #374151; }
+
+/* Table */
+.is-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.8rem;
+    background: white;
+    border-radius: 6px;
+    overflow: hidden;
+    table-layout: fixed;
+}
+.is-table thead th {
+    background: linear-gradient(135deg, #1e3c72, #2a5298);
+    color: white;
+    padding: 7px 8px;
+    font-weight: 700;
+    font-size: 0.74rem;
+    text-align: center;
+}
+.is-table thead th.th-code { width: 100px; }
+.is-table thead th.th-name { width: auto; text-align: right; padding-right: 12px; }
+.is-table thead th.th-amount { width: 140px; }
+.is-table thead th.th-percent { width: 70px; }
+
+/* Section headers */
+.section-row td {
+    color: white;
+    font-weight: 800;
+    font-size: 0.78rem;
+    padding: 6px 10px;
+    letter-spacing: 0.3px;
+}
+.section-row td i { margin-left: 5px; }
+.section-row.operating td { background: linear-gradient(90deg, #1e3c72, #2a5298); }
+.section-row.investing td { background: linear-gradient(90deg, #b45309, #f59e0b); }
+.section-row.financing td { background: linear-gradient(90deg, #5b21b6, #8b5cf6); }
+.section-row.tax td { background: linear-gradient(90deg, #374151, #6b7280); }
+
+/* Item rows */
+.is-table tbody tr.item-row { border-bottom: 1px solid #f1f5f9; }
+.is-table tbody tr.item-row:hover { background: #fef9c3; }
+.is-table tbody tr.item-row td { padding: 4px 8px; font-size: 0.78rem; }
+.is-table tbody tr.item-row td.td-code {
+    font-family: 'Consolas', monospace;
+    color: #475467;
+    text-align: center;
+    font-size: 0.72rem;
+}
+.is-table tbody tr.item-row td.td-name { text-align: right; padding-right: 16px; color: #1e293b; font-weight: 600; }
+.is-table tbody tr.item-row td.td-amount {
+    text-align: center;
+    font-family: 'Consolas', monospace;
+    font-weight: 700;
+    font-size: 0.78rem;
+    color: #059669;
+}
+.is-table tbody tr.item-row td.td-amount.negative { color: #dc2626; }
+.is-table tbody tr.item-row td.td-percent { text-align: center; font-size: 0.7rem; color: #64748b; font-weight: 600; }
+
+/* Subtotal */
+.subtotal-row td {
+    background: #f8fafc;
+    font-weight: 800;
+    padding: 5px 8px;
+    border-top: 2px solid #e2e8f0;
+    border-bottom: 1px solid #e2e8f0;
+    font-size: 0.8rem;
+}
+.subtotal-row td.td-name { text-align: right; padding-right: 16px; }
+.subtotal-row td.td-amount {
+    text-align: center;
+    font-family: 'Consolas', monospace;
+    color: #059669;
+}
+.subtotal-row td.td-amount.negative { color: #dc2626; }
+
+/* Mandatory totals (IFRS 18) */
+.total-row td {
+    color: white;
+    font-weight: 900;
+    font-size: 0.85rem;
+    padding: 8px;
+    letter-spacing: 0.3px;
+}
+.total-row td.td-name { text-align: right; padding-right: 16px; }
+.total-row td.td-amount { text-align: center; font-family: 'Consolas', monospace; }
+.total-row td.td-percent { text-align: center; font-size: 0.72rem; font-weight: 700; }
+
+.total-row.gross td { background: linear-gradient(90deg, #065f46, #10b981); }
+.total-row.operating td { background: linear-gradient(90deg, #1e3c72, #2a5298); }
+.total-row.ebit td { background: linear-gradient(90deg, #7c3aed, #8b5cf6); }
+.total-row.pbt td { background: linear-gradient(90deg, #b45309, #f59e0b); }
+.total-row.net td { background: linear-gradient(90deg, #065f46, #10b981); }
+.total-row.net.loss td { background: linear-gradient(90deg, #991b1b, #dc2626); }
+
+/* Empty state */
+.empty-section td {
+    padding: 8px 12px;
+    text-align: right;
+    color: #94a3b8;
+    font-style: italic;
+    font-size: 0.72rem;
+}
+
+@media print {
+    body { background: white; }
+    .sidebar, .no-print, .kpi-cards, .filter-bar, .is-header .btn { display: none !important; }
+    .col-md-10 { width: 100% !important; padding: 0 !important; }
+    .card { box-shadow: none !important; }
+    @page { size: A4 landscape; margin: 8mm; }
+}
+
+/* ============================================
+   إلغاء أسهم input[type=number]
+   ============================================ */
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none !important;
+    margin: 0 !important;
+}
+input[type=number] {
+    -moz-appearance: textfield !important;
+    appearance: textfield !important;
+}
+input[type="number"] {
+    -moz-appearance: textfield !important;
+}
+
+</style>
+
+
+
+<style id="compact-spacing-global">
+/* ============================================
+   توحيد المسافات المضغوطة
+   ============================================ */
+
+.table td, .table th {
+    padding: 3px 6px !important;
+    font-size: 0.75rem !important;
+    vertical-align: middle !important;
+    line-height: 1.2 !important;
+}
+
+.table tbody tr {
+    height: auto !important;
+}
+
+.form-control, .form-select {
+    font-size: 0.75rem !important;
+    line-height: 1.2 !important;
+}
+
+.form-control-sm, .form-select-sm {
+    height: 26px !important;
+    padding: 2px 6px !important;
+    font-size: 0.72rem !important;
+    line-height: 1 !important;
+}
+
+.btn {
+    padding: 3px 8px !important;
+    font-size: 0.72rem !important;
+    line-height: 1.2 !important;
+}
+
+.btn-sm {
+    padding: 2px 6px !important;
+    font-size: 0.7rem !important;
+}
+
+.card {
+    margin-bottom: 6px !important;
+}
+
+.card-body, .card.p-2, .card.p-3, .card.p-4 {
+    padding: 6px 8px !important;
+}
+
+.modal-header {
+    padding: 6px 12px !important;
+}
+
+.modal-title {
+    font-size: 0.9rem !important;
+}
+
+.modal-body {
+    padding: 8px 12px !important;
+}
+
+.modal-footer {
+    padding: 6px 12px !important;
+}
+
+.modal-footer .btn {
+    padding: 4px 10px !important;
+    font-size: 0.75rem !important;
+}
+
+.mb-1, .mb-2, .mb-3, .mb-4 {
+    margin-bottom: 4px !important;
+}
+
+.mt-1, .mt-2, .mt-3, .mt-4 {
+    margin-top: 4px !important;
+}
+
+.ms-1, .ms-2, .ms-3 {
+    margin-right: 4px !important;
+}
+
+.me-1, .me-2, .me-3 {
+    margin-left: 4px !important;
+}
+
+.p-1, .p-2, .p-3, .p-4 {
+    padding: 4px !important;
+}
+
+.g-1, .g-2, .g-3 {
+    gap: 4px !important;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    line-height: 1.3 !important;
+}
+
+h1 { font-size: 1.2rem !important; margin-bottom: 6px !important; }
+h2 { font-size: 1.05rem !important; margin-bottom: 6px !important; }
+h3 { font-size: 0.95rem !important; margin-bottom: 4px !important; }
+h4 { font-size: 0.9rem !important; margin-bottom: 4px !important; }
+h5 { font-size: 0.85rem !important; margin-bottom: 4px !important; }
+h6 { font-size: 0.8rem !important; margin-bottom: 4px !important; }
+
+.alert {
+    padding: 6px 10px !important;
+    margin-bottom: 6px !important;
+    font-size: 0.78rem !important;
+}
+
+.badge {
+    padding: 2px 6px !important;
+    font-size: 0.68rem !important;
+}
+
+.nav-tabs .nav-link {
+    padding: 5px 12px !important;
+    font-size: 0.78rem !important;
+}
+
+hr {
+    margin: 6px 0 !important;
+}
+
+/* بطاقات الأعمار (aging) */
+.aging-card, .bucket-card, .stat-card {
+    padding: 6px 8px !important;
+    margin-bottom: 4px !important;
+}
+
+.aging-card .h4, .aging-card .h5,
+.bucket-card .h4, .bucket-card .h5 {
+    font-size: 1rem !important;
+    margin: 2px 0 !important;
+}
+
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none !important;
+    margin: 0 !important;
+}
+input[type=number] {
+    -moz-appearance: textfield !important;
+}
+</style>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 16 16%22><text y=%2214%22 font-size=%2214%22>📒</text></svg>">
+</head>
+<body>
+
+<div class="container-fluid">
+<div class="row">
+
+<!-- Sidebar -->
+<div class="col-md-2 sidebar p-0">
+<div class="brand"><i class="bi bi-box-seam" style="font-size:2rem;"></i><h5 class="mt-2 mb-0">موديول المخازن</h5></div>
+<nav class="mt-3">
+<a href="index.html#reports"><i class="bi bi-house-fill"></i> التقارير الختامية</a>
+<a href="accounts.html"><i class="bi bi-book"></i> الدليل المحاسبي</a>
+<a href="items.html"><i class="bi bi-box"></i> الأصناف</a>
+<a href="purchase_invoices.html"><i class="bi bi-receipt"></i> فواتير الشراء</a>
+<a href="sales_invoices.html"><i class="bi bi-cart-check"></i> فواتير البيع</a>
+<a href="journal.html"><i class="bi bi-journal-text"></i> القيود</a>
+<a href="financial_reports.html"><i class="bi bi-graph-up"></i> التقارير المالية</a>
+<a href="trial_balance.html"><i class="bi bi-list-check"></i> ميزان المراجعة</a>
+<a href="income_statement.html" class="active"><i class="bi bi-graph-up-arrow"></i> قائمة الدخل</a>
+<a href="reports.html"><i class="bi bi-file-earmark-bar-graph"></i> التقارير</a>
+</nav>
+</div>
+
+<div class="col-md-10">
+
+<!-- Header -->
+<div class="is-header">
+<div>
+<div style="margin-bottom:10px;"><a href="index.html#reports" class="btn btn-sm btn-outline-secondary"><i class="bi bi-house"></i> التقارير الختامية</a></div>
+<h2><i class="bi bi-graph-up-arrow"></i> قائمة الدخل</h2>
+<small class="text-muted" style="font-size: 0.7rem;">
+<i class="bi bi-patch-check-fill" style="color: #10b981;"></i>
+معيار IFRS 18 — العرض والإفصاح في القوائم المالية
+</small>
+</div>
+<div class="d-flex gap-1 no-print">
+<button class="btn btn-sm btn-outline-success" onclick="exportExcel()"><i class="bi bi-file-earmark-excel"></i> Excel</button>
+<button class="btn btn-sm btn-success" onclick="window.print()"><i class="bi bi-printer-fill"></i> طباعة A4</button>
+<a href="index.html#reports" class="btn btn-sm btn-outline-secondary"><i class="bi bi-house"></i> التقارير الختامية</a>
+<button class="btn btn-sm btn-outline-primary" onclick="load()"><i class="bi bi-arrow-clockwise"></i> تحديث</button>
+</div>
+</div>
+
+<!-- Filters -->
+<div class="card p-3 filter-bar no-print">
+<div class="filters-row">
+
+<div class="date-field filter-field-date date-from">
+<label class="form-label"><i class="bi bi-calendar-range"></i><span>من تاريخ</span></label>
+<input type="text" class="form-control form-control-sm" id="f-from" placeholder="يوم/شهر/سنة" maxlength="10" dir="ltr">
+</div>
+
+<div class="date-field filter-field-date date-to">
+<label class="form-label"><i class="bi bi-calendar-range-fill"></i><span>إلى تاريخ</span></label>
+<input type="text" class="form-control form-control-sm" id="f-to" placeholder="يوم/شهر/سنة" maxlength="10" dir="ltr">
+</div>
+
+<div style="flex: 1;"></div>
+
+<div class="filter-buttons">
+<button class="btn btn-primary btn-sm" onclick="load()"><i class="bi bi-search"></i> تطبيق</button>
+<button class="btn btn-outline-secondary btn-sm" onclick="clearFilters()" title="مسح الفلاتر"><i class="bi bi-x-circle"></i></button>
+</div>
+
+</div>
+</div>
+
+<!-- KPI Cards -->
+<div class="kpi-cards no-print" id="kpi-cards">
+<div class="kpi-card revenue">
+<div class="kpi-label">الإيرادات</div>
+<div class="kpi-value" id="kpi-revenue">—</div>
+</div>
+<div class="kpi-card cogs">
+<div class="kpi-label">تكلفة المبيعات</div>
+<div class="kpi-value" id="kpi-cogs">—</div>
+</div>
+<div class="kpi-card gross">
+<div class="kpi-label">إجمالي الربح</div>
+<div class="kpi-value" id="kpi-gross">—</div>
+</div>
+<div class="kpi-card operating">
+<div class="kpi-label">الربح التشغيلي</div>
+<div class="kpi-value" id="kpi-operating">—</div>
+</div>
+<div class="kpi-card net" id="kpi-net-card">
+<div class="kpi-label">صافي الربح</div>
+<div class="kpi-value" id="kpi-net">—</div>
+</div>
+</div>
+
+<!-- Table -->
+<div class="card p-2">
+<table class="is-table" id="is-table">
+<thead>
+<tr>
+<th class="th-code">الكود</th>
+<th class="th-name">البند</th>
+<th class="th-amount">المبلغ</th>
+<th class="th-percent">%</th>
+</tr>
+</thead>
+<tbody id="is-body">
+<tr><td colspan="4" class="text-center py-4"><i class="bi bi-arrow-clockwise"></i> جاري التحميل...</td></tr>
+</tbody>
+</table>
+</div>
+
+</div>
+</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+const API = '/api/v1';
+
+function escapeHtml(s) {
+    return String(s ?? '').replace(/[&<>"']/g, c => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+    }[c]));
+}
+
+function fmtMoney(v) {
+    const n = Number(v) || 0;
+    return n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function pct(part, total) {
+    const p = Number(part) || 0;
+    const t = Number(total) || 0;
+    if (t === 0) return '—';
+    return ((p / t) * 100).toFixed(1) + '%';
+}
+
+function parseDateDMY(dmy) {
+    if (!dmy) return '';
+    const p = String(dmy).trim().split('/');
+    if (p.length !== 3) return dmy;
+    return p[2] + '-' + p[1].padStart(2, '0') + '-' + p[0].padStart(2, '0');
+}
+
+function isValidDateDMY(dmy) {
+    if (!dmy) return true;
+    const p = String(dmy).trim().split('/');
+    if (p.length !== 3) return false;
+    const d = parseInt(p[0]), m = parseInt(p[1]), y = parseInt(p[2]);
+    if (isNaN(d) || isNaN(m) || isNaN(y)) return false;
+    if (d < 1 || d > 31 || m < 1 || m > 12 || y < 1900 || y > 2100) return false;
+    const dt = new Date(y, m - 1, d);
+    return dt.getDate() === d && dt.getMonth() === m - 1 && dt.getFullYear() === y;
+}
+
+function setupDateField(id) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.addEventListener('input', function() {
+        let v = this.value.replace(/[^0-9]/g, '');
+        if (v.length >= 3) v = v.slice(0, 2) + '/' + v.slice(2);
+        if (v.length >= 6) v = v.slice(0, 5) + '/' + v.slice(5);
+        this.value = v.slice(0, 10);
+    });
+    el.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            load();
+        }
+    });
+}
+
+function getFilters() {
+    const f = {};
+    const from = parseDateDMY(document.getElementById('f-from').value);
+    const to = parseDateDMY(document.getElementById('f-to').value);
+    if (from) f.date_from = from;
+    if (to) f.date_to = to;
+    return f;
+}
+
+function buildQS(filters) {
+    const p = new URLSearchParams();
+    for (const k in filters) p.append(k, filters[k]);
+    const s = p.toString();
+    return s ? '?' + s : '';
+}
+
+function clearFilters() {
+    document.getElementById('f-from').value = '';
+    document.getElementById('f-to').value = '';
+    load();
+}
+
+// ============================================================
+// بناء صف بند
+// ============================================================
+function itemRow(code, name, amount, totalRevenue, isNegative = false) {
+    const displayAmount = isNegative ? `(${fmtMoney(Math.abs(amount))})` : fmtMoney(amount);
+    const amountClass = isNegative || amount < 0 ? 'negative' : '';
+    return `
+        <tr class="item-row">
+            <td class="td-code">${escapeHtml(code)}</td>
+            <td class="td-name">${escapeHtml(name)}</td>
+            <td class="td-amount ${amountClass}">${displayAmount}</td>
+            <td class="td-percent">${pct(Math.abs(amount), totalRevenue)}</td>
+        </tr>
+    `;
+}
+
+// ============================================================
+// بناء قسم كامل
+// ============================================================
+function sectionHeader(icon, title, category = 'operating') {
+    const badgeClass = category === 'operating' ? 'operating' :
+                       category === 'investing' ? 'investing' :
+                       category === 'financing' ? 'financing' : 'tax';
+    const badgeText = category === 'operating' ? 'OPERATING' :
+                      category === 'investing' ? 'INVESTING' :
+                      category === 'financing' ? 'FINANCING' : 'TAX';
+    return `
+        <tr class="section-row ${category}">
+            <td colspan="4">
+                <i class="bi bi-${icon}"></i> ${title}
+                <span class="ifrs-badge ${badgeClass}">${badgeText}</span>
+            </td>
+        </tr>
+    `;
+}
+
+function subtotalRow(label, amount, isNegative = false, totalRevenue = 0) {
+    const displayAmount = isNegative ? `(${fmtMoney(Math.abs(amount))})` : fmtMoney(amount);
+    const amountClass = isNegative || amount < 0 ? 'negative' : '';
+    return `
+        <tr class="subtotal-row">
+            <td></td>
+            <td class="td-name"><strong>${label}</strong></td>
+            <td class="td-amount ${amountClass}"><strong>${displayAmount}</strong></td>
+            <td class="td-percent"><strong>${pct(Math.abs(amount), totalRevenue)}</strong></td>
+        </tr>
+    `;
+}
+
+function totalRow(label, amount, className, totalRevenue, icon = 'trophy') {
+    return `
+        <tr class="total-row ${className}">
+            <td></td>
+            <td class="td-name"><i class="bi bi-${icon}"></i> ${label}</td>
+            <td class="td-amount">${fmtMoney(amount)}</td>
+            <td class="td-percent">${pct(amount, totalRevenue)}</td>
+        </tr>
+    `;
+}
+
+function emptySection(text = 'لا توجد بنود') {
+    return `<tr class="empty-section"><td colspan="4"><i class="bi bi-dash-circle"></i> ${text}</td></tr>`;
+}
+
+// ============================================================
+// تحميل قائمة الدخل
+// ============================================================
+async function load() {
+    const body = document.getElementById('is-body');
+    body.innerHTML = '<tr><td colspan="4" class="text-center py-4"><i class="bi bi-arrow-clockwise"></i> جاري التحميل...</td></tr>';
+
+    try {
+        const r = await fetch(`${API}/financial-reports/income-statement${buildQS(getFilters())}`).then(x => x.json());
+        const d = r.data || {};
+        const t = d.totals || {};
+
+        const totalRevenue = Number(t.total_revenue) || 0;
+        const netProfit = Number(t.net_profit) || 0;
+
+        // KPI
+        document.getElementById('kpi-revenue').textContent = fmtMoney(totalRevenue);
+        document.getElementById('kpi-cogs').textContent = fmtMoney(t.total_cogs);
+        document.getElementById('kpi-gross').textContent = fmtMoney(t.gross_profit);
+        document.getElementById('kpi-operating').textContent = fmtMoney(t.operating_profit);
+        document.getElementById('kpi-net').textContent = fmtMoney(netProfit);
+
+        const netCard = document.getElementById('kpi-net-card');
+        netCard.classList.toggle('loss', netProfit < 0);
+
+        let html = '';
+
+        // ========== 1) الإيرادات (OPERATING / REVENUE) ==========
+        html += sectionHeader('cash-coin', 'الإيرادات التشغيلية', 'operating');
+        if ((d.revenue || []).length) {
+            (d.revenue || []).forEach(x => {
+                html += itemRow(x.code, x.name_ar, x.amount, totalRevenue);
+            });
+        } else {
+            html += emptySection();
+        }
+        html += subtotalRow('إجمالي الإيرادات', totalRevenue, false, totalRevenue);
+
+        // ========== 2) تكلفة المبيعات (OPERATING / COGS) ==========
+        html += sectionHeader('box-seam', 'تكلفة المبيعات (COGS)', 'operating');
+        if ((d.cogs || []).length) {
+            (d.cogs || []).forEach(x => {
+                html += itemRow(x.code, x.name_ar, x.amount, totalRevenue, true);
+            });
+        } else {
+            html += emptySection();
+        }
+        html += subtotalRow('إجمالي التكلفة', Number(t.total_cogs) || 0, true, totalRevenue);
+
+        // ========== إجمالي الربح (إلزامي) ==========
+        html += totalRow('إجمالي الربح (GROSS PROFIT)', t.gross_profit, 'gross', totalRevenue, 'graph-up');
+
+        // ========== 3) المصروفات التشغيلية (OPERATING) ==========
+        const hasOpex = (d.selling_expenses || []).length ||
+                        (d.admin_expenses || []).length ||
+                        (d.depreciation_expenses || []).length ||
+                        (d.other_operating || []).length;
+
+        if (hasOpex) {
+            html += sectionHeader('receipt-cutoff', 'المصروفات التشغيلية', 'operating');
+
+            // بيعية
+            if ((d.selling_expenses || []).length) {
+                html += `<tr class="item-row" style="background:#fef3c7;"><td colspan="4" style="padding:4px 12px;font-weight:800;font-size:0.74rem;color:#92400e;">
+                    <i class="bi bi-megaphone"></i> مصروفات بيعية وتوزيعية</td></tr>`;
+                (d.selling_expenses || []).forEach(x => {
+                    html += itemRow(x.code, x.name_ar, x.amount, totalRevenue, true);
+                });
+            }
+
+            // إدارية
+            if ((d.admin_expenses || []).length) {
+                html += `<tr class="item-row" style="background:#fef3c7;"><td colspan="4" style="padding:4px 12px;font-weight:800;font-size:0.74rem;color:#92400e;">
+                    <i class="bi bi-briefcase"></i> مصروفات إدارية وعمومية</td></tr>`;
+                (d.admin_expenses || []).forEach(x => {
+                    html += itemRow(x.code, x.name_ar, x.amount, totalRevenue, true);
+                });
+            }
+
+            // إهلاك
+            if ((d.depreciation_expenses || []).length) {
+                html += `<tr class="item-row" style="background:#fef3c7;"><td colspan="4" style="padding:4px 12px;font-weight:800;font-size:0.74rem;color:#92400e;">
+                    <i class="bi bi-building-gear"></i> الإهلاك والإطفاء</td></tr>`;
+                (d.depreciation_expenses || []).forEach(x => {
+                    html += itemRow(x.code, x.name_ar, x.amount, totalRevenue, true);
+                });
+            }
+
+            // أخرى
+            if ((d.other_operating || []).length) {
+                html += `<tr class="item-row" style="background:#fef3c7;"><td colspan="4" style="padding:4px 12px;font-weight:800;font-size:0.74rem;color:#92400e;">
+                    <i class="bi bi-three-dots"></i> مصروفات تشغيلية أخرى</td></tr>`;
+                (d.other_operating || []).forEach(x => {
+                    html += itemRow(x.code, x.name_ar, x.amount, totalRevenue, true);
+                });
+            }
+
+            html += subtotalRow('إجمالي المصروفات التشغيلية', Number(t.total_opex) || 0, true, totalRevenue);
+        }
+
+        // ========== الربح التشغيلي (إلزامي) ==========
+        html += totalRow('الربح التشغيلي (OPERATING PROFIT)', t.operating_profit, 'operating', totalRevenue, 'graph-up-arrow');
+
+        // ========== 4) الإيرادات الاستثمارية (INVESTING) ==========
+        if ((d.investing_income || []).length || (d.investing_loss || []).length) {
+            html += sectionHeader('bank', 'الإيرادات الاستثمارية', 'investing');
+
+            (d.investing_income || []).forEach(x => {
+                html += itemRow(x.code, x.name_ar, x.amount, totalRevenue, false);
+            });
+            (d.investing_loss || []).forEach(x => {
+                html += itemRow(x.code, x.name_ar, x.amount, totalRevenue, true);
+            });
+
+            html += subtotalRow('صافي الإيرادات الاستثمارية', Number(t.total_investing) || 0, Number(t.total_investing) < 0, totalRevenue);
+
+            // ========== EBIT (إلزامي) ==========
+            html += totalRow('الأرباح قبل الفوائد والضرائب (EBIT)', t.ebit, 'ebit', totalRevenue, 'cash-stack');
+        }
+
+        // ========== 5) تكاليف التمويل (FINANCING) ==========
+        if ((d.finance_costs || []).length) {
+            html += sectionHeader('bank2', 'تكاليف التمويل', 'financing');
+            (d.finance_costs || []).forEach(x => {
+                html += itemRow(x.code, x.name_ar, x.amount, totalRevenue, true);
+            });
+            html += subtotalRow('إجمالي تكاليف التمويل', Number(t.total_finance) || 0, true, totalRevenue);
+        }
+
+        // ========== الربح قبل الضريبة (إلزامي) ==========
+        html += totalRow('الربح قبل الضريبة (PROFIT BEFORE TAX)', t.profit_before_tax, 'pbt', totalRevenue, 'calculator');
+
+        // ========== 6) الضرائب (TAX) ==========
+        if ((d.taxes || []).length) {
+            html += sectionHeader('percent', 'الضرائب', 'tax');
+            (d.taxes || []).forEach(x => {
+                html += itemRow(x.code, x.name_ar, x.amount, totalRevenue, true);
+            });
+            html += subtotalRow('إجمالي الضرائب', Number(t.total_taxes) || 0, true, totalRevenue);
+        }
+
+        // ========== صافي الربح (إلزامي) ==========
+        const netClass = netProfit >= 0 ? 'net' : 'net loss';
+        const netLabel = netProfit >= 0 ? 'صافي الربح (NET PROFIT)' : 'صافي الخسارة (NET LOSS)';
+        const netIcon = netProfit >= 0 ? 'check-circle-fill' : 'exclamation-triangle-fill';
+        html += totalRow(netLabel, netProfit, netClass, totalRevenue, netIcon);
+
+        body.innerHTML = html;
+
+    } catch (e) {
+        console.error(e);
+        body.innerHTML = '<tr><td colspan="4" class="text-center text-danger py-4">فشل تحميل البيانات</td></tr>';
+    }
+}
+
+function exportExcel() {
+    const qs = buildQS(getFilters());
+    window.location.href = '/api/v1/export/excel/export/income_statement' + qs;
+}
+
+// Init
+setupDateField('f-from');
+setupDateField('f-to');
+load();
+</script>
+</body>
+</html>

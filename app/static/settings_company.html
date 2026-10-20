@@ -1,0 +1,754 @@
+﻿<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>بيانات الشركة</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+* { font-family: 'Cairo','Segoe UI',Tahoma,sans-serif; box-sizing: border-box; }
+body { background: #f5f6fa; padding: 12px; font-size: 13px; color: #1e293b; line-height: 1.5; }
+.container-box { max-width: 1300px; margin: 0 auto; }
+
+.page-head {
+    background: white; border-radius: 10px; padding: 14px 18px;
+    margin-bottom: 14px; box-shadow: 0 1px 6px rgba(0,0,0,0.05);
+    display: flex; justify-content: space-between; align-items: center;
+    flex-wrap: wrap; gap: 10px;
+}
+.page-head h2 {
+    margin: 0; font-size: 1.15rem; font-weight: 700; color: #1e3c72;
+    display: flex; align-items: center; gap: 8px;
+}
+.page-head h2 i { color: #4facfe; }
+.page-head .btn { font-size: 0.82rem; padding: 6px 14px; border-radius: 7px; }
+
+/* Tabs */
+.nav-tabs {
+    background: white;
+    border-radius: 10px 10px 0 0;
+    padding: 8px 14px 0;
+    border-bottom: none;
+    box-shadow: 0 -1px 6px rgba(0,0,0,0.02);
+}
+.nav-tabs .nav-link {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: #64748b;
+    border: none;
+    border-bottom: 3px solid transparent;
+    padding: 8px 14px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.nav-tabs .nav-link.active {
+    color: #1e3c72;
+    background: transparent;
+    border-bottom-color: #4facfe;
+}
+.nav-tabs .nav-link:hover { color: #4facfe; }
+
+.tab-content {
+    background: white;
+    border-radius: 0 0 10px 10px;
+    padding: 20px;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.05);
+    margin-bottom: 14px;
+}
+
+.form-label { font-size: 0.8rem; font-weight: 600; color: #475569; margin-bottom: 4px; }
+.form-control, .form-select { font-size: 0.85rem; padding: 7px 12px; border-radius: 6px; border-color: #e2e8f0; }
+.form-control:focus, .form-select:focus { border-color: #4facfe; box-shadow: 0 0 0 3px rgba(79,172,254,0.15); }
+
+.form-section-title {
+    font-weight: 700;
+    font-size: 0.9rem;
+    color: #1e3c72;
+    padding-bottom: 8px;
+    margin-bottom: 12px;
+    border-bottom: 1.5px solid #f1f5f9;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.form-section-title i { color: #4facfe; }
+
+/* Toggle switch */
+.form-check-input { cursor: pointer; }
+.form-switch .form-check-input { width: 2.5em; height: 1.3em; }
+.form-check-label { font-size: 0.85rem; cursor: pointer; }
+
+/* File upload */
+.file-upload-box {
+    border: 2px dashed #cbd5e1;
+    border-radius: 8px;
+    padding: 18px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.15s;
+    background: #f8fafc;
+}
+.file-upload-box:hover { border-color: #4facfe; background: #eff6ff; }
+.file-upload-box i { font-size: 2rem; color: #94a3b8; margin-bottom: 6px; display: block; }
+.file-upload-box .text { font-size: 0.82rem; color: #64748b; }
+.file-upload-box.has-file { border-color: #16a34a; background: #f0fdf4; border-style: solid; }
+.file-upload-box.has-file i { color: #16a34a; }
+.file-preview {
+    max-width: 150px;
+    max-height: 100px;
+    border-radius: 6px;
+    margin-top: 8px;
+    border: 1px solid #e2e8f0;
+}
+
+/* Save bar */
+.save-bar {
+    background: white;
+    border-radius: 10px;
+    padding: 12px 18px;
+    box-shadow: 0 -2px 10px rgba(0,0,0,0.05);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    bottom: 12px;
+    z-index: 100;
+    margin-top: 14px;
+}
+.save-bar .info { font-size: 0.82rem; color: #64748b; }
+.save-bar .info.dirty { color: #dc2626; font-weight: 600; }
+
+/* Toast */
+.toast-msg {
+    position: fixed;
+    top: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #16a34a;
+    color: white;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-weight: 600;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+    z-index: 9999;
+    display: none;
+    align-items: center;
+    gap: 8px;
+}
+.toast-msg.show { display: flex; animation: slideDown 0.3s ease; }
+.toast-msg.error { background: #dc2626; }
+@keyframes slideDown {
+    from { transform: translate(-50%, -100%); opacity: 0; }
+    to   { transform: translate(-50%, 0);     opacity: 1; }
+}
+
+/* ============================================
+   إلغاء أسهم input[type=number]
+   ============================================ */
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none !important;
+    margin: 0 !important;
+}
+input[type=number] {
+    -moz-appearance: textfield !important;
+    appearance: textfield !important;
+}
+input[type="number"] {
+    -moz-appearance: textfield !important;
+}
+
+</style>
+<script src="permissions.js"></script>
+
+
+
+<style id="compact-spacing-global">
+/* ============================================
+   توحيد المسافات المضغوطة
+   ============================================ */
+
+.table td, .table th {
+    padding: 3px 6px !important;
+    font-size: 0.75rem !important;
+    vertical-align: middle !important;
+    line-height: 1.2 !important;
+}
+
+.table tbody tr {
+    height: auto !important;
+}
+
+.form-control, .form-select {
+    font-size: 0.75rem !important;
+    line-height: 1.2 !important;
+}
+
+.form-control-sm, .form-select-sm {
+    height: 26px !important;
+    padding: 2px 6px !important;
+    font-size: 0.72rem !important;
+    line-height: 1 !important;
+}
+
+.btn {
+    padding: 3px 8px !important;
+    font-size: 0.72rem !important;
+    line-height: 1.2 !important;
+}
+
+.btn-sm {
+    padding: 2px 6px !important;
+    font-size: 0.7rem !important;
+}
+
+.card {
+    margin-bottom: 6px !important;
+}
+
+.card-body, .card.p-2, .card.p-3, .card.p-4 {
+    padding: 6px 8px !important;
+}
+
+.modal-header {
+    padding: 6px 12px !important;
+}
+
+.modal-title {
+    font-size: 0.9rem !important;
+}
+
+.modal-body {
+    padding: 8px 12px !important;
+}
+
+.modal-footer {
+    padding: 6px 12px !important;
+}
+
+.modal-footer .btn {
+    padding: 4px 10px !important;
+    font-size: 0.75rem !important;
+}
+
+.mb-1, .mb-2, .mb-3, .mb-4 {
+    margin-bottom: 4px !important;
+}
+
+.mt-1, .mt-2, .mt-3, .mt-4 {
+    margin-top: 4px !important;
+}
+
+.ms-1, .ms-2, .ms-3 {
+    margin-right: 4px !important;
+}
+
+.me-1, .me-2, .me-3 {
+    margin-left: 4px !important;
+}
+
+.p-1, .p-2, .p-3, .p-4 {
+    padding: 4px !important;
+}
+
+.g-1, .g-2, .g-3 {
+    gap: 4px !important;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    line-height: 1.3 !important;
+}
+
+h1 { font-size: 1.2rem !important; margin-bottom: 6px !important; }
+h2 { font-size: 1.05rem !important; margin-bottom: 6px !important; }
+h3 { font-size: 0.95rem !important; margin-bottom: 4px !important; }
+h4 { font-size: 0.9rem !important; margin-bottom: 4px !important; }
+h5 { font-size: 0.85rem !important; margin-bottom: 4px !important; }
+h6 { font-size: 0.8rem !important; margin-bottom: 4px !important; }
+
+.alert {
+    padding: 6px 10px !important;
+    margin-bottom: 6px !important;
+    font-size: 0.78rem !important;
+}
+
+.badge {
+    padding: 2px 6px !important;
+    font-size: 0.68rem !important;
+}
+
+.nav-tabs .nav-link {
+    padding: 5px 12px !important;
+    font-size: 0.78rem !important;
+}
+
+hr {
+    margin: 6px 0 !important;
+}
+
+/* بطاقات الأعمار (aging) */
+.aging-card, .bucket-card, .stat-card {
+    padding: 6px 8px !important;
+    margin-bottom: 4px !important;
+}
+
+.aging-card .h4, .aging-card .h5,
+.bucket-card .h4, .bucket-card .h5 {
+    font-size: 1rem !important;
+    margin: 2px 0 !important;
+}
+
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none !important;
+    margin: 0 !important;
+}
+input[type=number] {
+    -moz-appearance: textfield !important;
+}
+</style>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 16 16%22><text y=%2214%22 font-size=%2214%22>📒</text></svg>">
+</head>
+<body>
+
+<div class="container-box">
+
+    <!-- Page Header -->
+    <div class="page-head">
+        <h2><i class="bi bi-building"></i> بيانات الشركة</h2>
+        <div class="d-flex gap-2">
+            <a href="settings.html" class="btn btn-outline-info">
+                <i class="bi bi-arrow-right"></i> الإعدادات
+            </a>
+            <a href="index.html#settings" class="btn btn-outline-secondary">
+                <i class="bi bi-house-fill"></i> الرئيسية
+            </a>
+        </div>
+    </div>
+
+    <!-- Tabs -->
+    <ul class="nav nav-tabs" role="tablist">
+        <li class="nav-item">
+            <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-basic">
+                <i class="bi bi-info-circle"></i> البيانات الأساسية
+            </button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-contact">
+                <i class="bi bi-telephone"></i> التواصل
+            </button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-financial">
+                <i class="bi bi-cash-coin"></i> البيانات المالية
+            </button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-branding">
+                <i class="bi bi-image"></i> الشعار والختم
+            </button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-custom">
+                <i class="bi bi-sliders"></i> تخصيص
+            </button>
+        </li>
+    </ul>
+
+    <!-- Tab Content -->
+    <div class="tab-content">
+
+        <!-- Tab 1: Basic -->
+        <div class="tab-pane fade show active" id="tab-basic">
+            <div class="form-section-title"><i class="bi bi-info-circle"></i> البيانات الأساسية</div>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label">اسم الشركة (عربي) *</label>
+                    <input type="text" class="form-control" id="f-name_ar" oninput="markDirty()">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">اسم الشركة (إنجليزي)</label>
+                    <input type="text" class="form-control" id="f-name_en" oninput="markDirty()">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">النشاط التجاري</label>
+                    <input type="text" class="form-control" id="f-business" oninput="markDirty()" placeholder="مثال: تجارة عامة - استيراد وتصدير">
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">الكيان القانوني</label>
+                    <select class="form-select" id="f-legal_type" onchange="markDirty()">
+                        <option value="">— اختر —</option>
+                        <option value="INDIVIDUAL">فردي</option>
+                        <option value="COMPANY">شركة</option>
+                        <option value="PARTNERSHIP">شركة تضامن</option>
+                        <option value="LLC">شركة ذات مسؤولية محدودة</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">تاريخ التأسيس</label>
+                    <input type="date" class="form-control" id="f-establishment_date" oninput="markDirty()">
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 2: Contact -->
+        <div class="tab-pane fade" id="tab-contact">
+            <div class="form-section-title"><i class="bi bi-telephone"></i> بيانات التواصل والعنوان</div>
+            <div class="row g-3">
+                <div class="col-12">
+                    <label class="form-label">العنوان الكامل</label>
+                    <textarea class="form-control" id="f-address" rows="2" oninput="markDirty()"></textarea>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">المدينة</label>
+                    <input type="text" class="form-control" id="f-city" oninput="markDirty()">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">الدولة</label>
+                    <input type="text" class="form-control" id="f-country" oninput="markDirty()">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">الرمز البريدي</label>
+                    <input type="text" class="form-control" id="f-postal_code" oninput="markDirty()">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">تليفون 1</label>
+                    <input type="tel" class="form-control" id="f-phone" oninput="markDirty()">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">تليفون 2</label>
+                    <input type="tel" class="form-control" id="f-phone2" oninput="markDirty()">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">موبايل</label>
+                    <input type="tel" class="form-control" id="f-mobile" oninput="markDirty()">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">فاكس</label>
+                    <input type="tel" class="form-control" id="f-fax" oninput="markDirty()">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">البريد الإلكتروني</label>
+                    <input type="email" class="form-control" id="f-email" oninput="markDirty()">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">الموقع الإلكتروني</label>
+                    <input type="url" class="form-control" id="f-website" oninput="markDirty()">
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 3: Financial -->
+        <div class="tab-pane fade" id="tab-financial">
+            <div class="form-section-title"><i class="bi bi-cash-coin"></i> البيانات المالية والقانونية</div>
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label">الرقم الضريبي</label>
+                    <input type="text" class="form-control" id="f-tax_number" oninput="markDirty()">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">السجل التجاري</label>
+                    <input type="text" class="form-control" id="f-commercial_register" oninput="markDirty()">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">البطاقة الضريبية</label>
+                    <input type="text" class="form-control" id="f-tax_card" oninput="markDirty()">
+                </div>
+            </div>
+
+            <div class="form-section-title mt-4"><i class="bi bi-currency-exchange"></i> العملة</div>
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label">العملة الافتراضية</label>
+                    <select class="form-select" id="f-currency" onchange="markDirty()">
+                        <option value="EGP">جنيه مصري (EGP)</option>
+                        <option value="SAR">ريال سعودي (SAR)</option>
+                        <option value="AED">درهم إماراتي (AED)</option>
+                        <option value="USD">دولار أمريكي (USD)</option>
+                        <option value="EUR">يورو (EUR)</option>
+                        <option value="KWD">دينار كويتي (KWD)</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">رمز العملة</label>
+                    <input type="text" class="form-control" id="f-currency_symbol" oninput="markDirty()">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">اسم العملة</label>
+                    <input type="text" class="form-control" id="f-currency_name" oninput="markDirty()">
+                </div>
+            </div>
+
+            <div class="form-section-title mt-4"><i class="bi bi-calendar"></i> السنة المالية</div>
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <label class="form-label">بداية السنة المالية</label>
+                    <select class="form-select" id="f-fiscal_year_start" onchange="markDirty()">
+                        <option value="01">يناير</option>
+                        <option value="04">أبريل</option>
+                        <option value="07">يوليو</option>
+                        <option value="10">أكتوبر</option>
+                    </select>
+                </div>
+                <div class="col-md-6">
+                    <label class="form-label">نهاية السنة المالية</label>
+                    <select class="form-select" id="f-fiscal_year_end" onchange="markDirty()">
+                        <option value="12">ديسمبر</option>
+                        <option value="03">مارس</option>
+                        <option value="06">يونيو</option>
+                        <option value="09">سبتمبر</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 4: Branding -->
+        <div class="tab-pane fade" id="tab-branding">
+            <div class="form-section-title"><i class="bi bi-image"></i> الشعار والختم والتوقيع</div>
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <label class="form-label">شعار الشركة</label>
+                    <div class="file-upload-box" onclick="document.getElementById('file-logo').click()">
+                        <i class="bi bi-image"></i>
+                        <div class="text">اضغط لاختيار صورة</div>
+                        <div class="text" style="font-size:0.72rem;">PNG / JPG — بحد أقصى 500KB</div>
+                        <div id="preview-logo"></div>
+                    </div>
+                    <input type="file" id="file-logo" accept="image/*" style="display:none;" onchange="uploadLogo(this)">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">الختم الرسمي</label>
+                    <div class="file-upload-box" onclick="document.getElementById('file-stamp').click()">
+                        <i class="bi bi-patch-check"></i>
+                        <div class="text">اضغط لاختيار صورة</div>
+                        <div class="text" style="font-size:0.72rem;">PNG بخلفية شفافة</div>
+                        <div id="preview-stamp"></div>
+                    </div>
+                    <input type="file" id="file-stamp" accept="image/*" style="display:none;" onchange="uploadStamp(this)">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label">توقيع المدير</label>
+                    <div class="file-upload-box" onclick="document.getElementById('file-signature').click()">
+                        <i class="bi bi-vector-pen"></i>
+                        <div class="text">اضغط لاختيار صورة</div>
+                        <div class="text" style="font-size:0.72rem;">PNG بخلفية شفافة</div>
+                        <div id="preview-signature"></div>
+                    </div>
+                    <input type="file" id="file-signature" accept="image/*" style="display:none;" onchange="uploadSignature(this)">
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 5: Custom -->
+        <div class="tab-pane fade" id="tab-custom">
+            <div class="form-section-title"><i class="bi bi-sliders"></i> تخصيص العرض</div>
+            <div class="row g-3">
+                <div class="col-12">
+                    <label class="form-label">نص التذييل (يظهر أسفل كل صفحة مطبوعة)</label>
+                    <textarea class="form-control" id="f-footer_note" rows="2" oninput="markDirty()" placeholder="مثال: شكرًا لتعاملكم معنا"></textarea>
+                </div>
+            </div>
+
+            <div class="form-section-title mt-4"><i class="bi bi-toggle-on"></i> خيارات الطباعة</div>
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="f-show_logo_in_reports" onchange="markDirty()">
+                        <label class="form-check-label" for="f-show_logo_in_reports">إظهار الشعار في التقارير</label>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="f-show_tax_in_invoices" onchange="markDirty()">
+                        <label class="form-check-label" for="f-show_tax_in_invoices">إظهار الرقم الضريبي في الفواتير</label>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="f-show_stamp" onchange="markDirty()">
+                        <label class="form-check-label" for="f-show_stamp">إظهار الختم الرسمي</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Save bar -->
+    <div class="save-bar">
+        <div class="info" id="save-info">
+            <i class="bi bi-info-circle"></i> لا توجد تغييرات غير محفوظة
+        </div>
+        <button class="btn btn-primary" onclick="save()" id="btn-save">
+            <i class="bi bi-check-circle-fill"></i> حفظ التغييرات
+        </button>
+    </div>
+
+</div>
+
+<div class="toast-msg" id="toast">
+    <i class="bi bi-check-circle-fill"></i>
+    <span id="toast-text">تم الحفظ</span>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+const API = 'http://localhost:5000/api/v1';
+let isDirty = false;
+let currentData = {};
+
+async function load() {
+    try {
+        const r = await fetch(`${API}/settings/company`).then(x => x.json());
+        if (!r.success) { showToast('خطأ في التحميل', true); return; }
+        currentData = r.data;
+        fillForm(currentData);
+        isDirty = false;
+        updateSaveBar();
+    } catch (e) {
+        console.error(e);
+        showToast('خطأ في الاتصال', true);
+    }
+}
+
+function fillForm(data) {
+    for (const [key, value] of Object.entries(data)) {
+        const el = document.getElementById('f-' + key);
+        if (!el) continue;
+        if (el.type === 'checkbox') {
+            el.checked = !!value;
+        } else {
+            el.value = value ?? '';
+        }
+    }
+
+    // معاينة الصور
+    if (data.logo_url) showPreview('logo', data.logo_url);
+    if (data.stamp_url) showPreview('stamp', data.stamp_url);
+    if (data.signature_url) showPreview('signature', data.signature_url);
+}
+
+function showPreview(type, url) {
+    const div = document.getElementById('preview-' + type);
+    const box = div.closest('.file-upload-box');
+    if (url) {
+        div.innerHTML = `<img src="${url}" class="file-preview" alt="">`;
+        box.classList.add('has-file');
+    }
+}
+
+function markDirty() {
+    isDirty = true;
+    updateSaveBar();
+}
+
+function updateSaveBar() {
+    const info = document.getElementById('save-info');
+    if (isDirty) {
+        info.innerHTML = '<i class="bi bi-exclamation-circle"></i> هناك تغييرات غير محفوظة';
+        info.className = 'info dirty';
+    } else {
+        info.innerHTML = '<i class="bi bi-info-circle"></i> لا توجد تغييرات غير محفوظة';
+        info.className = 'info';
+    }
+}
+
+async function save() {
+    const btn = document.getElementById('btn-save');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> جاري الحفظ...';
+
+    // جمع البيانات
+    const data = {};
+    document.querySelectorAll('[id^="f-"]').forEach(el => {
+        const key = el.id.replace('f-', '');
+        if (el.type === 'checkbox') {
+            data[key] = el.checked;
+        } else {
+            data[key] = el.value;
+        }
+    });
+
+    try {
+        const r = await fetch(`${API}/settings/company`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
+        }).then(x => x.json());
+
+        if (r.success) {
+            showToast('تم حفظ الإعدادات بنجاح');
+            isDirty = false;
+            updateSaveBar();
+        } else {
+            showToast(r.message || 'خطأ', true);
+        }
+    } catch (e) {
+        console.error(e);
+        showToast('خطأ في الاتصال', true);
+    } finally {
+        btn.disabled = false;
+        btn.innerHTML = '<i class="bi bi-check-circle-fill"></i> حفظ التغييرات';
+    }
+}
+
+// رفع الصور (base64 للآن)
+function uploadLogo(input) {
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = e => {
+            document.getElementById('f-logo_url').value = e.target.result;
+            showPreview('logo', e.target.result);
+            markDirty();
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+
+function uploadStamp(input) {
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = e => {
+            document.getElementById('f-stamp_url').value = e.target.result;
+            showPreview('stamp', e.target.result);
+            markDirty();
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+
+function uploadSignature(input) {
+    if (input.files && input.files[0]) {
+        const reader = new FileReader();
+        reader.onload = e => {
+            document.getElementById('f-signature_url').value = e.target.result;
+            showPreview('signature', e.target.result);
+            markDirty();
+        };
+        reader.readAsDataURL(input.files[0]);
+    }
+}
+
+function showToast(msg, isError = false) {
+    const toast = document.getElementById('toast');
+    document.getElementById('toast-text').textContent = msg;
+    toast.className = 'toast-msg show' + (isError ? ' error' : '');
+    setTimeout(() => toast.className = 'toast-msg', 3000);
+}
+
+// Warn before leaving
+window.addEventListener('beforeunload', e => {
+    if (isDirty) {
+        e.preventDefault();
+        e.returnValue = '';
+    }
+});
+
+// تحميل
+load();
+</script>
+</body>
+</html>

@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>تقارير الخزائن</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+body { font-family: 'Cairo','Segoe UI',Tahoma,sans-serif; background: #f5f6fa; padding: 20px; font-size: 13px; }
+.container-box { max-width: 1400px; margin: 0 auto; }
+h2 { color: #1e3c72; font-weight: 700; }
+.card-box { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 1px 10px rgba(0,0,0,0.05); margin-bottom: 20px; }
+
+.stat-card {
+    background: white; border-radius: 12px; padding: 15px 20px;
+    box-shadow: 0 1px 10px rgba(0,0,0,0.05);
+    display: flex; align-items: center; gap: 15px;
+    border-right: 4px solid;
+}
+.stat-card .icon { width: 50px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; color: white; }
+.stat-card .label { font-size: 0.78rem; color: #64748b; }
+.stat-card .value { font-size: 1.3rem; font-weight: 700; color: #1e3c72; }
+
+.badge-CASH_BOX { background: #e8f5e9; color: #2e7d32; }
+.badge-BANK { background: #e3f2fd; color: #1565c0; }
+.badge-CARD { background: #f3e5f5; color: #6a1b9a; }
+
+/* ============================================
+   إلغاء أسهم input[type=number]
+   ============================================ */
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none !important;
+    margin: 0 !important;
+}
+input[type=number] {
+    -moz-appearance: textfield !important;
+    appearance: textfield !important;
+}
+input[type="number"] {
+    -moz-appearance: textfield !important;
+}
+
+</style>
+<script src="permissions.js"></script>
+
+
+
+<style id="compact-spacing-global">
+/* ============================================
+   توحيد المسافات المضغوطة
+   ============================================ */
+
+.table td, .table th {
+    padding: 3px 6px !important;
+    font-size: 0.75rem !important;
+    vertical-align: middle !important;
+    line-height: 1.2 !important;
+}
+
+.table tbody tr {
+    height: auto !important;
+}
+
+.form-control, .form-select {
+    font-size: 0.75rem !important;
+    line-height: 1.2 !important;
+}
+
+.form-control-sm, .form-select-sm {
+    height: 26px !important;
+    padding: 2px 6px !important;
+    font-size: 0.72rem !important;
+    line-height: 1 !important;
+}
+
+.btn {
+    padding: 3px 8px !important;
+    font-size: 0.72rem !important;
+    line-height: 1.2 !important;
+}
+
+.btn-sm {
+    padding: 2px 6px !important;
+    font-size: 0.7rem !important;
+}
+
+.card {
+    margin-bottom: 6px !important;
+}
+
+.card-body, .card.p-2, .card.p-3, .card.p-4 {
+    padding: 6px 8px !important;
+}
+
+.modal-header {
+    padding: 6px 12px !important;
+}
+
+.modal-title {
+    font-size: 0.9rem !important;
+}
+
+.modal-body {
+    padding: 8px 12px !important;
+}
+
+.modal-footer {
+    padding: 6px 12px !important;
+}
+
+.modal-footer .btn {
+    padding: 4px 10px !important;
+    font-size: 0.75rem !important;
+}
+
+.mb-1, .mb-2, .mb-3, .mb-4 {
+    margin-bottom: 4px !important;
+}
+
+.mt-1, .mt-2, .mt-3, .mt-4 {
+    margin-top: 4px !important;
+}
+
+.ms-1, .ms-2, .ms-3 {
+    margin-right: 4px !important;
+}
+
+.me-1, .me-2, .me-3 {
+    margin-left: 4px !important;
+}
+
+.p-1, .p-2, .p-3, .p-4 {
+    padding: 4px !important;
+}
+
+.g-1, .g-2, .g-3 {
+    gap: 4px !important;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    line-height: 1.3 !important;
+}
+
+h1 { font-size: 1.2rem !important; margin-bottom: 6px !important; }
+h2 { font-size: 1.05rem !important; margin-bottom: 6px !important; }
+h3 { font-size: 0.95rem !important; margin-bottom: 4px !important; }
+h4 { font-size: 0.9rem !important; margin-bottom: 4px !important; }
+h5 { font-size: 0.85rem !important; margin-bottom: 4px !important; }
+h6 { font-size: 0.8rem !important; margin-bottom: 4px !important; }
+
+.alert {
+    padding: 6px 10px !important;
+    margin-bottom: 6px !important;
+    font-size: 0.78rem !important;
+}
+
+.badge {
+    padding: 2px 6px !important;
+    font-size: 0.68rem !important;
+}
+
+.nav-tabs .nav-link {
+    padding: 5px 12px !important;
+    font-size: 0.78rem !important;
+}
+
+hr {
+    margin: 6px 0 !important;
+}
+
+/* بطاقات الأعمار (aging) */
+.aging-card, .bucket-card, .stat-card {
+    padding: 6px 8px !important;
+    margin-bottom: 4px !important;
+}
+
+.aging-card .h4, .aging-card .h5,
+.bucket-card .h4, .bucket-card .h5 {
+    font-size: 1rem !important;
+    margin: 2px 0 !important;
+}
+
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none !important;
+    margin: 0 !important;
+}
+input[type=number] {
+    -moz-appearance: textfield !important;
+}
+</style>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 16 16%22><text y=%2214%22 font-size=%2214%22>📒</text></svg>">
+</head>
+<body>
+<div class="container-box">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="bi bi-graph-up text-success"></i> تقارير الخزائن</h2>
+        <div>
+            <a href="cash_boxes.html" class="btn btn-outline-info"><i class="bi bi-safe2-fill"></i> الخزائن</a>
+            <button class="btn btn-sm btn-outline-success" onclick="exportToExcel('cash_box_reports')" title="تصدير Excel">
+                <i class="bi bi-file-earmark-excel"></i> Excel
+            </button>
+            <a href="index.html" class="btn btn-outline-secondary"><i class="bi bi-house"></i> الرئيسية</a>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="card-box">
+        <div class="row g-2">
+            <div class="col-md-3">
+                <label class="form-label">من تاريخ</label>
+                <input type="date" class="form-control" id="f-from">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">إلى تاريخ</label>
+                <input type="date" class="form-control" id="f-to">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">&nbsp;</label>
+                <button class="btn btn-primary w-100" onclick="loadAll()"><i class="bi bi-search"></i> عرض</button>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">&nbsp;</label>
+                <button class="btn btn-outline-secondary w-100" onclick="resetFilters()"><i class="bi bi-x-circle"></i> مسح</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Summary Cards -->
+    <div class="row g-3 mb-4">
+        <div class="col-md-3">
+            <div class="stat-card" style="border-right-color: #4facfe;">
+                <div class="icon" style="background: linear-gradient(135deg, #4facfe, #00f2fe);"><i class="bi bi-safe2-fill"></i></div>
+                <div>
+                    <div class="label">إجمالي الخزائن</div>
+                    <div class="value" id="s-boxes">0.00</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card" style="border-right-color: #43e97b;">
+                <div class="icon" style="background: linear-gradient(135deg, #43e97b, #38f9d7);"><i class="bi bi-bank2"></i></div>
+                <div>
+                    <div class="label">إجمالي البنوك</div>
+                    <div class="value" id="s-banks">0.00</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card" style="border-right-color: #fa709a;">
+                <div class="icon" style="background: linear-gradient(135deg, #fa709a, #fee140);"><i class="bi bi-credit-card-2-front-fill"></i></div>
+                <div>
+                    <div class="label">إجمالي البطاقات</div>
+                    <div class="value" id="s-cards">0.00</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="stat-card" style="border-right-color: #a18cd1;">
+                <div class="icon" style="background: linear-gradient(135deg, #a18cd1, #fbc2eb);"><i class="bi bi-cash-stack"></i></div>
+                <div>
+                    <div class="label">الإجمالي العام</div>
+                    <div class="value" id="s-total">0.00</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Movement Stats -->
+    <div class="card-box">
+        <h6 class="mb-3"><i class="bi bi-arrow-left-right"></i> حركات الفترة</h6>
+        <div class="row g-3">
+            <div class="col-md-3">
+                <div class="text-center p-3 bg-light rounded">
+                    <div class="small text-muted">إيداعات</div>
+                    <div class="h5 text-success" id="t-deposit">0.00</div>
+                    <div class="small text-muted" id="t-deposit-count">0 حركة</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="text-center p-3 bg-light rounded">
+                    <div class="small text-muted">سحوبات</div>
+                    <div class="h5 text-danger" id="t-withdraw">0.00</div>
+                    <div class="small text-muted" id="t-withdraw-count">0 حركة</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="text-center p-3 bg-light rounded">
+                    <div class="small text-muted">تحويلات</div>
+                    <div class="h5 text-primary" id="t-transfer">0.00</div>
+                    <div class="small text-muted" id="t-transfer-count">0 حركة</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="text-center p-3 bg-light rounded">
+                    <div class="small text-muted">مصروفات</div>
+                    <div class="h5 text-warning" id="t-expense">0.00</div>
+                    <div class="small text-muted" id="t-expense-count">0 حركة</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Box Details -->
+    <div class="card-box">
+        <h6 class="mb-3"><i class="bi bi-list-check"></i> تفاصيل الخزائن والبنوك</h6>
+        <table class="table table-hover">
+            <thead class="table-light">
+                <tr>
+                    <th>النوع</th>
+                    <th>الكود</th>
+                    <th>الاسم</th>
+                    <th>الحساب</th>
+                    <th class="text-end">الرصيد الافتتاحي</th>
+                    <th class="text-end">الرصيد الحالي</th>
+                    <th>إجراءات</th>
+                </tr>
+            </thead>
+            <tbody id="tbl"><tr><td colspan="7" class="text-center text-muted">جاري التحميل...</td></tr></tbody>
+        </table>
+    </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+const API = '/api/v1';
+
+async function loadAll() {
+    const from = document.getElementById('f-from').value;
+    const to = document.getElementById('f-to').value;
+    
+    // Summary
+    let url = `${API}/cash-boxes/reports/summary?`;
+    if (from) url += `date_from=${from}&`;
+    if (to) url += `date_to=${to}`;
+    
+    const r = await fetch(url).then(x => x.json());
+    if (r.success) {
+        const d = r.data;
+        document.getElementById('s-boxes').textContent = d.balances.boxes.total.toFixed(2);
+        document.getElementById('s-banks').textContent = d.balances.banks.total.toFixed(2);
+        document.getElementById('s-cards').textContent = d.balances.cards.total.toFixed(2);
+        document.getElementById('s-total').textContent = d.balances.grand_total.toFixed(2);
+        
+        document.getElementById('t-deposit').textContent = (d.transactions.DEPOSIT?.total || 0).toFixed(2);
+        document.getElementById('t-deposit-count').textContent = (d.transactions.DEPOSIT?.count || 0) + ' حركة';
+        
+        document.getElementById('t-withdraw').textContent = (d.transactions.WITHDRAW?.total || 0).toFixed(2);
+        document.getElementById('t-withdraw-count').textContent = (d.transactions.WITHDRAW?.count || 0) + ' حركة';
+        
+        const transferTotal = (d.transactions.TRANSFER_IN?.total || 0) + (d.transactions.TRANSFER_OUT?.total || 0);
+        const transferCount = (d.transactions.TRANSFER_IN?.count || 0) + (d.transactions.TRANSFER_OUT?.count || 0);
+        document.getElementById('t-transfer').textContent = transferTotal.toFixed(2);
+        document.getElementById('t-transfer-count').textContent = transferCount + ' حركة';
+        
+        document.getElementById('t-expense').textContent = d.expenses.total.toFixed(2);
+        document.getElementById('t-expense-count').textContent = d.expenses.count + ' حركة';
+    }
+    
+    // Details
+    loadDetails();
+}
+
+async function loadDetails() {
+    const [boxes, banks, cards] = await Promise.all([
+        fetch(`${API}/cash-boxes/boxes/`).then(x => x.json()),
+        fetch(`${API}/cash-boxes/banks/`).then(x => x.json()),
+        fetch(`${API}/cash-boxes/cards/`).then(x => x.json())
+    ]);
+    
+    const all = [
+        ...(boxes.data || []).map(b => ({...b, type: 'CASH_BOX', typeName: 'خزينة'})),
+        ...(banks.data || []).map(b => ({...b, type: 'BANK', typeName: 'بنك'})),
+        ...(cards.data || []).map(b => ({...b, type: 'CARD', typeName: 'بطاقة'}))
+    ];
+    
+    document.getElementById('tbl').innerHTML = all.length ? all.map(b => `
+        <tr>
+            <td><span class="badge badge-${b.type}">${b.typeName}</span></td>
+            <td><code>${b.code}</code></td>
+            <td><strong>${b.name_ar}</strong></td>
+            <td><code>${b.account_code}</code></td>
+            <td class="text-end">${parseFloat(b.opening_balance || 0).toFixed(2)}</td>
+            <td class="text-end"><strong>${parseFloat(b.current_balance || 0).toFixed(2)}</strong></td>
+            <td>
+                <button class="btn btn-sm btn-outline-info" onclick="viewStatement('${b.type}', ${b.id})">
+                    <i class="bi bi-file-earmark-text"></i> كشف
+                </button>
+            </td>
+        </tr>
+    `).join('') : '<tr><td colspan="7" class="text-center text-muted py-4">لا توجد بيانات</td></tr>';
+}
+
+async function viewStatement(boxType, boxId) {
+    const from = document.getElementById('f-from').value;
+    const to = document.getElementById('f-to').value;
+    
+    let url = `${API}/cash-boxes/reports/box-statement/${boxType}/${boxId}?`;
+    if (from) url += `date_from=${from}&`;
+    if (to) url += `date_to=${to}`;
+    
+    const r = await fetch(url).then(x => x.json());
+    if (!r.success) { alert('خطأ'); return; }
+    
+    const d = r.data;
+    let html = `<h5>${d.box.name} (${d.box.code})</h5>
+        <p>الحساب: <code>${d.box.account_code}</code></p>
+        <div class="row mb-3">
+            <div class="col-md-4">رصيد افتتاحي: <strong>${d.opening_balance.toFixed(2)}</strong></div>
+            <div class="col-md-4">رصيد ختامي: <strong>${d.closing_balance.toFixed(2)}</strong></div>
+            <div class="col-md-4">الرصيد الحالي: <strong>${d.box.current_balance.toFixed(2)}</strong></div>
+        </div>
+        <table class="table table-sm table-bordered">
+            <thead class="table-light"><tr>
+                <th>التاريخ</th><th>المرجع</th><th>النوع</th><th>البيان</th>
+                <th class="text-end">مدين</th><th class="text-end">دائن</th><th class="text-end">الرصيد</th>
+            </tr></thead><tbody>`;
+    
+    if (d.transactions.length) {
+        d.transactions.forEach(t => {
+            html += `<tr>
+                <td>${t.date}</td>
+                <td><code>${t.reference || '-'}</code></td>
+                <td>${t.type}</td>
+                <td><small>${t.description || '-'}</small></td>
+                <td class="text-end">${t.debit > 0 ? t.debit.toFixed(2) : '-'}</td>
+                <td class="text-end">${t.credit > 0 ? t.credit.toFixed(2) : '-'}</td>
+                <td class="text-end"><strong>${t.balance.toFixed(2)}</strong></td>
+            </tr>`;
+        });
+    } else {
+        html += '<tr><td colspan="7" class="text-center text-muted">لا توجد حركات</td></tr>';
+    }
+    
+    html += `</tbody></table>`;
+    
+    const w = window.open('', '_blank');
+    w.document.write(`<html dir="rtl"><head><title>كشف حساب</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+        <style>body{padding:20px;font-family:Cairo,sans-serif;}</style>
+        </head><body>${html}
+<script>
+// دالة تصدير Excel
+function exportToExcel(templateKey) {
+    if (!templateKey) {
+        alert('مفيش قالب تصدير');
+        return;
+    }
+    window.location.href = '/api/v1/export/excel/export/' + templateKey;
+}
+</script>
+
+</body></html>`);
+}
+
+function resetFilters() {
+    document.getElementById('f-from').value = '';
+    document.getElementById('f-to').value = '';
+    loadAll();
+}
+
+loadAll();
+</script>
+</body>
+</html>

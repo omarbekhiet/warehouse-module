@@ -1,0 +1,298 @@
+﻿<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>المخزون حسب المستودع</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+body { font-family: 'Cairo', 'Segoe UI', Tahoma, sans-serif; background: #f0f2f5; padding: 20px; }
+.container-box { max-width: 1400px; margin: 0 auto; }
+h2 { color: #1e3c72; font-weight: 700; }
+.card-box { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); margin-bottom: 20px; }
+.wh-header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px 20px; border-radius: 10px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
+.wh-header h5 { margin: 0; }
+.wh-header .total { font-size: 1.3rem; font-weight: 700; }
+table { font-size: 0.85rem; }
+
+/* ============================================
+   إلغاء أسهم input[type=number]
+   ============================================ */
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none !important;
+    margin: 0 !important;
+}
+input[type=number] {
+    -moz-appearance: textfield !important;
+    appearance: textfield !important;
+}
+input[type="number"] {
+    -moz-appearance: textfield !important;
+}
+
+</style>
+<script src="permissions.js"></script>
+
+
+
+<style id="compact-spacing-global">
+/* ============================================
+   توحيد المسافات المضغوطة
+   ============================================ */
+
+.table td, .table th {
+    padding: 3px 6px !important;
+    font-size: 0.75rem !important;
+    vertical-align: middle !important;
+    line-height: 1.2 !important;
+}
+
+.table tbody tr {
+    height: auto !important;
+}
+
+.form-control, .form-select {
+    font-size: 0.75rem !important;
+    line-height: 1.2 !important;
+}
+
+.form-control-sm, .form-select-sm {
+    height: 26px !important;
+    padding: 2px 6px !important;
+    font-size: 0.72rem !important;
+    line-height: 1 !important;
+}
+
+.btn {
+    padding: 3px 8px !important;
+    font-size: 0.72rem !important;
+    line-height: 1.2 !important;
+}
+
+.btn-sm {
+    padding: 2px 6px !important;
+    font-size: 0.7rem !important;
+}
+
+.card {
+    margin-bottom: 6px !important;
+}
+
+.card-body, .card.p-2, .card.p-3, .card.p-4 {
+    padding: 6px 8px !important;
+}
+
+.modal-header {
+    padding: 6px 12px !important;
+}
+
+.modal-title {
+    font-size: 0.9rem !important;
+}
+
+.modal-body {
+    padding: 8px 12px !important;
+}
+
+.modal-footer {
+    padding: 6px 12px !important;
+}
+
+.modal-footer .btn {
+    padding: 4px 10px !important;
+    font-size: 0.75rem !important;
+}
+
+.mb-1, .mb-2, .mb-3, .mb-4 {
+    margin-bottom: 4px !important;
+}
+
+.mt-1, .mt-2, .mt-3, .mt-4 {
+    margin-top: 4px !important;
+}
+
+.ms-1, .ms-2, .ms-3 {
+    margin-right: 4px !important;
+}
+
+.me-1, .me-2, .me-3 {
+    margin-left: 4px !important;
+}
+
+.p-1, .p-2, .p-3, .p-4 {
+    padding: 4px !important;
+}
+
+.g-1, .g-2, .g-3 {
+    gap: 4px !important;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    line-height: 1.3 !important;
+}
+
+h1 { font-size: 1.2rem !important; margin-bottom: 6px !important; }
+h2 { font-size: 1.05rem !important; margin-bottom: 6px !important; }
+h3 { font-size: 0.95rem !important; margin-bottom: 4px !important; }
+h4 { font-size: 0.9rem !important; margin-bottom: 4px !important; }
+h5 { font-size: 0.85rem !important; margin-bottom: 4px !important; }
+h6 { font-size: 0.8rem !important; margin-bottom: 4px !important; }
+
+.alert {
+    padding: 6px 10px !important;
+    margin-bottom: 6px !important;
+    font-size: 0.78rem !important;
+}
+
+.badge {
+    padding: 2px 6px !important;
+    font-size: 0.68rem !important;
+}
+
+.nav-tabs .nav-link {
+    padding: 5px 12px !important;
+    font-size: 0.78rem !important;
+}
+
+hr {
+    margin: 6px 0 !important;
+}
+
+/* بطاقات الأعمار (aging) */
+.aging-card, .bucket-card, .stat-card {
+    padding: 6px 8px !important;
+    margin-bottom: 4px !important;
+}
+
+.aging-card .h4, .aging-card .h5,
+.bucket-card .h4, .bucket-card .h5 {
+    font-size: 1rem !important;
+    margin: 2px 0 !important;
+}
+
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none !important;
+    margin: 0 !important;
+}
+input[type=number] {
+    -moz-appearance: textfield !important;
+}
+</style>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 16 16%22><text y=%2214%22 font-size=%2214%22>📒</text></svg>">
+</head>
+<body>
+
+<div class="container-box">
+
+    <div class="d-flex justify-content-between mb-4">
+        <h2><i class="bi bi-building"></i> المخزون حسب المستودع</h2>
+        <div>
+            <button class="btn btn-sm btn-outline-success" onclick="exportToExcel('inventory_by_warehouse')" title="تصدير Excel">
+                <i class="bi bi-file-earmark-excel"></i> Excel
+            </button>
+            <a href="index.html" class="btn btn-outline-secondary"><i class="bi bi-house"></i> الرئيسية</a>
+            <button class="btn btn-primary" onclick="load()"><i class="bi bi-arrow-clockwise"></i> تحديث</button>
+        </div>
+    </div>
+
+    <div class="alert alert-info">
+        <i class="bi bi-info-circle"></i> التقرير يعرض تفصيل المخزون في كل مستودع حسب نوع التشغيل
+    </div>
+
+    <div id="content">
+        <div class="text-center text-muted py-5">جاري التحميل...</div>
+    </div>
+
+</div>
+
+<script>
+const API = '/api/v1';
+
+const opLabels = {
+    'OPERATING': {label: 'مخزون تشغيلي', color: '#43e97b', icon: 'box-seam'},
+    'NON_OPERATING': {label: 'مخزون غير تشغيلي', color: '#f5576c', icon: 'wrench'},
+    'CAPITAL': {label: 'قطع غيار رأسمالية', color: '#4facfe', icon: 'gear'}
+};
+
+async function load() {
+    try {
+        const r = await fetch(`${API}/reports/inventory-by-warehouse`).then(x => x.json());
+        const warehouses = r.data || [];
+        
+        if (!warehouses.length) {
+            document.getElementById('content').innerHTML = '<div class="card-box text-center text-muted py-5">لا توجد بيانات</div>';
+            return;
+        }
+        
+        let html = '';
+        warehouses.forEach(wh => {
+            html += `
+                <div class="card-box">
+                    <div class="wh-header">
+                        <h5><i class="bi bi-building"></i> ${wh.warehouse}</h5>
+                        <div class="total">${wh.total_value.toLocaleString('ar-EG', {maximumFractionDigits: 2})} ج.م</div>
+                    </div>
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>نوع التشغيل</th>
+                                <th class="text-end">عدد الأصناف</th>
+                                <th class="text-end">الكمية</th>
+                                <th class="text-end">القيمة</th>
+                                <th class="text-end">النسبة</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+            
+            wh.items.forEach(item => {
+                const info = opLabels[item.operating_type] || {label: item.operating_type, color: '#667eea', icon: 'box'};
+                const percent = wh.total_value > 0 ? (item.total_value / wh.total_value * 100) : 0;
+                
+                html += `
+                    <tr>
+                        <td>
+                            <i class="bi bi-${info.icon}" style="color:${info.color};"></i>
+                            <strong style="color:${info.color};">${info.label}</strong>
+                        </td>
+                        <td class="text-end">${item.item_count}</td>
+                        <td class="text-end">${item.total_qty.toLocaleString('ar-EG')}</td>
+                        <td class="text-end"><strong>${item.total_value.toLocaleString('ar-EG', {maximumFractionDigits: 2})}</strong></td>
+                        <td class="text-end">${percent.toFixed(1)}%</td>
+                    </tr>
+                `;
+            });
+            
+            html += `
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        });
+        
+        document.getElementById('content').innerHTML = html;
+    } catch(e) {
+        console.error(e);
+        document.getElementById('content').innerHTML = '<div class="card-box text-center text-danger py-5">خطأ في التحميل</div>';
+    }
+}
+
+load();
+</script>
+
+<script>
+// دالة تصدير Excel
+function exportToExcel(templateKey) {
+    if (!templateKey) {
+        alert('مفيش قالب تصدير');
+        return;
+    }
+    window.location.href = '/api/v1/export/excel/export/' + templateKey;
+}
+</script>
+
+</body>
+</html>

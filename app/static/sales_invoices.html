@@ -1,14 +1,393 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head><meta charset="UTF-8"><title>فواتير البيع</title>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
-<link href="style.css" rel="stylesheet"></head>
+<link href="style.css" rel="stylesheet"><script src="permissions.js"></script>
+<style>
+/* ============================================
+   إلغاء أسهم input[type=number]
+   ============================================ */
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none !important;
+    margin: 0 !important;
+}
+input[type=number] {
+    -moz-appearance: textfield !important;
+    appearance: textfield !important;
+}
+input[type="number"] {
+    -moz-appearance: textfield !important;
+}
+</style>
+
+<style>
+/* ============================================
+   ضغط جدول البنود والمجاميع
+   ============================================ */
+
+/* جدول البنود */
+#inv-lines tr {
+    height: auto !important;
+}
+#inv-lines td {
+    padding: 2px 4px !important;
+    font-size: 0.75rem !important;
+    vertical-align: middle !important;
+    line-height: 1.2 !important;
+    height: 28px !important;
+}
+
+/* الـ inputs جوا الجدول */
+#inv-lines .form-control-sm,
+#inv-lines .form-select-sm {
+    height: 26px !important;
+    padding: 1px 4px !important;
+    font-size: 0.72rem !important;
+    line-height: 1 !important;
+}
+
+/* الـ badge جوا الجدول */
+#inv-lines .line-tax-badge,
+#inv-lines .badge {
+    padding: 1px 4px !important;
+    font-size: 0.62rem !important;
+}
+
+/* الـ td للضريبة */
+#inv-lines .line-tax-cell {
+    padding: 2px 3px !important;
+    line-height: 1.1 !important;
+}
+
+#inv-lines .line-tax-rate {
+    font-size: 0.55rem !important;
+    margin-top: 1px !important;
+}
+
+/* رأس الجدول */
+#invModal table thead th {
+    padding: 3px 5px !important;
+    font-size: 0.72rem !important;
+    line-height: 1.2 !important;
+    height: 26px !important;
+}
+
+/* ============================================
+   ضغط المجاميع
+   ============================================ */
+
+/* الـ sum rows */
+#sum-sub, #sum-tax, #sum-total {
+    font-size: 0.8rem !important;
+    line-height: 1.2 !important;
+}
+
+/* الـ divs اللي فيها المجاميع */
+#invModal .mt-1,
+#invModal .mb-1 {
+    margin-top: 4px !important;
+    margin-bottom: 4px !important;
+}
+
+/* الصفوف اللي فيها المجاميع */
+#invModal .row {
+    margin-bottom: 2px !important;
+}
+
+/* ============================================
+   ضغط الـ Modal Footer
+   ============================================ */
+#invModal .modal-footer {
+    padding: 6px 12px !important;
+}
+
+#invModal .modal-footer .btn {
+    padding: 4px 10px !important;
+    font-size: 0.75rem !important;
+}
+
+/* ============================================
+   ضغط باقي الـ Modal
+   ============================================ */
+#invModal .modal-body {
+    padding: 8px 12px !important;
+}
+
+#invModal h6 {
+    font-size: 0.82rem !important;
+    margin-top: 4px !important;
+    margin-bottom: 4px !important;
+}
+
+/* المسافات العامة */
+#invModal .mb-1 {
+    margin-bottom: 4px !important;
+}
+
+#invModal .mt-3 {
+    margin-top: 4px !important;
+}
+</style>
+
+
+<style>
+/* ============================================
+   ضغط إضافي — جدول ومجاميع
+   ============================================ */
+
+/* الجدول */
+#inv-lines td {
+    padding: 1px 3px !important;
+    height: 24px !important;
+    font-size: 0.72rem !important;
+    line-height: 1 !important;
+}
+
+/* الـ inputs */
+#inv-lines .form-control-sm,
+#inv-lines .form-select-sm {
+    height: 22px !important;
+    padding: 0 3px !important;
+    font-size: 0.7rem !important;
+    line-height: 1 !important;
+}
+
+/* الـ select arrow */
+#inv-lines .form-select-sm {
+    background-position: left 0.25rem center !important;
+    background-size: 10px !important;
+}
+
+/* رأس الجدول */
+#invModal table thead th {
+    padding: 2px 4px !important;
+    font-size: 0.68rem !important;
+    height: 22px !important;
+}
+
+/* المجاميع — كل صف في سطر واحد مضغوط */
+#invModal .sum-row,
+#invModal .totals-row {
+    padding: 1px 0 !important;
+    margin: 0 !important;
+    font-size: 0.72rem !important;
+    line-height: 1.4 !important;
+}
+
+/* الـ divs العامة */
+#invModal .card,
+#invModal .alert {
+    padding: 4px 8px !important;
+    margin-bottom: 4px !important;
+}
+
+/* الـ Modal Footer */
+#invModal .modal-footer {
+    padding: 4px 10px !important;
+    border-top: 1px solid #dee2e6 !important;
+}
+
+#invModal .modal-footer .btn {
+    padding: 3px 8px !important;
+    font-size: 0.72rem !important;
+}
+
+/* الـ Modal Header */
+#invModal .modal-header {
+    padding: 6px 12px !important;
+}
+
+#invModal .modal-title {
+    font-size: 0.9rem !important;
+}
+
+/* الـ Modal Body */
+#invModal .modal-body {
+    padding: 6px 10px !important;
+}
+
+/* إضافة بند */
+#invModal .btn-success {
+    padding: 2px 8px !important;
+    font-size: 0.7rem !important;
+}
+
+/* الـ hr */
+#invModal hr {
+    margin: 4px 0 !important;
+}
+
+/* ============================================
+   صفوف المجاميع
+   ============================================ */
+#invModal .totals-section {
+    margin-top: 4px !important;
+}
+
+#invModal .totals-section > div {
+    padding: 2px 0 !important;
+    margin: 0 !important;
+    font-size: 0.75rem !important;
+    line-height: 1.5 !important;
+}
+</style>
+
+
+
+
+<style id="compact-spacing-global">
+/* ============================================
+   توحيد المسافات المضغوطة
+   ============================================ */
+
+.table td, .table th {
+    padding: 3px 6px !important;
+    font-size: 0.75rem !important;
+    vertical-align: middle !important;
+    line-height: 1.2 !important;
+}
+
+.table tbody tr {
+    height: auto !important;
+}
+
+.form-control, .form-select {
+    font-size: 0.75rem !important;
+    line-height: 1.2 !important;
+}
+
+.form-control-sm, .form-select-sm {
+    height: 26px !important;
+    padding: 2px 6px !important;
+    font-size: 0.72rem !important;
+    line-height: 1 !important;
+}
+
+.btn {
+    padding: 3px 8px !important;
+    font-size: 0.72rem !important;
+    line-height: 1.2 !important;
+}
+
+.btn-sm {
+    padding: 2px 6px !important;
+    font-size: 0.7rem !important;
+}
+
+.card {
+    margin-bottom: 6px !important;
+}
+
+.card-body, .card.p-2, .card.p-3, .card.p-4 {
+    padding: 6px 8px !important;
+}
+
+.modal-header {
+    padding: 6px 12px !important;
+}
+
+.modal-title {
+    font-size: 0.9rem !important;
+}
+
+.modal-body {
+    padding: 8px 12px !important;
+}
+
+.modal-footer {
+    padding: 6px 12px !important;
+}
+
+.modal-footer .btn {
+    padding: 4px 10px !important;
+    font-size: 0.75rem !important;
+}
+
+.mb-1, .mb-2, .mb-3, .mb-4 {
+    margin-bottom: 4px !important;
+}
+
+.mt-1, .mt-2, .mt-3, .mt-4 {
+    margin-top: 4px !important;
+}
+
+.ms-1, .ms-2, .ms-3 {
+    margin-right: 4px !important;
+}
+
+.me-1, .me-2, .me-3 {
+    margin-left: 4px !important;
+}
+
+.p-1, .p-2, .p-3, .p-4 {
+    padding: 4px !important;
+}
+
+.g-1, .g-2, .g-3 {
+    gap: 4px !important;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    line-height: 1.3 !important;
+}
+
+h1 { font-size: 1.2rem !important; margin-bottom: 6px !important; }
+h2 { font-size: 1.05rem !important; margin-bottom: 6px !important; }
+h3 { font-size: 0.95rem !important; margin-bottom: 4px !important; }
+h4 { font-size: 0.9rem !important; margin-bottom: 4px !important; }
+h5 { font-size: 0.85rem !important; margin-bottom: 4px !important; }
+h6 { font-size: 0.8rem !important; margin-bottom: 4px !important; }
+
+.alert {
+    padding: 6px 10px !important;
+    margin-bottom: 6px !important;
+    font-size: 0.78rem !important;
+}
+
+.badge {
+    padding: 2px 6px !important;
+    font-size: 0.68rem !important;
+}
+
+.nav-tabs .nav-link {
+    padding: 5px 12px !important;
+    font-size: 0.78rem !important;
+}
+
+hr {
+    margin: 6px 0 !important;
+}
+
+/* بطاقات الأعمار (aging) */
+.aging-card, .bucket-card, .stat-card {
+    padding: 6px 8px !important;
+    margin-bottom: 4px !important;
+}
+
+.aging-card .h4, .aging-card .h5,
+.bucket-card .h4, .bucket-card .h5 {
+    font-size: 1rem !important;
+    margin: 2px 0 !important;
+}
+
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none !important;
+    margin: 0 !important;
+}
+input[type=number] {
+    -moz-appearance: textfield !important;
+}
+</style>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 16 16%22><text y=%2214%22 font-size=%2214%22>📒</text></svg>">
+</head>
 <body><div class="container-fluid"><div class="row">
 <div class="col-md-2 sidebar p-0">
 <div class="brand"><i class="bi bi-box-seam" style="font-size:2rem;"></i><h5 class="mt-2 mb-0">موديول المخازن</h5></div>
 <nav class="mt-3">
-<a href="index.html"><i class="bi bi-speedometer2"></i> لوحة التحكم</a>
+<a href="index.html#sales"><i class="bi bi-house-fill"></i> المبيعات</a>
 <a href="notifications.html"><i class="bi bi-bell"></i> الإشعارات</a>
 <a href="accounts.html"><i class="bi bi-book"></i> الدليل المحاسبي</a>
 <a href="warehouses.html"><i class="bi bi-building"></i> المستودعات</a>
@@ -38,6 +417,12 @@
 <div class="col-md-10 p-4">
 <div class="d-flex justify-content-between mb-4">
 <h2><i class="bi bi-cart-check"></i> فواتير البيع</h2>
+<button class="btn btn-sm btn-outline-success" onclick="exportToExcel('sales_invoices')" title="تصدير Excel">
+                <i class="bi bi-file-earmark-excel"></i> Excel
+            </button>
+            <a href="index.html#sales" class="btn btn-outline-secondary">
+                <i class="bi bi-house-fill"></i> الرئيسية
+            </a>
 <button class="btn btn-success" onclick="openAdd()"><i class="bi bi-plus-circle"></i> فاتورة بيع جديدة</button>
 </div>
 
@@ -61,9 +446,9 @@
 <table class="table table-hover">
 <thead><tr>
 <th>رقم الفاتورة</th><th>التاريخ</th><th>العميل</th><th>المستودع</th>
-<th>الإجمالي</th><th>تكلفة المبيعات</th><th>الحالة</th><th>إجراءات</th>
+<th>الإجمالي</th><th>تكلفة المبيعات</th><th>الحالة</th><th>المستخدم</th><th>إجراءات</th>
 </tr></thead>
-<tbody id="tbl"><tr><td colspan="8" class="text-center">جاري التحميل...</td></tr></tbody>
+<tbody id="tbl"><tr><td colspan="9" class="text-center">جاري التحميل...</td></tr></tbody>
 </table></div></div></div></div>
 
 <div class="modal fade" id="invModal" tabindex="-1">
@@ -71,13 +456,68 @@
 <div class="modal-content">
 <div class="modal-header bg-success text-white"><h5 class="modal-title" id="modal-title"><i class="bi bi-cart-check"></i> فاتورة بيع</h5><button class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
 <div class="modal-body">
-<div class="row g-3 mb-3">
-<div class="col-md-3"><label class="form-label">التاريخ *</label><input type="date" class="form-control" id="f-date"></div>
-<div class="col-md-3"><label class="form-label">العميل *</label><select class="form-select" id="f-customer"></select></div>
-<div class="col-md-3"><label class="form-label">المستودع *</label><select class="form-select" id="f-warehouse"></select></div>
-<div class="col-md-3"><label class="form-label">ضريبة %</label><input type="number" class="form-control" id="f-tax_rate" value="14" step="0.01"></div>
-<div class="col-md-12"><label class="form-label">ملاحظات</label><input class="form-control" id="f-notes"></div>
+<div class="row g-2 mb-2">
+    <!-- ============ السطر الأول: التاريخ + العميل + المستودع + الضريبة ============ -->
+    <div class="col-md-2">
+        <label class="form-label" style="font-size:0.72rem;margin-bottom:2px;">التاريخ *</label>
+        <input type="date" class="form-control form-control-sm" id="f-date">
+    </div>
+    
+    <div class="col-md-3">
+        <label class="form-label" style="font-size:0.72rem;margin-bottom:2px;">العميل *</label>
+        <select class="form-select form-select-sm" id="f-customer"></select>
+    </div>
+    
+    <div class="col-md-4">
+        <label class="form-label" style="font-size:0.72rem;margin-bottom:2px;">المستودع *</label>
+        <select class="form-select form-select-sm" id="f-warehouse"></select>
+        
+        <!-- ============ مستطيل أرصدة الصنف ============ -->
+        <div id="stock-info-box" style="display: none; margin-top: 4px;">
+            <div style="background: linear-gradient(135deg, #eff6ff, #dbeafe); border-radius: 5px; padding: 5px 7px; border-right: 3px solid #2563eb; font-size: 0.6rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 3px;">
+                    <strong style="color: #1e40af; font-size: 0.62rem;">
+                        <i class="bi bi-box-seam"></i> 
+                        <span id="stock-item-name">أرصدة الصنف</span>
+                    </strong>
+                    <button type="button" onclick="hideStockInfo()" style="background: transparent; border: none; color: #64748b; cursor: pointer; font-size: 0.7rem; padding: 0 2px;">
+                        <i class="bi bi-x-circle"></i>
+                    </button>
+                </div>
+                <div id="stock-info-content" style="color: #334155; font-size: 0.58rem; line-height: 1.35;">
+                    جاري التحميل...
+                </div>
+                <div id="stock-info-total" style="margin-top: 2px; padding-top: 2px; border-top: 1px dashed #93c5fd; color: #1e40af; font-size: 0.6rem; font-weight: 800; text-align: center;">
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-2">
+        <label class="form-label" style="font-size:0.72rem;margin-bottom:2px;">ضريبة %</label>
+        <input type="number" class="form-control form-control-sm" id="f-tax_rate" value="14" step="0.01">
+    </div>
+    
+    <div class="col-md-1">
+        <!-- فراغ صغير للتوازن -->
+    </div>
+    
+    <!-- ============ السطر التاني: طريقة الدفع + ملاحظات ============ -->
+    <div class="col-md-3">
+        <label class="form-label" style="font-size:0.72rem;margin-bottom:2px;">طريقة الدفع *</label>
+        <select class="form-select form-select-sm" id="f-payment_type">
+            <option value="CREDIT">آجل</option>
+            <option value="CASH">نقدي</option>
+        </select>
+    </div>
+    
+    <div class="col-md-9">
+        <label class="form-label" style="font-size:0.72rem;margin-bottom:2px;">ملاحظات</label>
+        <input class="form-control form-control-sm" id="f-notes">
+    </div>
 </div>
+
+
 
 <h6>البنود</h6>
 <table class="table table-bordered">
@@ -85,7 +525,7 @@
 <tr>
 <th style="width:22%">الصنف</th><th style="width:18%">الوحدة</th>
 <th style="width:10%">الكمية</th><th style="width:12%">سعر</th>
-<th style="width:10%">خصم %</th><th style="width:12%">الإجمالي</th><th style="width:6%"></th>
+<th style="width:8%">خصم %</th><th style="width:10%">قبل الضريبة</th><th style="width:10%">الضريبة</th><th style="width:10%">الإجمالي</th><th style="width:5%"></th>
 </tr>
 </thead>
 <tbody id="inv-lines"></tbody>
@@ -165,7 +605,9 @@ async function load(){
    <td><strong>${parseFloat(inv.total_amount||0).toFixed(2)}</strong></td>
    <td>${parseFloat(inv.cogs_amount||0).toFixed(2)}</td>
    <td><span class="badge-status badge-${inv.status}">${inv.status}</span></td>
+   <td>${inv.created_by_name||'—'}</td>
    <td>
+    <button class="btn btn-sm btn-outline-secondary" onclick="printInv(${inv.id})" title="طباعة"><i class="bi bi-printer"></i></button>
     <button class="btn btn-sm btn-outline-info" onclick="viewInv(${inv.id})" title="عرض"><i class="bi bi-eye"></i></button>
     ${isDraft ? `
      <button class="btn btn-sm btn-outline-warning" onclick="editInv(${inv.id})" title="تعديل"><i class="bi bi-pencil"></i></button>
@@ -180,7 +622,7 @@ async function load(){
     ` : ''}
     ${isPosted ? `<button class="btn btn-sm btn-outline-secondary" disabled><i class="bi bi-lock"></i></button>` : ''}
    </td></tr>`;
- }).join('') : '<tr><td colspan="8" class="text-center text-muted">لا توجد فواتير</td></tr>';
+ }).join('') : '<tr><td colspan="9" class="text-center text-muted">لا توجد فواتير</td></tr>';
 }
 
 function openAdd(){
@@ -189,6 +631,7 @@ function openAdd(){
  document.getElementById('f-date').value = new Date().toISOString().split('T')[0];
  document.getElementById('f-notes').value = '';
  document.getElementById('f-tax_rate').value = 14;
+ document.getElementById('f-payment_type').value = 'CREDIT';
  document.getElementById('inv-lines').innerHTML = '';
  document.getElementById('modal-title').innerHTML = '<i class="bi bi-cart-check"></i> فاتورة بيع جديدة';
  addLine();
@@ -206,6 +649,7 @@ async function editInv(id){
  document.getElementById('f-warehouse').value = inv.warehouse_id;
  document.getElementById('f-notes').value = inv.notes||'';
  document.getElementById('f-tax_rate').value = inv.tax_rate||14;
+ document.getElementById('f-payment_type').value = inv.payment_type || 'CREDIT';
  document.getElementById('inv-lines').innerHTML = '';
  inv.lines.forEach(l=>addLine(l));
  calcTotals();
@@ -213,22 +657,113 @@ async function editInv(id){
  invModal.show();
 }
 
+
+// ============================================================
+// عرض أرصدة الصنف في المخازن
+// ============================================================
+async function showStockInfo(itemId) {
+    const box = document.getElementById('stock-info-box');
+    const content = document.getElementById('stock-info-content');
+    const totalEl = document.getElementById('stock-info-total');
+    const nameEl = document.getElementById('stock-item-name');
+    
+    if (!box || !content) return;
+    
+    // نجيب اسم الصنف
+    const item = itemsList.find(i => i.id === parseInt(itemId));
+    const itemName = item ? `${item.code} - ${item.name_ar}` : 'الصنف';
+    
+    nameEl.textContent = `أرصدة: ${itemName}`;
+    
+    // نعرض المستطيل
+    box.style.display = 'block';
+    content.innerHTML = '<i class="bi bi-hourglass-split"></i> جاري التحميل...';
+    totalEl.innerHTML = '';
+    
+    try {
+        const r = await fetch(`${API}/items/${itemId}/stock`).then(x => x.json());
+        
+        if (!r.success || !r.data || r.data.length === 0) {
+            content.innerHTML = '<span style="color: #94a3b8;"><i class="bi bi-inbox"></i> لا يوجد رصيد متاح في أي مخزن</span>';
+            totalEl.innerHTML = '';
+            return;
+        }
+        
+        // نبني الجدول
+        let html = '';
+        let total = 0;
+        
+        r.data.forEach(row => {
+            const qty = parseFloat(row.quantity) || 0;
+            total += qty;
+            
+            html += `
+                <div style="display: flex; justify-content: space-between; padding: 2px 4px; border-bottom: 1px dashed #dbeafe;">
+                    <span style="color: #475569;">
+                        <i class="bi bi-building" style="font-size: 0.65rem;"></i>
+                        ${row.warehouse_name || 'مخزن'}
+                    </span>
+                    <span style="font-weight: 700; color: #1e40af;">
+                        ${qty.toLocaleString('en-US', {maximumFractionDigits: 2})}
+                    </span>
+                </div>
+            `;
+        });
+        
+        content.innerHTML = html;
+        
+        if (r.data.length > 1) {
+            totalEl.innerHTML = `<i class="bi bi-calculator"></i> الإجمالي: ${total.toLocaleString('en-US', {maximumFractionDigits: 2})}`;
+        } else {
+            totalEl.innerHTML = '';
+        }
+        
+    } catch (e) {
+        console.error('showStockInfo:', e);
+        content.innerHTML = '<span style="color: #dc2626;"><i class="bi bi-exclamation-triangle"></i> خطأ في التحميل</span>';
+    }
+}
+
+// ============================================================
+// إخفاء المستطيل
+// ============================================================
+function hideStockInfo() {
+    const box = document.getElementById('stock-info-box');
+    if (box) box.style.display = 'none';
+}
+
 function addLine(data={}){
  const tr = document.createElement('tr');
- const itemOpts = itemsList.map(i=>`<option value="${i.id}" ${data.item_id==i.id?'selected':''}>${i.code} - ${i.name_ar}</option>`).join('');
+ 
+ // نضيف بيانات الضريبة للـ tr
+ tr.dataset.isTaxable = data.is_taxable || '0';
+ tr.dataset.taxRate = data.tax_rate || '0';
+ 
+ const itemOpts = itemsList.map(i=>{
+     const isTaxable = i.is_taxable === 1;
+     const taxRate = i.default_tax_rate || 14;
+     const taxBadge = isTaxable ? ` [${taxRate}%]` : ' [معفى]';
+     return `<option value="${i.id}" data-is-taxable="${i.is_taxable || 0}" data-tax-rate="${i.default_tax_rate || 0}" ${data.item_id==i.id?'selected':''}>${i.code} - ${i.name_ar}${taxBadge}</option>`;
+ }).join('');
+ 
  tr.innerHTML = `
   <td><select class="form-select form-select-sm item-sel">${itemOpts}</select></td>
   <td><select class="form-select form-select-sm uom-sel"></select></td>
   <td><input type="number" class="form-control form-control-sm qty-in" value="${data.quantity||1}" step="0.0001" min="0.0001"></td>
   <td><input type="number" class="form-control form-control-sm price-in" value="${data.unit_price||0}" step="0.0001" min="0"></td>
   <td><input type="number" class="form-control form-control-sm disc-in" value="${data.discount_pct||0}" step="0.01" min="0" max="100"></td>
+  <td class="line-sub">0.00</td>
+  <td class="line-tax-cell">
+      <span class="line-tax-badge" style="font-size:0.7rem;padding:2px 5px;border-radius:3px;background:#d1fae5;color:#065f46;">0.00</span>
+      <div class="line-tax-rate" style="font-size:0.58rem;color:#94a3b8;text-align:center;">0%</div>
+  </td>
   <td class="line-total">0.00</td>
   <td><button class="btn btn-sm btn-danger" onclick="this.closest('tr').remove(); calcTotals()"><i class="bi bi-trash"></i></button></td>`;
  document.getElementById('inv-lines').appendChild(tr);
- 
+
  const itemSel = tr.querySelector('.item-sel');
  const uomSel = tr.querySelector('.uom-sel');
- 
+
  const refreshUoms = ()=>{
   const itemId = parseInt(itemSel.value);
   const tiers = itemTiersMap[itemId] || [];
@@ -238,27 +773,93 @@ function addLine(data={}){
   uomSel.innerHTML = sorted.map(t=>`<option value="${t.uom_id}" ${data.uom_id==t.uom_id?'selected':''}>${labels[t.tier]} ${t.uom_name} (${t.uom_code})</option>`).join('');
   calcTotals();
  };
- itemSel.addEventListener('change', refreshUoms);
- refreshUoms();
  
+ // معالج تغيير الصنف — لتحديث الضريبة
+ const updateTaxFromItem = ()=>{
+     const selectedOpt = itemSel.options[itemSel.selectedIndex];
+     if (selectedOpt) {
+         tr.dataset.isTaxable = selectedOpt.dataset.isTaxable || '0';
+         tr.dataset.taxRate = selectedOpt.dataset.taxRate || '0';
+     }
+     refreshUoms();
+     calcTotals();
+ };
+ 
+ itemSel.addEventListener('change', function() {
+     updateTaxFromItem();
+     // نعرض أرصدة الصنف
+     const itemId = itemSel.value;
+     if (itemId) {
+         showStockInfo(itemId);
+     }
+ });
+ 
+ // لو الصنف محدد مسبقاً، حدّث الضريبة
+ if (data.item_id) {
+     const selectedOpt = itemSel.options[itemSel.selectedIndex];
+     if (selectedOpt) {
+         tr.dataset.isTaxable = selectedOpt.dataset.isTaxable || '0';
+         tr.dataset.taxRate = selectedOpt.dataset.taxRate || '0';
+     }
+ }
+ 
+ refreshUoms();
+
  tr.querySelectorAll('.qty-in,.price-in,.disc-in').forEach(inp=>inp.addEventListener('input',calcTotals));
 }
 
 function calcTotals(){
- const taxRate = parseFloat(document.getElementById('f-tax_rate').value) || 14;
- let subtotal = 0;
+ let sumSub = 0;
+ let sumTax = 0;
+ 
  document.querySelectorAll('#inv-lines tr').forEach(tr=>{
-  const q = parseFloat(tr.querySelector('.qty-in').value)||0;
-  const p = parseFloat(tr.querySelector('.price-in').value)||0;
-  const d = parseFloat(tr.querySelector('.disc-in').value)||0;
+  const q = parseFloat(tr.querySelector('.qty-in')?.value)||0;
+  const p = parseFloat(tr.querySelector('.price-in')?.value)||0;
+  const d = parseFloat(tr.querySelector('.disc-in')?.value)||0;
+  
+  // الإجمالي قبل الضريبة لهذا السطر
   const lineSub = q * p * (1 - d/100);
-  tr.querySelector('.line-total').textContent = lineSub.toFixed(2);
-  subtotal += lineSub;
+  
+  // الضريبة لهذا السطر (من بيانات الصنف)
+  const isTaxable = parseInt(tr.dataset.isTaxable) || 0;
+  const taxRate = parseFloat(tr.dataset.taxRate) || 0;
+  const lineTax = isTaxable === 1 ? (lineSub * taxRate / 100) : 0;
+  
+  // الإجمالي النهائي
+  const lineTotal = lineSub + lineTax;
+  
+  // نحدّث العرض
+  const subEl = tr.querySelector('.line-sub');
+  if (subEl) subEl.textContent = lineSub.toFixed(2);
+  
+  const taxEl = tr.querySelector('.line-tax-badge');
+  if (taxEl) {
+      taxEl.textContent = lineTax.toFixed(2);
+      if (isTaxable === 1) {
+          taxEl.style.background = '#fee2e2';
+          taxEl.style.color = '#991b1b';
+      } else {
+          taxEl.style.background = '#d1fae5';
+          taxEl.style.color = '#065f46';
+      }
+  }
+  
+  const rateEl = tr.querySelector('.line-tax-rate');
+  if (rateEl) {
+      rateEl.textContent = isTaxable === 1 ? `${taxRate}%` : 'معفى';
+      rateEl.style.color = isTaxable === 1 ? '#dc2626' : '#059669';
+  }
+  
+  const totalEl = tr.querySelector('.line-total');
+  if (totalEl) totalEl.textContent = lineTotal.toFixed(2);
+  
+  sumSub += lineSub;
+  sumTax += lineTax;
  });
- const tax = subtotal * taxRate / 100;
- document.getElementById('sum-sub').textContent = subtotal.toFixed(2);
- document.getElementById('sum-tax').textContent = tax.toFixed(2);
- document.getElementById('sum-total').textContent = (subtotal+tax).toFixed(2);
+ 
+ document.getElementById('sum-sub').textContent = sumSub.toFixed(2);
+ document.getElementById('sum-tax').textContent = sumTax.toFixed(2);
+ document.getElementById('sum-total').textContent = (sumSub+sumTax).toFixed(2);
 }
 
 document.getElementById('f-tax_rate').addEventListener('input', calcTotals);
@@ -277,6 +878,7 @@ async function save(postNow){
  
  const body = {
   invoice_date: document.getElementById('f-date').value,
+  payment_type: document.getElementById('f-payment_type').value,
   customer_id: parseInt(document.getElementById('f-customer').value),
   warehouse_id: parseInt(document.getElementById('f-warehouse').value),
   tax_rate: parseFloat(document.getElementById('f-tax_rate').value)||14,
@@ -361,4 +963,44 @@ async function delInv(id){
 }
 
 (async()=>{ await loadLists(); await load(); })();
-</script></body></html>
+
+function printInv(id) {
+    window.open('print_sales_invoice.html?id=' + id, '_blank');
+}
+</script>
+<script>
+// دالة تصدير Excel
+function exportToExcel(templateKey) {
+    if (!templateKey) {
+        alert('مفيش قالب تصدير');
+        return;
+    }
+    window.location.href = '/api/v1/export/excel/export/' + templateKey;
+}
+
+// ============================================================
+// إخفاء مستطيل الأرصدة عند التفاعل مع باقي الحقول
+// ============================================================
+document.addEventListener('DOMContentLoaded', function() {
+    // عند تغيير المستودع
+    const whSelect = document.getElementById('f-warehouse');
+    if (whSelect) {
+        whSelect.addEventListener('change', function() {
+            if (this.value) hideStockInfo();
+        });
+    }
+    
+    // عند تغيير الكمية أو الصنف في أي سطر
+    document.addEventListener('input', function(e) {
+        if (e.target.classList.contains('qty-in')) {
+            if (e.target.value && parseFloat(e.target.value) > 0) {
+                // نخفي بعد 2 ثانية
+                setTimeout(hideStockInfo, 1500);
+            }
+        }
+    });
+});
+
+</script>
+
+</body></html>

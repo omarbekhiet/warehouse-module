@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>كارت الصنف</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet">
+<link href="style.css" rel="stylesheet">
+<script src="permissions.js"></script>
+<style>
+body { background: #f8fafc; font-size: 0.85rem; }
+.main-container { padding: 6px 10px !important; }
+
+.page-header { margin-bottom: 4px !important; padding: 0 !important; }
+.page-header h4 { font-size: 1.05rem; margin: 0; line-height: 1.2; }
+.page-header small { font-size: 0.7rem; }
+.page-header .btn { padding: 2px 8px; font-size: 0.78rem; }
+
+.select-card { padding: 4px 6px !important; margin-bottom: 4px !important; }
+
+.stat-card {
+    border-radius: 6px;
+    padding: 5px 6px;
+    text-align: center;
+    line-height: 1.05;
+}
+.stat-card .label { font-size: 0.65rem; color: #64748b; margin-bottom: 0; }
+.stat-card .value { font-size: 1.05rem; font-weight: 800; }
+.stat-total { background: linear-gradient(135deg, #e0f2fe, #bae6fd); }
+.stat-total .value { color: #0369a1; }
+.stat-available { background: linear-gradient(135deg, #d1fae5, #a7f3d0); }
+.stat-available .value { color: #065f46; }
+.stat-pending { background: linear-gradient(135deg, #fef3c7, #fde68a); }
+.stat-pending .value { color: #92400e; }
+.stat-value { background: linear-gradient(135deg, #ede9fe, #ddd6fe); }
+.stat-value .value { color: #6d28d9; }
+
+.item-info-box {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 4px 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    line-height: 1.15;
+    margin-bottom: 4px !important;
+}
+.item-info-box i { font-size: 1.2rem; color: #2563eb; }
+.item-info-box h5 { font-size: 0.92rem; margin: 0; line-height: 1.2; }
+.item-info-box small { font-size: 0.7rem; }
+
+.alert { padding: 3px 10px; font-size: 0.75rem; margin-bottom: 4px; border-radius: 5px; }
+h6 { font-size: 0.8rem; margin: 0; line-height: 1.2; }
+
+.wh-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.70rem;
+    line-height: 1;
+    margin: 0;
+}
+.wh-table thead th {
+    background: #f1f5f9;
+    color: #334155;
+    padding: 2px 5px;
+    text-align: center;
+    font-size: 0.66rem;
+    font-weight: 700;
+    white-space: nowrap;
+    border-bottom: 1.5px solid #cbd5e1;
+}
+.wh-table thead th.text-start { text-align: right; }
+.wh-table tbody tr { border-bottom: 1px solid #f1f5f9; transition: all 0.1s; }
+.wh-table tbody tr:hover { background: #fef9c3; cursor: pointer; }
+.wh-table tbody tr.active-row { background: #dbeafe !important; border-right: 3px solid #2563eb; }
+.wh-table tbody td {
+    padding: 1px 5px;
+    vertical-align: middle;
+    text-align: center;
+    white-space: nowrap;
+    line-height: 1.1;
+}
+.wh-table tbody td.text-start { text-align: right; font-weight: 600; }
+.wh-table tbody td.num { font-family: 'Consolas', monospace; font-weight: 600; }
+.wh-table tbody td.num.success { color: #059669; font-weight: 700; }
+.wh-table tbody td.num.warning { color: #d97706; font-weight: 700; }
+
+.mv-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.68rem;
+    line-height: 1;
+}
+.mv-table thead th {
+    background: linear-gradient(135deg, #1e3c72, #2a5298);
+    color: white;
+    padding: 2px 3px;
+    text-align: center;
+    font-size: 0.60rem;
+    font-weight: 700;
+    white-space: nowrap;
+    border: 1px solid #0f2555;
+}
+.mv-table thead th.group-in { background: linear-gradient(135deg, #065f46, #047857); }
+.mv-table thead th.group-out { background: linear-gradient(135deg, #991b1b, #b91c1c); }
+.mv-table thead th.group-bal { background: linear-gradient(135deg, #1e40af, #1d4ed8); }
+
+.mv-table tbody tr { border-bottom: 1px solid #f1f5f9; }
+.mv-table tbody tr:hover { background: #fef9c3; }
+.mv-table tbody tr.row-pending { background: #fffbeb; }
+.mv-table tbody tr.row-pending:hover { background: #fef3c7; }
+.mv-table tbody tr.row-invoiced { background: #f0fdf4; }
+.mv-table tbody tr.row-invoiced:hover { background: #dcfce7; }
+.mv-table tbody tr.row-issue { background: #fef2f2; }
+.mv-table tbody tr.row-issue:hover { background: #fee2e2; }
+
+.mv-table tbody td {
+    padding: 1px 3px;
+    vertical-align: middle;
+    text-align: center;
+    border-left: 1px solid #f1f5f9;
+    white-space: nowrap;
+    line-height: 1.05;
+}
+.mv-table tbody td.text-start { text-align: right; }
+.mv-table tbody td.num {
+    font-family: 'Consolas', monospace;
+    font-weight: 600;
+    font-size: 0.68rem;
+}
+.mv-table .badge { font-size: 0.55rem; padding: 1px 4px; }
+
+.col-rate {
+    background: #f3e8ff;
+    font-weight: 700;
+    color: #6d28d9;
+}
+.mv-table thead th.col-rate-header {
+    background: linear-gradient(135deg, #6d28d9, #7c3aed);
+}
+
+.table-wrapper {
+    max-height: calc(100vh - 480px);
+    overflow: auto;
+    border-radius: 5px;
+}
+.table-wrapper::-webkit-scrollbar { width: 6px; height: 6px; }
+.table-wrapper::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+
+.legend {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    font-size: 0.65rem;
+    padding: 0;
+    margin: 0;
+}
+.legend-item { display: flex; align-items: center; gap: 2px; }
+.legend-dot { width: 7px; height: 7px; border-radius: 2px; }
+
+.select2-container--bootstrap-5 .select2-selection {
+    min-height: 34px;
+    padding: 3px;
+    font-size: 0.88rem;
+}
+.select2-container { width: 100% !important; }
+
+.row { --bs-gutter-y: 0.25rem; --bs-gutter-x: 0.25rem; }
+.card { box-shadow: 0 1px 2px rgba(0,0,0,0.04); }
+.card.p-1 { padding: 3px 5px !important; }
+.card.mb-1 { margin-bottom: 4px !important; }
+
+.filter-bar {
+    background: #f8fafc;
+    border-radius: 5px;
+    padding: 4px 6px;
+    margin-bottom: 4px;
+}
+.filter-bar label { font-size: 0.65rem; color: #64748b; margin-bottom: 1px; display: block; }
+.filter-bar .form-control, .filter-bar .form-select { font-size: 0.78rem; padding: 2px 6px; height: 28px; }
+.filter-bar .btn { font-size: 0.75rem; padding: 2px 8px; height: 28px; }
+
+.filter-indicator {
+    background: #dbeafe;
+    border: 1px solid #93c5fd;
+    border-radius: 5px;
+    padding: 3px 8px;
+    font-size: 0.75rem;
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+.filter-indicator .info { color: #1e40af; font-weight: 600; }
+.filter-indicator .btn { padding: 1px 8px; font-size: 0.72rem; }
+
+/* ============================================
+   إلغاء أسهم input[type=number]
+   ============================================ */
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none !important;
+    margin: 0 !important;
+}
+input[type=number] {
+    -moz-appearance: textfield !important;
+    appearance: textfield !important;
+}
+input[type="number"] {
+    -moz-appearance: textfield !important;
+}
+
+</style>
+
+
+
+<style id="compact-spacing-global">
+/* ============================================
+   توحيد المسافات المضغوطة
+   ============================================ */
+
+.table td, .table th {
+    padding: 3px 6px !important;
+    font-size: 0.75rem !important;
+    vertical-align: middle !important;
+    line-height: 1.2 !important;
+}
+
+.table tbody tr {
+    height: auto !important;
+}
+
+.form-control, .form-select {
+    font-size: 0.75rem !important;
+    line-height: 1.2 !important;
+}
+
+.form-control-sm, .form-select-sm {
+    height: 26px !important;
+    padding: 2px 6px !important;
+    font-size: 0.72rem !important;
+    line-height: 1 !important;
+}
+
+.btn {
+    padding: 3px 8px !important;
+    font-size: 0.72rem !important;
+    line-height: 1.2 !important;
+}
+
+.btn-sm {
+    padding: 2px 6px !important;
+    font-size: 0.7rem !important;
+}
+
+.card {
+    margin-bottom: 6px !important;
+}
+
+.card-body, .card.p-2, .card.p-3, .card.p-4 {
+    padding: 6px 8px !important;
+}
+
+.modal-header {
+    padding: 6px 12px !important;
+}
+
+.modal-title {
+    font-size: 0.9rem !important;
+}
+
+.modal-body {
+    padding: 8px 12px !important;
+}
+
+.modal-footer {
+    padding: 6px 12px !important;
+}
+
+.modal-footer .btn {
+    padding: 4px 10px !important;
+    font-size: 0.75rem !important;
+}
+
+.mb-1, .mb-2, .mb-3, .mb-4 {
+    margin-bottom: 4px !important;
+}
+
+.mt-1, .mt-2, .mt-3, .mt-4 {
+    margin-top: 4px !important;
+}
+
+.ms-1, .ms-2, .ms-3 {
+    margin-right: 4px !important;
+}
+
+.me-1, .me-2, .me-3 {
+    margin-left: 4px !important;
+}
+
+.p-1, .p-2, .p-3, .p-4 {
+    padding: 4px !important;
+}
+
+.g-1, .g-2, .g-3 {
+    gap: 4px !important;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    line-height: 1.3 !important;
+}
+
+h1 { font-size: 1.2rem !important; margin-bottom: 6px !important; }
+h2 { font-size: 1.05rem !important; margin-bottom: 6px !important; }
+h3 { font-size: 0.95rem !important; margin-bottom: 4px !important; }
+h4 { font-size: 0.9rem !important; margin-bottom: 4px !important; }
+h5 { font-size: 0.85rem !important; margin-bottom: 4px !important; }
+h6 { font-size: 0.8rem !important; margin-bottom: 4px !important; }
+
+.alert {
+    padding: 6px 10px !important;
+    margin-bottom: 6px !important;
+    font-size: 0.78rem !important;
+}
+
+.badge {
+    padding: 2px 6px !important;
+    font-size: 0.68rem !important;
+}
+
+.nav-tabs .nav-link {
+    padding: 5px 12px !important;
+    font-size: 0.78rem !important;
+}
+
+hr {
+    margin: 6px 0 !important;
+}
+
+/* بطاقات الأعمار (aging) */
+.aging-card, .bucket-card, .stat-card {
+    padding: 6px 8px !important;
+    margin-bottom: 4px !important;
+}
+
+.aging-card .h4, .aging-card .h5,
+.bucket-card .h4, .bucket-card .h5 {
+    font-size: 1rem !important;
+    margin: 2px 0 !important;
+}
+
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none !important;
+    margin: 0 !important;
+}
+input[type=number] {
+    -moz-appearance: textfield !important;
+}
+</style>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 16 16%22><text y=%2214%22 font-size=%2214%22>📒</text></svg>">
+</head>
+<body>
+<div class="container-fluid main-container"><div class="row">
+
+<div class="col-md-2 sidebar p-0">
+<div class="brand">
+    <i class="bi bi-box-seam" style="font-size:2rem;"></i>
+    <h5 class="mt-2 mb-0">موديول المخازن</h5>
+</div>
+<nav class="mt-3">
+<a href="index.html#warehouse"><i class="bi bi-house-fill"></i> المخازن والأصناف</a>
+<a href="accounts.html"><i class="bi bi-book"></i> الدليل المحاسبي</a>
+<a href="warehouses.html"><i class="bi bi-building"></i> المستودعات</a>
+<a href="items.html"><i class="bi bi-box"></i> الأصناف</a>
+<a href="item_card.html" class="active"><i class="bi bi-card-list"></i> كارت الصنف</a>
+<a href="stock_movements.html"><i class="bi bi-arrow-left-right"></i> أنواع الحركات</a>
+<a href="purchase_invoices.html"><i class="bi bi-receipt"></i> فواتير الشراء</a>
+<a href="receipts.html"><i class="bi bi-arrow-down-circle"></i> الاستلام</a>
+<a href="issues.html"><i class="bi bi-arrow-up-circle"></i> الصرف</a>
+<a href="journal.html"><i class="bi bi-journal-text"></i> القيود</a>
+</nav>
+</div>
+
+<div class="col-md-10 p-2">
+
+<div class="d-flex justify-content-between align-items-center" style="margin-bottom: 4px;">
+<div>
+    <h4 style="margin:0;"><i class="bi bi-card-list"></i> كارت الصنف</h4>
+    <small class="text-muted">ابحث بكود الصنف أو جزء من اسمه</small>
+</div>
+<a href="items.html" class="btn btn-sm btn-outline-secondary">
+    <i class="bi bi-arrow-right"></i> رجوع
+</a>
+</div>
+
+<div class="card select-card">
+<select class="form-select" id="item-select"></select>
+</div>
+
+<div id="card-content" style="display:none;">
+
+<div class="item-info-box">
+    <i class="bi bi-box-seam"></i>
+    <div style="flex:1;">
+        <h5 id="item-title">—</h5>
+        <small class="text-muted" id="item-subtitle">—</small>
+    </div>
+    <div>
+        <span class="badge" id="item-policy-badge" style="font-size:0.75rem; padding: 4px 10px;">—</span>
+    </div>
+</div>
+
+<div class="row g-2 mb-2">
+<div class="col-3"><div class="stat-card stat-total"><div class="label">إجمالي الرصيد</div><div class="value" id="s-total">-</div></div></div>
+<div class="col-3"><div class="stat-card stat-available"><div class="label">✅ قابل للصرف</div><div class="value" id="s-available">-</div></div></div>
+<div class="col-3"><div class="stat-card stat-pending"><div class="label">⏳ معلّق</div><div class="value" id="s-pending">-</div></div></div>
+<div class="col-3"><div class="stat-card stat-value"><div class="label">💰 القيمة</div><div class="value" id="s-value">-</div></div></div>
+</div>
+
+<div id="pending-alert" class="alert alert-warning" style="display:none;">
+    <i class="bi bi-exclamation-triangle-fill"></i>
+    يوجد <strong id="pending-count">0</strong> وحدة بانتظار الفاتورة — غير قابلة للصرف.
+</div>
+
+<div class="card p-1 mb-1">
+<h6 class="mb-1"><i class="bi bi-building"></i> الرصيد حسب المخزن <small class="text-muted" style="font-size:0.65rem;">(اضغط على أي سطر لعرض حركاته)</small></h6>
+<table class="wh-table">
+<thead>
+<tr>
+    <th class="text-start">المخزن</th>
+    <th>إجمالي</th>
+    <th>قابل للصرف</th>
+    <th>معلّق</th>
+    <th>متوسط التكلفة</th>
+    <th>القيمة</th>
+</tr>
+</thead>
+<tbody id="warehouses-body"></tbody>
+</table>
+</div>
+
+<div class="card p-1">
+<div class="d-flex justify-content-between align-items-center mb-1">
+    <h6 class="mb-0"><i class="bi bi-list-ul"></i> كشف الحركات</h6>
+    <div class="legend">
+        <div class="legend-item"><div class="legend-dot" style="background:#d1fae5;"></div> مفوتَر</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#fef3c7;"></div> معلّق</div>
+        <div class="legend-item"><div class="legend-dot" style="background:#fee2e2;"></div> منصرف</div>
+    </div>
+</div>
+
+<div id="filter-indicator" class="filter-indicator" style="display:none;">
+    <span class="info">
+        <i class="bi bi-funnel-fill"></i>
+        يتم عرض حركات: <strong id="filter-wh-name"></strong>
+    </span>
+    <button class="btn btn-sm btn-outline-primary" onclick="resetFilters()">
+        <i class="bi bi-x-circle"></i> عرض كل المخازن
+    </button>
+</div>
+
+<div class="filter-bar">
+<div class="row g-1 align-items-end">
+<div class="col-md-4">
+    <label>🏭 المخزن</label>
+    <select class="form-select" id="flt-warehouse" onchange="filterMovements()">
+        <option value="">كل المخازن</option>
+    </select>
+</div>
+<div class="col-md-3">
+    <label>📅 من تاريخ</label>
+    <input type="date" class="form-control" id="flt-date-from" onchange="filterMovements()">
+</div>
+<div class="col-md-3">
+    <label>📅 إلى تاريخ</label>
+    <input type="date" class="form-control" id="flt-date-to" onchange="filterMovements()">
+</div>
+<div class="col-md-2">
+    <button class="btn btn-outline-secondary w-100" onclick="resetFilters()">
+        <i class="bi bi-x-circle"></i> مسح
+    </button>
+</div>
+</div>
+</div>
+
+<div class="table-wrapper">
+<table class="mv-table">
+<thead>
+<tr>
+    <th rowspan="2" style="min-width:65px;">التاريخ</th>
+    <th rowspan="2" style="min-width:40px;">النوع</th>
+    <th rowspan="2" style="min-width:100px;">رقم الإذن</th>
+    <th rowspan="2" style="min-width:80px;">الفاتورة</th>
+    <th rowspan="2" style="min-width:70px;">المخزن</th>
+    <th class="group-in" colspan="3">📥 الوارد</th>
+    <th class="group-out" colspan="3">📤 المنصرف</th>
+    <th class="group-bal" colspan="2">📊 الرصيد</th>
+    <th rowspan="2" style="min-width:55px;">السياسة</th>
+</tr>
+<tr>
+    <th style="min-width:45px;">كمية</th>
+    <th style="min-width:45px;">سعر</th>
+    <th style="min-width:55px;">قيمة</th>
+    <th style="min-width:45px;">كمية</th>
+    <th class="col-rate-header" style="min-width:55px;">💱 سعر</th>
+    <th style="min-width:55px;">قيمة</th>
+    <th style="min-width:50px;">كمية</th>
+    <th style="min-width:55px;">قيمة</th>
+</tr>
+</thead>
+<tbody id="movements-body"></tbody>
+</table>
+</div>
+</div>
+
+</div>
+
+<div id="empty-state" class="text-center p-5 text-muted">
+    <i class="bi bi-search" style="font-size: 3rem; opacity: 0.3;"></i>
+    <h6 class="mt-2">ابحث عن صنف لعرض كارت الصنف</h6>
+</div>
+
+</div>
+</div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+<script>
+const API = 'http://localhost:5000/api/v1';
+let currentCardData = null;
+let allMovements = [];
+let currentWarehouseFilter = null;
+
+// ============================================================
+// Load Items
+// ============================================================
+async function loadItems() {
+    try {
+        const r = await fetch(`${API}/items/search-list`).then(x => x.json());
+        const items = Array.isArray(r) ? r : (r.data || []);
+        
+        if (!items.length) {
+            $('#item-select').html('<option value="">لا توجد أصناف</option>');
+            return;
+        }
+        
+        const opts = ['<option value="">— ابحث عن صنف —</option>'];
+        items.forEach(i => {
+            const en = i.name_en ? ` (${i.name_en})` : '';
+            opts.push(`<option value="${i.id}">${i.code} — ${i.name_ar}${en}</option>`);
+        });
+        
+        $('#item-select').html(opts.join(''));
+        
+        $('#item-select').select2({
+            theme: 'bootstrap-5',
+            placeholder: 'اكتب كود الصنف أو جزء من اسمه...',
+            allowClear: true,
+            width: '100%',
+            language: {
+                noResults: () => "لا توجد نتائج",
+                searching: () => "جاري البحث..."
+            }
+        });
+        
+        $('#item-select').on('select2:select', function(e) {
+            loadCard(e.params.data.id);
+        });
+        
+        $('#item-select').on('select2:clear', function() {
+            document.getElementById('card-content').style.display = 'none';
+            document.getElementById('empty-state').style.display = 'block';
+        });
+        
+        const urlParams = new URLSearchParams(window.location.search);
+        const preselectedId = urlParams.get('id');
+        if (preselectedId) {
+            $('#item-select').val(preselectedId).trigger('change');
+            loadCard(preselectedId);
+        }
+    } catch(e) {
+        console.error(e);
+    }
+}
+
+// ============================================================
+// Load Card
+// ============================================================
+async function loadCard(itemId) {
+    if (!itemId) return;
+    
+    document.getElementById('empty-state').style.display = 'none';
+    document.getElementById('card-content').style.display = 'none';
+    
+    try {
+        const r = await fetch(`${API}/items/${itemId}/card`).then(x => x.json());
+        
+        if (!r.success) {
+            alert(r.message || 'خطأ');
+            return;
+        }
+        
+        const d = r.data;
+        currentCardData = d;
+        
+        // العنوان
+        document.getElementById('item-title').textContent = d.item.name_ar;
+        document.getElementById('item-subtitle').textContent = 
+            `الكود: ${d.item.code}${d.item.name_en ? ' — ' + d.item.name_en : ''}`;
+        
+        // ✅ شارة السياسة + المصدر (مرة واحدة بس)
+        const policy = d.item.effective_cost_method || 'WEIGHTED_AVERAGE';
+        const sourceLabel = d.item.effective_cost_method_source_label || '';
+        
+        const policyBadge = document.getElementById('item-policy-badge');
+        
+        let policyIcon = '📊';
+        let policyName = policy;
+        let bgColor = '#64748b';
+        
+        if (policy === 'FIFO') {
+            policyIcon = '🔵';
+            policyName = 'FIFO';
+            bgColor = '#8b5cf6';
+        } else if (policy === 'LIFO') {
+            policyIcon = '🟣';
+            policyName = 'LIFO';
+            bgColor = '#ec4899';
+        } else if (policy === 'WEIGHTED_AVERAGE') {
+            policyIcon = '🟢';
+            policyName = 'المتوسط المرجح';
+            bgColor = '#06b6d4';
+        } else if (policy === 'STANDARD') {
+            policyIcon = '🟡';
+            policyName = 'التكلفة المعيارية';
+            bgColor = '#f59e0b';
+        }
+        
+        policyBadge.innerHTML = `${policyIcon} ${policyName} <small style="opacity:0.85; font-size:0.65rem;">(${sourceLabel})</small>`;
+        policyBadge.style.background = bgColor;
+        policyBadge.style.color = 'white';
+        policyBadge.title = `المصدر: ${sourceLabel}`;
+        
+        // الإحصائيات
+        document.getElementById('s-total').textContent = d.summary.total_qty.toFixed(2);
+        document.getElementById('s-available').textContent = d.summary.available_qty.toFixed(2);
+        document.getElementById('s-pending').textContent = d.summary.pending_qty.toFixed(2);
+        document.getElementById('s-value').textContent = d.summary.total_value.toFixed(2) + ' ج';
+        
+        if (d.summary.pending_qty > 0) {
+            document.getElementById('pending-alert').style.display = 'block';
+            document.getElementById('pending-count').textContent = d.summary.pending_qty.toFixed(2);
+        } else {
+            document.getElementById('pending-alert').style.display = 'none';
+        }
+        
+        // المخازن
+        if (d.warehouses && d.warehouses.length) {
+            document.getElementById('warehouses-body').innerHTML = d.warehouses.map(w => `
+                <tr data-warehouse-id="${w.warehouse_id || w.id}" onclick="filterByWarehouse(${w.warehouse_id || w.id}, '${w.warehouse_code || w.code} — ${w.warehouse_name || w.name_ar}')">
+                    <td class="text-start"><strong>${w.warehouse_code || w.code}</strong> — ${w.warehouse_name || w.name_ar}</td>
+                    <td class="num">${parseFloat(w.quantity || w.total_qty || 0).toFixed(2)}</td>
+                    <td class="num success">${parseFloat(w.quantity || w.available_qty || 0).toFixed(2)}</td>
+                    <td class="num warning">${parseFloat(w.pending_qty || 0).toFixed(2)}</td>
+                    <td class="num">${parseFloat(w.average_cost || 0).toFixed(2)}</td>
+                    <td class="num">${parseFloat(w.total_value || 0).toFixed(2)}</td>
+                </tr>
+            `).join('');
+        } else {
+            document.getElementById('warehouses-body').innerHTML = 
+                '<tr><td colspan="6" style="text-align:center; color:#94a3b8; padding: 6px;">لا يوجد رصيد</td></tr>';
+        }
+        
+        // املأ قائمة الفلتر
+        const whOpts = ['<option value="">كل المخازن</option>'];
+        (d.warehouses || []).forEach(w => {
+            const whId = w.warehouse_id || w.id;
+            const whCode = w.warehouse_code || w.code;
+            const whName = w.warehouse_name || w.name_ar;
+            whOpts.push(`<option value="${whId}">${whCode} — ${whName}</option>`);
+        });
+        document.getElementById('flt-warehouse').innerHTML = whOpts.join('');
+        
+        // احفظ الحركات
+        allMovements = d.movements || [];
+        
+        // اعرض الحركات
+        currentWarehouseFilter = null;
+        document.getElementById('filter-indicator').style.display = 'none';
+        renderMovements();
+        
+        document.getElementById('card-content').style.display = 'block';
+        
+    } catch(e) {
+        console.error(e);
+        alert('خطأ: ' + e.message);
+    }
+}
+
+// ============================================================
+// فلتر حسب المخزن
+// ============================================================
+function filterByWarehouse(whId, whName) {
+    document.querySelectorAll('#warehouses-body tr').forEach(tr => tr.classList.remove('active-row'));
+    const row = document.querySelector(`#warehouses-body tr[data-warehouse-id="${whId}"]`);
+    if (row) row.classList.add('active-row');
+    
+    currentWarehouseFilter = whId;
+    document.getElementById('flt-warehouse').value = whId;
+    document.getElementById('filter-indicator').style.display = 'flex';
+    document.getElementById('filter-wh-name').textContent = whName;
+    
+    renderMovements();
+}
+
+// ============================================================
+// فلتر الحركات
+// ============================================================
+function filterMovements() {
+    currentWarehouseFilter = document.getElementById('flt-warehouse').value || null;
+    
+    document.querySelectorAll('#warehouses-body tr').forEach(tr => tr.classList.remove('active-row'));
+    
+    if (currentWarehouseFilter) {
+        const row = document.querySelector(`#warehouses-body tr[data-warehouse-id="${currentWarehouseFilter}"]`);
+        if (row) {
+            row.classList.add('active-row');
+            const code = row.querySelector('.text-start').textContent;
+            document.getElementById('filter-wh-name').textContent = code;
+            document.getElementById('filter-indicator').style.display = 'flex';
+        }
+    } else {
+        document.getElementById('filter-indicator').style.display = 'none';
+    }
+    
+    renderMovements();
+}
+
+// ============================================================
+// إعادة تعيين الفلاتر
+// ============================================================
+function resetFilters() {
+    document.getElementById('flt-warehouse').value = '';
+    document.getElementById('flt-date-from').value = '';
+    document.getElementById('flt-date-to').value = '';
+    currentWarehouseFilter = null;
+    document.getElementById('filter-indicator').style.display = 'none';
+    document.querySelectorAll('#warehouses-body tr').forEach(tr => tr.classList.remove('active-row'));
+    renderMovements();
+}
+
+// ============================================================
+// عرض الحركات
+// ============================================================
+function renderMovements() {
+    if (!currentCardData) return;
+    
+    const dateFrom = document.getElementById('flt-date-from').value;
+    const dateTo = document.getElementById('flt-date-to').value;
+    
+    let filtered = allMovements;
+    
+    // فلتر المخزن
+    if (currentWarehouseFilter) {
+        const whId = parseInt(currentWarehouseFilter);
+        filtered = filtered.filter(m => {
+            if (m.transaction_type === 'RECEIPT') return m.to_warehouse_id === whId;
+            if (m.transaction_type === 'ISSUE') return m.from_warehouse_id === whId;
+            if (m.transaction_type === 'TRANSFER') return m.from_warehouse_id === whId || m.to_warehouse_id === whId;
+            return true;
+        });
+    }
+    
+    // فلتر التاريخ
+    if (dateFrom) {
+        filtered = filtered.filter(m => m.transaction_date >= dateFrom);
+    }
+    if (dateTo) {
+        filtered = filtered.filter(m => m.transaction_date <= dateTo);
+    }
+    
+    if (!filtered.length) {
+        document.getElementById('movements-body').innerHTML = 
+            '<tr><td colspan="14" class="text-center text-muted p-3">لا توجد حركات مطابقة</td></tr>';
+        return;
+    }
+    
+    document.getElementById('movements-body').innerHTML = filtered.map(m => {
+        let rowClass = '';
+        if (m.movement_status === 'PENDING_INVOICE') rowClass = 'row-pending';
+        else if (m.movement_status === 'INVOICED') rowClass = 'row-invoiced';
+        else if (m.direction === 'OUT') rowClass = 'row-issue';
+        
+        // ✅ شارة السياسة (مرة واحدة بس)
+        let policyBadge = '<span class="text-muted">—</span>';
+        if (m.movement_policy && m.movement_policy !== '—' && m.movement_policy !== '-') {
+            if (m.movement_policy === 'FIFO') {
+                policyBadge = '<span class="badge" style="background:#8b5cf6; font-size:0.6rem;">FIFO</span>';
+            } else if (m.movement_policy === 'LIFO') {
+                policyBadge = '<span class="badge" style="background:#ec4899; font-size:0.6rem;">LIFO</span>';
+            } else if (m.movement_policy === 'WEIGHTED_AVERAGE') {
+                policyBadge = '<span class="badge" style="background:#06b6d4; font-size:0.6rem;">متوسط</span>';
+            } else {
+                policyBadge = `<span class="badge bg-secondary" style="font-size:0.6rem;">${m.movement_policy}</span>`;
+            }
+        }
+        
+        // المخزن
+        let warehouse = '-';
+        if (m.direction === 'IN' || m.direction === 'OUT' || m.direction === 'ADJUST') {
+            warehouse = m.to_warehouse_code || m.from_warehouse_code || '-';
+        } else if (m.direction === 'TRANSFER') {
+            warehouse = `${m.from_warehouse_code || '?'} → ${m.to_warehouse_code || '?'}`;
+        }
+        
+        // رقم الفاتورة
+        const invoiceNo = m.invoice_no 
+            ? `<code style="color:#059669; font-size:0.62rem;">${m.invoice_no}</code>` 
+            : '—';
+        
+        // الوارد
+        const inQty = m.in_qty > 0 ? m.in_qty.toFixed(2) : '—';
+        const inPrice = m.in_price > 0 ? m.in_price.toFixed(2) : '—';
+        const inValue = m.in_value > 0 ? m.in_value.toFixed(2) : '—';
+        
+        // المنصرف
+        const outQty = m.out_qty > 0 ? m.out_qty.toFixed(2) : '—';
+        const outPrice = m.out_price > 0 ? m.out_price.toFixed(2) : '—';
+        const outValue = m.out_value > 0 ? m.out_value.toFixed(2) : '—';
+        
+        // الرصيد
+        const balQty = m.balance_qty.toFixed(2);
+        const balValue = m.balance_value.toFixed(2);
+        
+        return `<tr class="${rowClass}">
+            <td>${m.transaction_date}</td>
+            <td>${m.direction_label}</td>
+            <td><code style="font-size:0.62rem;">${m.transaction_no}</code></td>
+            <td>${invoiceNo}</td>
+            <td><small>${warehouse}</small></td>
+            <td class="num group-in">${inQty}</td>
+            <td class="num group-in">${inPrice}</td>
+            <td class="num group-in">${inValue}</td>
+            <td class="num group-out">${outQty}</td>
+            <td class="num col-rate">${outPrice}</td>
+            <td class="num group-out">${outValue}</td>
+            <td class="num group-bal"><strong>${balQty}</strong></td>
+            <td class="num group-bal"><strong>${balValue}</strong></td>
+            <td style="text-align:center;">${policyBadge}</td>
+        </tr>`;
+    }).join('');
+}
+
+// ============================================================
+// Init
+// ============================================================
+$(document).ready(function() {
+    loadItems();
+});
+</script>
+
+</body>
+</html>

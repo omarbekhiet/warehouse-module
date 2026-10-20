@@ -1,0 +1,817 @@
+﻿﻿<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ميزان المراجعة - IFRS 18</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="style.css" rel="stylesheet">
+<script src="permissions.js"></script>
+<style>
+* { font-family: 'IBM Plex Sans Arabic', 'Cairo', 'Segoe UI', Tahoma, sans-serif; box-sizing: border-box; }
+body { background: #f0f2f5; padding: 6px; font-size: 13px; margin: 0; }
+.container-fluid { padding: 0 !important; }
+.col-md-10 { padding: 6px 10px !important; }
+
+h2 { font-size: 1.05rem; margin: 0 !important; font-weight: 700; }
+.tb-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px; margin-bottom: 6px; }
+
+.card { border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); border: none; margin-bottom: 6px; }
+.card.p-3 { padding: 8px !important; }
+
+/* Filters */
+.filters-row {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 6px;
+    align-items: flex-start;
+    width: 100%;
+}
+.date-field { display: flex; flex-direction: column; min-width: 0; }
+.filter-field-date { flex: 0 0 170px; min-width: 140px; }
+.filter-field-search { flex: 1 1 auto; min-width: 150px; }
+
+.date-field .form-label {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    font-size: 0.72rem;
+    font-weight: 800;
+    margin-bottom: 3px;
+    height: 18px;
+}
+.date-field input {
+    height: 30px;
+    width: 100%;
+    font-size: 0.76rem;
+    padding: 3px 6px;
+    text-align: center;
+    border-width: 2px !important;
+    font-family: 'Consolas', monospace;
+    font-weight: 700;
+    border-radius: 5px;
+}
+.date-from .form-label { color: #2563eb; }
+.date-from input { border-color: #93c5fd !important; background: #eff6ff !important; }
+.date-to .form-label { color: #059669; }
+.date-to input { border-color: #6ee7b7 !important; background: #ecfdf5 !important; }
+.date-asof .form-label { color: #d97706; }
+.date-asof input { border-color: #fcd34d !important; background: #fffbeb !important; }
+.date-search .form-label { color: #475569; }
+.date-search input { border-color: #cbd5e1 !important; background: white !important; text-align: right; padding-right: 10px; }
+
+.filter-buttons {
+    flex: 0 0 auto;
+    display: flex;
+    gap: 4px;
+    margin-top: 21px;
+}
+.filter-buttons .btn { height: 30px; font-size: 0.74rem; padding: 3px 10px; font-weight: 700; }
+
+/* KPI Cards */
+.kpi-cards {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+    margin-bottom: 8px;
+}
+.kpi-card {
+    background: white;
+    border-radius: 8px;
+    padding: 8px 10px;
+    text-align: center;
+    border-right: 4px solid;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+.kpi-label { font-size: 0.65rem; color: #64748b; font-weight: 700; margin-bottom: 3px; }
+.kpi-value { font-size: 1rem; font-weight: 900; font-family: 'Consolas', monospace; }
+.kpi-card.debit { border-color: #10b981; }
+.kpi-card.debit .kpi-value { color: #059669; }
+.kpi-card.credit { border-color: #ef4444; }
+.kpi-card.credit .kpi-value { color: #dc2626; }
+.kpi-card.count { border-color: #2563eb; }
+.kpi-card.count .kpi-value { color: #2563eb; }
+.kpi-card.status { border-color: #10b981; }
+.kpi-card.status.unbalanced { border-color: #ef4444; }
+.kpi-card.status .kpi-value { font-size: 0.9rem; }
+.kpi-card.status.balanced .kpi-value { color: #059669; }
+.kpi-card.status.unbalanced .kpi-value { color: #dc2626; }
+
+/* Table */
+.table-responsive {
+    max-height: calc(100vh - 280px);
+    overflow-y: auto;
+    overflow-x: auto;
+    border-radius: 6px;
+}
+.tb-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.75rem;
+    background: white;
+    table-layout: fixed;
+}
+.tb-table thead th {
+    background: linear-gradient(135deg, #1e3c72, #2a5298);
+    color: white;
+    padding: 5px 3px;
+    font-weight: 700;
+    font-size: 0.7rem;
+    text-align: center;
+    border: 1px solid #0f2555;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    vertical-align: middle;
+}
+.tb-table thead th.group-opening { background: linear-gradient(135deg, #4f46e5, #6366f1); }
+.tb-table thead th.group-period  { background: linear-gradient(135deg, #059669, #10b981); }
+.tb-table thead th.group-closing { background: linear-gradient(135deg, #d97706, #f59e0b); }
+.tb-table thead tr:nth-child(2) th { top: 32px; }
+
+/* Group headers */
+.group-header td {
+    background: #f1f5f9 !important;
+    font-weight: 800;
+    padding: 6px 10px;
+    border-top: 2px solid #cbd5e1;
+    border-bottom: 1px solid #e2e8f0;
+    font-size: 0.78rem;
+    color: #1e3c72;
+}
+.group-header td i { margin-left: 5px; color: #64748b; }
+.group-header.op-1 td { border-right: 4px solid #2563eb; }
+.group-header.op-2 td { border-right: 4px solid #dc2626; }
+.group-header.op-3 td { border-right: 4px solid #7c3aed; }
+.group-header.op-4 td { border-right: 4px solid #059669; }
+.group-header.op-5 td { border-right: 4px solid #d97706; }
+.group-header.op-6 td { border-right: 4px solid #0891b2; }
+.group-header.op-7 td { border-right: 4px solid #7c3aed; }
+.group-header.op-8 td { border-right: 4px solid #475569; }
+
+/* Body cells */
+.tb-table tbody td {
+    vertical-align: middle;
+    padding: 3px 4px;
+    text-align: center;
+    border-bottom: 1px solid #f1f5f9;
+    line-height: 1.2;
+    height: 26px;
+}
+.tb-table tbody tr:hover { background: #fef9c3; }
+
+.tb-table td.code-cell {
+    font-family: 'Consolas', monospace;
+    font-size: 0.7rem;
+    color: #475467;
+    font-weight: 600;
+    text-align: center;
+}
+.tb-table td.name-cell {
+    text-align: right;
+    padding-right: 8px !important;
+    font-weight: 600;
+    color: #1e293b;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.tb-table td.level-cell { text-align: center; }
+.tb-table td.level-cell span {
+    display: inline-block;
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-size: 0.62rem;
+    font-weight: 700;
+    background: #e0e7ff;
+    color: #3730a3;
+}
+
+/* IFRS 18 badge */
+.ifrs-badge {
+    display: inline-block;
+    font-size: 0.55rem;
+    padding: 1px 4px;
+    border-radius: 3px;
+    font-weight: 700;
+    margin-right: 3px;
+}
+.ifrs-badge.operating { background: #dbeafe; color: #1e40af; }
+.ifrs-badge.investing { background: #fef3c7; color: #92400e; }
+.ifrs-badge.financing { background: #ede9fe; color: #5b21b6; }
+.ifrs-badge.tax { background: #f3f4f6; color: #374151; }
+
+/* Numbers */
+.num-cell {
+    font-family: 'Consolas', monospace;
+    font-weight: 700;
+    font-size: 0.74rem;
+    white-space: nowrap;
+    padding: 3px 5px !important;
+}
+.num-cell.debit { color: #059669; }
+.num-cell.credit { color: #dc2626; }
+.num-cell.empty { color: #cbd5e1; font-weight: 400; }
+
+/* Total row */
+.total-row td {
+    background: #e8f5e9 !important;
+    font-weight: 800;
+    border-top: 2px solid #16a34a;
+    border-bottom: 2px solid #16a34a;
+    padding: 6px 4px !important;
+    font-size: 0.78rem;
+}
+
+/* Balance badge */
+.balance-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    padding: 2px 7px;
+    border-radius: 12px;
+    font-size: 0.65rem;
+    font-weight: 800;
+    white-space: nowrap;
+}
+.balance-badge.ok { background: #d1fae5; color: #065f46; }
+.balance-badge.bad { background: #fee2e2; color: #991b1b; }
+
+/* Scrollbar */
+.table-responsive::-webkit-scrollbar { width: 8px; height: 8px; }
+.table-responsive::-webkit-scrollbar-track { background: #f1f5f9; }
+.table-responsive::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+
+@media print {
+    body { background: white; }
+    .sidebar, .no-print, .filter-bar, .kpi-cards, .tb-header .btn { display: none !important; }
+    .col-md-10 { width: 100% !important; padding: 0 !important; }
+    .table-responsive { max-height: none !important; overflow: visible !important; }
+    .tb-table { font-size: 9pt; }
+    @page { size: A4 landscape; margin: 8mm; }
+}
+
+/* ============================================
+   إلغاء أسهم input[type=number]
+   ============================================ */
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none !important;
+    margin: 0 !important;
+}
+input[type=number] {
+    -moz-appearance: textfield !important;
+    appearance: textfield !important;
+}
+input[type="number"] {
+    -moz-appearance: textfield !important;
+}
+
+</style>
+
+
+
+<style id="compact-spacing-global">
+/* ============================================
+   توحيد المسافات المضغوطة
+   ============================================ */
+
+.table td, .table th {
+    padding: 3px 6px !important;
+    font-size: 0.75rem !important;
+    vertical-align: middle !important;
+    line-height: 1.2 !important;
+}
+
+.table tbody tr {
+    height: auto !important;
+}
+
+.form-control, .form-select {
+    font-size: 0.75rem !important;
+    line-height: 1.2 !important;
+}
+
+.form-control-sm, .form-select-sm {
+    height: 26px !important;
+    padding: 2px 6px !important;
+    font-size: 0.72rem !important;
+    line-height: 1 !important;
+}
+
+.btn {
+    padding: 3px 8px !important;
+    font-size: 0.72rem !important;
+    line-height: 1.2 !important;
+}
+
+.btn-sm {
+    padding: 2px 6px !important;
+    font-size: 0.7rem !important;
+}
+
+.card {
+    margin-bottom: 6px !important;
+}
+
+.card-body, .card.p-2, .card.p-3, .card.p-4 {
+    padding: 6px 8px !important;
+}
+
+.modal-header {
+    padding: 6px 12px !important;
+}
+
+.modal-title {
+    font-size: 0.9rem !important;
+}
+
+.modal-body {
+    padding: 8px 12px !important;
+}
+
+.modal-footer {
+    padding: 6px 12px !important;
+}
+
+.modal-footer .btn {
+    padding: 4px 10px !important;
+    font-size: 0.75rem !important;
+}
+
+.mb-1, .mb-2, .mb-3, .mb-4 {
+    margin-bottom: 4px !important;
+}
+
+.mt-1, .mt-2, .mt-3, .mt-4 {
+    margin-top: 4px !important;
+}
+
+.ms-1, .ms-2, .ms-3 {
+    margin-right: 4px !important;
+}
+
+.me-1, .me-2, .me-3 {
+    margin-left: 4px !important;
+}
+
+.p-1, .p-2, .p-3, .p-4 {
+    padding: 4px !important;
+}
+
+.g-1, .g-2, .g-3 {
+    gap: 4px !important;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    line-height: 1.3 !important;
+}
+
+h1 { font-size: 1.2rem !important; margin-bottom: 6px !important; }
+h2 { font-size: 1.05rem !important; margin-bottom: 6px !important; }
+h3 { font-size: 0.95rem !important; margin-bottom: 4px !important; }
+h4 { font-size: 0.9rem !important; margin-bottom: 4px !important; }
+h5 { font-size: 0.85rem !important; margin-bottom: 4px !important; }
+h6 { font-size: 0.8rem !important; margin-bottom: 4px !important; }
+
+.alert {
+    padding: 6px 10px !important;
+    margin-bottom: 6px !important;
+    font-size: 0.78rem !important;
+}
+
+.badge {
+    padding: 2px 6px !important;
+    font-size: 0.68rem !important;
+}
+
+.nav-tabs .nav-link {
+    padding: 5px 12px !important;
+    font-size: 0.78rem !important;
+}
+
+hr {
+    margin: 6px 0 !important;
+}
+
+/* بطاقات الأعمار (aging) */
+.aging-card, .bucket-card, .stat-card {
+    padding: 6px 8px !important;
+    margin-bottom: 4px !important;
+}
+
+.aging-card .h4, .aging-card .h5,
+.bucket-card .h4, .bucket-card .h5 {
+    font-size: 1rem !important;
+    margin: 2px 0 !important;
+}
+
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none !important;
+    margin: 0 !important;
+}
+input[type=number] {
+    -moz-appearance: textfield !important;
+}
+</style>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 16 16%22><text y=%2214%22 font-size=%2214%22>📒</text></svg>">
+</head>
+<body>
+
+<div class="container-fluid">
+<div class="row">
+
+<!-- Sidebar -->
+<div class="col-md-2 sidebar p-0">
+<div class="brand"><i class="bi bi-box-seam" style="font-size:2rem;"></i><h5 class="mt-2 mb-0">موديول المخازن</h5></div>
+<nav class="mt-3">
+<a href="index.html#reports"><i class="bi bi-house-fill"></i> التقارير الختامية</a>
+<a href="accounts.html"><i class="bi bi-book"></i> الدليل المحاسبي</a>
+<a href="items.html"><i class="bi bi-box"></i> الأصناف</a>
+<a href="purchase_invoices.html"><i class="bi bi-receipt"></i> فواتير الشراء</a>
+<a href="sales_invoices.html"><i class="bi bi-cart-check"></i> فواتير البيع</a>
+<a href="journal.html"><i class="bi bi-journal-text"></i> القيود</a>
+<a href="financial_reports.html"><i class="bi bi-graph-up"></i> التقارير المالية</a>
+<a href="trial_balance.html" class="active"><i class="bi bi-list-check"></i> ميزان المراجعة</a>
+<a href="income_statement.html"><i class="bi bi-graph-up-arrow"></i> قائمة الدخل</a>
+<a href="reports.html"><i class="bi bi-file-earmark-bar-graph"></i> التقارير</a>
+</nav>
+</div>
+
+<div class="col-md-10">
+
+<div class="tb-header">
+<div>
+<div style="margin-bottom:10px;"><a href="index.html#reports" class="btn btn-sm btn-outline-secondary"><i class="bi bi-house"></i> التقارير الختامية</a></div>
+<h2><i class="bi bi-list-check"></i> ميزان المراجعة</h2>
+<small class="text-muted" style="font-size: 0.7rem;">
+<i class="bi bi-patch-check-fill" style="color: #10b981;"></i>
+معيار IFRS 18 — عرض الحسابات حسب الفئات
+</small>
+</div>
+<div class="d-flex gap-1 no-print">
+<button class="btn btn-sm btn-outline-success" onclick="exportExcel()"><i class="bi bi-file-earmark-excel"></i> Excel</button>
+<button class="btn btn-sm btn-success" onclick="window.print()"><i class="bi bi-printer-fill"></i> طباعة A4</button>
+<a href="index.html#reports" class="btn btn-sm btn-outline-secondary"><i class="bi bi-house"></i> التقارير الختامية</a>
+<button class="btn btn-sm btn-outline-primary" onclick="load()"><i class="bi bi-arrow-clockwise"></i> تحديث</button>
+</div>
+</div>
+
+<!-- Filters -->
+<div class="card p-3 filter-bar no-print">
+<div class="filters-row">
+
+<div class="date-field filter-field-date date-from">
+<label class="form-label"><i class="bi bi-calendar-range"></i><span>من تاريخ</span></label>
+<input type="text" class="form-control form-control-sm" id="f-from" placeholder="يوم/شهر/سنة" maxlength="10" dir="ltr">
+</div>
+
+<div class="date-field filter-field-date date-to">
+<label class="form-label"><i class="bi bi-calendar-range-fill"></i><span>إلى تاريخ</span></label>
+<input type="text" class="form-control form-control-sm" id="f-to" placeholder="يوم/شهر/سنة" maxlength="10" dir="ltr">
+</div>
+
+<div class="date-field filter-field-date date-asof">
+<label class="form-label"><i class="bi bi-bullseye"></i><span>حتى تاريخ</span></label>
+<input type="text" class="form-control form-control-sm" id="f-asof" placeholder="يوم/شهر/سنة" maxlength="10" dir="ltr">
+</div>
+
+<div class="date-field filter-field-search date-search">
+<label class="form-label"><i class="bi bi-search"></i><span>بحث (كود / اسم)</span></label>
+<input type="text" class="form-control form-control-sm" id="f-search" placeholder="اكتب للبحث...">
+</div>
+
+<div class="filter-buttons">
+<button class="btn btn-primary btn-sm" onclick="load()"><i class="bi bi-search"></i> تطبيق</button>
+<button class="btn btn-outline-secondary btn-sm" onclick="clearFilters()" title="مسح"><i class="bi bi-x-circle"></i></button>
+<button class="btn btn-outline-info btn-sm" onclick="toggleHideZeros()" id="btn-zeros" title="إخفاء الأصفار"><i class="bi bi-eye-slash"></i></button>
+</div>
+
+</div>
+</div>
+
+<!-- KPI Cards -->
+<div class="kpi-cards no-print" id="kpi-cards">
+<div class="kpi-card debit">
+<div class="kpi-label">إجمالي مدين (آخر المدة)</div>
+<div class="kpi-value" id="kpi-debit">—</div>
+</div>
+<div class="kpi-card credit">
+<div class="kpi-label">إجمالي دائن (آخر المدة)</div>
+<div class="kpi-value" id="kpi-credit">—</div>
+</div>
+<div class="kpi-card count">
+<div class="kpi-label">عدد الحسابات النشطة</div>
+<div class="kpi-value" id="kpi-count">—</div>
+</div>
+<div class="kpi-card status" id="kpi-status-card">
+<div class="kpi-label">حالة الميزان</div>
+<div class="kpi-value" id="kpi-status">—</div>
+</div>
+</div>
+
+<!-- Table -->
+<div class="card p-2">
+<div class="table-responsive">
+<table class="tb-table" id="tb-table">
+<thead>
+<tr>
+<th rowspan="2" style="width: 85px;">الكود</th>
+<th rowspan="2">اسم الحساب</th>
+<th rowspan="2" style="width: 50px;">المستوى</th>
+<th colspan="2" class="group-opening">رصيد أول المدة</th>
+<th colspan="2" class="group-period">حركة الفترة</th>
+<th colspan="2" class="group-closing">رصيد آخر المدة</th>
+</tr>
+<tr>
+<th style="width: 90px;">مدين</th>
+<th style="width: 90px;">دائن</th>
+<th style="width: 90px;">مدين</th>
+<th style="width: 90px;">دائن</th>
+<th style="width: 90px;">مدين</th>
+<th style="width: 90px;">دائن</th>
+</tr>
+</thead>
+<tbody id="tb-body">
+<tr><td colspan="9" class="text-center py-4"><i class="bi bi-arrow-clockwise"></i> جاري التحميل...</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+
+</div>
+</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+const API = '/api/v1';
+let allRows = [];
+let hideZeros = false;
+
+function escapeHtml(s) {
+    return String(s ?? '').replace(/[&<>"']/g, c => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+    }[c]));
+}
+
+function fmtNum(v) {
+    if (v === null || v === undefined) return '<span class="num-cell empty">—</span>';
+    const n = Number(v);
+    if (!isFinite(n) || Math.abs(n) < 0.005) return '<span class="num-cell empty">—</span>';
+    return n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function fmtMoney(v) {
+    const n = Number(v) || 0;
+    return n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function parseDateDMY(dmy) {
+    if (!dmy) return '';
+    const p = String(dmy).trim().split('/');
+    if (p.length !== 3) return dmy;
+    return p[2] + '-' + p[1].padStart(2, '0') + '-' + p[0].padStart(2, '0');
+}
+
+function isValidDateDMY(dmy) {
+    if (!dmy) return true;
+    const p = String(dmy).trim().split('/');
+    if (p.length !== 3) return false;
+    const d = parseInt(p[0]), m = parseInt(p[1]), y = parseInt(p[2]);
+    if (isNaN(d) || isNaN(m) || isNaN(y)) return false;
+    if (d < 1 || d > 31 || m < 1 || m > 12 || y < 1900 || y > 2100) return false;
+    const dt = new Date(y, m - 1, d);
+    return dt.getDate() === d && dt.getMonth() === m - 1 && dt.getFullYear() === y;
+}
+
+function setupDateField(id) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.addEventListener('input', function() {
+        let v = this.value.replace(/[^0-9]/g, '');
+        if (v.length >= 3) v = v.slice(0, 2) + '/' + v.slice(2);
+        if (v.length >= 6) v = v.slice(0, 5) + '/' + v.slice(5);
+        this.value = v.slice(0, 10);
+    });
+    el.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') { e.preventDefault(); load(); }
+    });
+}
+
+function getFilters() {
+    const f = {};
+    const from = parseDateDMY(document.getElementById('f-from').value);
+    const to = parseDateDMY(document.getElementById('f-to').value);
+    const asof = parseDateDMY(document.getElementById('f-asof').value);
+    if (from) f.date_from = from;
+    if (to) f.date_to = to;
+    if (asof) f.as_of = asof;
+    return f;
+}
+
+function buildQS(filters) {
+    const p = new URLSearchParams();
+    for (const k in filters) p.append(k, filters[k]);
+    const s = p.toString();
+    return s ? '?' + s : '';
+}
+
+function clearFilters() {
+    document.getElementById('f-from').value = '';
+    document.getElementById('f-to').value = '';
+    document.getElementById('f-asof').value = '';
+    document.getElementById('f-search').value = '';
+    load();
+}
+
+function toggleHideZeros() {
+    hideZeros = !hideZeros;
+    const btn = document.getElementById('btn-zeros');
+    btn.innerHTML = hideZeros ? '<i class="bi bi-eye"></i>' : '<i class="bi bi-eye-slash"></i>';
+    btn.classList.toggle('btn-info', !hideZeros);
+    btn.classList.toggle('btn-secondary', hideZeros);
+    renderTable();
+}
+
+function balanceBadge(debit, credit, label = '') {
+    const d = Number(debit) || 0;
+    const c = Number(credit) || 0;
+    const ok = Math.abs(d - c) < 0.01;
+    return `<span class="balance-badge ${ok ? 'ok' : 'bad'}">${ok ? '✅' : '⚠️'} ${label}</span>`;
+}
+
+// ============================================================
+// تحميل البيانات
+// ============================================================
+async function load() {
+    const body = document.getElementById('tb-body');
+    body.innerHTML = '<tr><td colspan="9" class="text-center py-4"><i class="bi bi-arrow-clockwise"></i> جاري التحميل...</td></tr>';
+
+    try {
+        const r = await fetch(`${API}/financial-reports/trial-balance${buildQS(getFilters())}`).then(x => x.json());
+        allRows = r.data || [];
+        window._totals = r.totals || {};
+
+        const activeCount = allRows.filter(x =>
+            (Number(x.opening_debit) || 0) > 0 || (Number(x.opening_credit) || 0) > 0 ||
+            (Number(x.period_debit) || 0) > 0 || (Number(x.period_credit) || 0) > 0 ||
+            (Number(x.closing_debit) || 0) > 0 || (Number(x.closing_credit) || 0) > 0
+        ).length;
+
+        // KPI
+        document.getElementById('kpi-debit').textContent = fmtMoney(r.totals.closing_debit);
+        document.getElementById('kpi-credit').textContent = fmtMoney(r.totals.closing_credit);
+        document.getElementById('kpi-count').textContent = activeCount;
+
+        const balanced = Math.abs((r.totals.closing_debit || 0) - (r.totals.closing_credit || 0)) < 0.01;
+        const statusCard = document.getElementById('kpi-status-card');
+        statusCard.classList.remove('balanced', 'unbalanced');
+        statusCard.classList.add(balanced ? 'balanced' : 'unbalanced');
+        document.getElementById('kpi-status').textContent = balanced ? '✅ متوازن' : '⚠️ غير متوازن';
+
+        renderTable();
+    } catch (e) {
+        console.error(e);
+        body.innerHTML = '<tr><td colspan="9" class="text-center text-danger py-4">فشل تحميل البيانات</td></tr>';
+    }
+}
+
+function renderTable() {
+    const tbody = document.getElementById('tb-body');
+    const totals = window._totals || {};
+    const search = (document.getElementById('f-search').value || '').trim().toLowerCase();
+
+    let filtered = allRows;
+
+    if (search) {
+        filtered = filtered.filter(x =>
+            String(x.code).toLowerCase().includes(search) ||
+            String(x.name_ar).toLowerCase().includes(search)
+        );
+    }
+
+    if (hideZeros) {
+        filtered = filtered.filter(x =>
+            (Number(x.opening_debit) || 0) > 0.005 || (Number(x.opening_credit) || 0) > 0.005 ||
+            (Number(x.period_debit) || 0) > 0.005 || (Number(x.period_credit) || 0) > 0.005 ||
+            (Number(x.closing_debit) || 0) > 0.005 || (Number(x.closing_credit) || 0) > 0.005
+        );
+    }
+
+    if (!filtered.length) {
+        tbody.innerHTML = '<tr><td colspan="9" class="text-center text-muted py-4">لا توجد بيانات</td></tr>';
+        return;
+    }
+
+    // تجميع حسب المجموعة الرئيسية (1، 2، 3، 4، 5، 6، 7، 8)
+    const groups = {};
+    filtered.forEach(x => {
+        const groupKey = String(x.code).charAt(0);
+        if (!groups[groupKey]) groups[groupKey] = [];
+        groups[groupKey].push(x);
+    });
+
+    const groupNames = {
+        '1': 'الأصول',
+        '2': 'الالتزامات',
+        '3': 'حقوق الملكية',
+        '4': 'الإيرادات',
+        '5': 'المصروفات التشغيلية',
+        '6': 'تكلفة النشاط',
+        '7': 'التمويل والاستثمار',
+        '8': 'الضرائب',
+    };
+
+    let html = '';
+    let grandTotalD = 0, grandTotalC = 0;
+
+    Object.keys(groups).sort().forEach(groupKey => {
+        const rows = groups[groupKey];
+
+        // حساب إجماليات المجموعة
+        let groupDebit = 0, groupCredit = 0;
+        rows.forEach(x => {
+            groupDebit += Number(x.closing_debit) || 0;
+            groupCredit += Number(x.closing_credit) || 0;
+        });
+
+        // صف المجموعة
+        html += `
+            <tr class="group-header op-${groupKey}">
+                <td colspan="6">
+                    <i class="bi bi-folder-fill"></i>
+                    ${groupNames[groupKey] || 'مجموعة ' + groupKey}
+                    <span style="font-size:0.65rem;color:#94a3b8;margin-right:6px;">(${rows.length} حساب)</span>
+                </td>
+                <td class="num-cell debit" style="font-weight:800;">${fmtMoney(groupDebit)}</td>
+                <td class="num-cell credit" style="font-weight:800;">${fmtMoney(groupCredit)}</td>
+                <td style="background:#f1f5f9;"></td>
+            </tr>
+        `;
+
+        rows.forEach(x => {
+            // IFRS 18 badge
+            let ifrsBadge = '';
+            if (x.ifrs18_category) {
+                const cls = x.ifrs18_category.toLowerCase();
+                ifrsBadge = `<span class="ifrs-badge ${cls}">${x.ifrs18_category}</span>`;
+            }
+
+            html += `
+                <tr>
+                    <td class="code-cell">${escapeHtml(x.code)}</td>
+                    <td class="name-cell" title="${escapeHtml(x.name_ar)}">${ifrsBadge}${escapeHtml(x.name_ar)}</td>
+                    <td class="level-cell"><span>${escapeHtml(x.level)}</span></td>
+                    <td class="num-cell debit">${fmtNum(x.opening_debit)}</td>
+                    <td class="num-cell credit">${fmtNum(x.opening_credit)}</td>
+                    <td class="num-cell debit">${fmtNum(x.period_debit)}</td>
+                    <td class="num-cell credit">${fmtNum(x.period_credit)}</td>
+                    <td class="num-cell debit">${fmtNum(x.closing_debit)}</td>
+                    <td class="num-cell credit">${fmtNum(x.closing_credit)}</td>
+                </tr>
+            `;
+        });
+
+        grandTotalD += groupDebit;
+        grandTotalC += groupCredit;
+    });
+
+    // صف الإجمالي العام
+    html += `
+        <tr class="total-row">
+            <td colspan="6" class="text-end">الإجمالي العام:</td>
+            <td class="num-cell debit">${fmtMoney(grandTotalD)}</td>
+            <td class="num-cell credit">${fmtMoney(grandTotalC)}</td>
+            <td style="background:#e8f5e9;"></td>
+        </tr>
+        <tr>
+            <td colspan="6" class="text-end"><strong>حالة التوازن:</strong></td>
+            <td colspan="3" class="text-center">
+                ${balanceBadge(grandTotalD, grandTotalC, Math.abs(grandTotalD - grandTotalC) < 0.01 ? 'الميزان متوازن' : 'الميزان غير متوازن')}
+            </td>
+        </tr>
+    `;
+
+    tbody.innerHTML = html;
+}
+
+function exportExcel() {
+    const qs = buildQS(getFilters());
+    window.location.href = '/api/v1/export/excel/export/trial_balance' + qs;
+}
+
+// Init
+setupDateField('f-from');
+setupDateField('f-to');
+setupDateField('f-asof');
+document.getElementById('f-search').addEventListener('input', renderTable);
+
+load();
+</script>
+</body>
+</html>

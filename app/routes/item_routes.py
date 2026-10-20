@@ -1,6 +1,6 @@
-﻿from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify
 from app.database import db
-from app.utils import json_safe
+from app.utils import json_safe, enrich_with_user
 
 item_bp = Blueprint('items', __name__)
 
@@ -8,10 +8,16 @@ item_bp = Blueprint('items', __name__)
 @item_bp.route('/', methods=['GET'])
 def list_items():
     search = request.args.get('search', '')
+    operating = request.args.get('operating_type', '')
     conditions, values = ["1=1"], []
+    
     if search:
-        conditions.append("(i.code LIKE ? OR i.name_ar LIKE ?)")
-        values += [f'%{search}%', f'%{search}%']
+        conditions.append("(i.code LIKE ? OR i.name_ar LIKE ? OR i.name_en LIKE ?)")
+        values += [f'%{search}%', f'%{search}%', f'%{search}%']
+    if operating:
+        conditions.append("i.operating_type = ?")
+        values.append(operating)
+    
     where = ' AND '.join(conditions)
     rows = db.query(
         f"""SELECT i.*, 
@@ -19,11 +25,7 @@ def list_items():
                    m.name_ar as medium_uom_name,
                    j.name_ar as major_uom_name,
                    g.code as group_code,
-                   g.name_ar as group_name,
-                   g.inventory_account as group_inventory_account,
-                   g.cost_account as group_cost_account,
-                   g.revenue_account as group_revenue_account,
-                   g.clearing_account as group_clearing_account
+                   g.name_ar as group_name
             FROM items i
             LEFT JOIN units_of_measure u ON i.base_uom_id = u.id
             LEFT JOIN units_of_measure m ON i.medium_uom_id = m.id
@@ -33,6 +35,7 @@ def list_items():
             ORDER BY i.code""",
         values
     )
+    rows = enrich_with_user(rows)
     return jsonify({'success': True, 'data': json_safe(rows)})
 
 
@@ -71,14 +74,19 @@ def create_item():
         if not d.get(f):
             return jsonify({'success': False, 'message': f'الحقل {f} مطلوب'}), 400
 
+    operating_type = d.get('operating_type', 'OPERATING')
+    if operating_type not in ('OPERATING', 'NON_OPERATING', 'CAPITAL'):
+        return jsonify({'success': False, 'message': 'نوع التشغيل غير صحيح'}), 400
+
     try:
         iid = db.execute(
             """INSERT INTO items (code, name_ar, name_en, category_id, group_id, item_type,
                base_uom_id, cost_method, inventory_account, cost_account,
                revenue_account, clearing_account, reorder_level, is_active,
                medium_uom_id, medium_to_minor_factor,
-               major_uom_id, major_to_medium_factor)
-               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?, ?, ?)""",
+               major_uom_id, major_to_medium_factor, operating_type,
+               is_taxable, default_tax_rate)
+               VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?, ?, ?, ?, ?, ?)""",
             (d['code'], d['name_ar'], d.get('name_en'),
              d.get('category_id', 1),
              d.get('group_id'),
@@ -89,7 +97,10 @@ def create_item():
              d.get('clearing_account'),
              d.get('reorder_level', 0),
              d.get('medium_uom_id'), d.get('medium_to_minor_factor'),
-             d.get('major_uom_id'), d.get('major_to_medium_factor'))
+             d.get('major_uom_id'), d.get('major_to_medium_factor'),
+             operating_type,
+             d.get('is_taxable', 1),
+             d.get('default_tax_rate', 14))
         )
         return jsonify({'success': True, 'data': {'id': iid}}), 201
     except Exception as e:
@@ -100,16 +111,20 @@ def create_item():
 def update_item(iid):
     d = request.get_json() or {}
     fields, values = [], []
+    
     for k in ['name_ar', 'name_en', 'category_id', 'group_id', 'item_type',
               'base_uom_id', 'cost_method', 'inventory_account', 'cost_account',
               'revenue_account', 'clearing_account', 'reorder_level',
               'medium_uom_id', 'medium_to_minor_factor',
-              'major_uom_id', 'major_to_medium_factor', 'is_active']:
+              'major_uom_id', 'major_to_medium_factor', 'is_active', 'operating_type',
+              'is_taxable', 'default_tax_rate']:
         if k in d:
             fields.append(f"{k}=?")
             values.append(d[k])
+    
     if not fields:
         return jsonify({'success': False, 'message': 'لا توجد بيانات'}), 400
+    
     values.append(iid)
     db.execute(f"UPDATE items SET {','.join(fields)} WHERE id=?", values)
     return jsonify({'success': True, 'message': 'تم التحديث'})
@@ -136,3 +151,38 @@ def delete_item(iid):
         conn.execute("DELETE FROM uom_conversions WHERE item_id=?", (iid,))
         conn.execute("DELETE FROM items WHERE id=?", (iid,))
     return jsonify({'success': True, 'message': 'تم حذف الصنف'})
+
+
+@item_bp.route('/report/by-operating-type', methods=['GET'])
+def report_by_operating_type():
+    rows = db.query("""
+        SELECT 
+            COALESCE(i.operating_type, 'OPERATING') as operating_type,
+            COUNT(DISTINCT i.id) as item_count,
+            COALESCE(SUM(sb.quantity), 0) as total_qty,
+            COALESCE(SUM(sb.total_value), 0) as total_value
+        FROM items i
+        LEFT JOIN stock_balances sb ON i.id = sb.item_id
+        GROUP BY i.operating_type
+    """)
+    
+    labels = {
+        'OPERATING': 'مخزون تشغيلي',
+        'NON_OPERATING': 'مخزون غير تشغيلي',
+        'CAPITAL': 'قطع غيار رأسمالية'
+    }
+    
+    result = []
+    total = 0
+    for r in rows:
+        val = float(r['total_value'] or 0)
+        total += val
+        result.append({
+            'operating_type': r['operating_type'],
+            'label_ar': labels.get(r['operating_type'], r['operating_type']),
+            'item_count': r['item_count'],
+            'total_qty': float(r['total_qty'] or 0),
+            'total_value': val
+        })
+    
+    return jsonify({'success': True, 'data': result, 'total_value': total})

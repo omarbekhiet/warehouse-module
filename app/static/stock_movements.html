@@ -1,0 +1,947 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>أنواع حركات المخازن</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet">
+<link href="style.css" rel="stylesheet">
+
+<style>
+.mv-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+    background: white;
+}
+.mv-table thead th {
+    background: linear-gradient(135deg, #1e3c72, #2a5298);
+    color: white;
+    font-weight: 700;
+    padding: 12px 10px;
+    text-align: right;
+    font-size: 0.78rem;
+    border-bottom: 2px solid #0f2555;
+    white-space: nowrap;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+.mv-table tbody tr {
+    border-bottom: 1px solid #f1f5f9;
+    transition: all 0.15s;
+}
+.mv-table tbody tr:hover { background: #fef9c3 !important; }
+.mv-table tbody td {
+    padding: 10px 11px;
+    vertical-align: middle;
+    border-left: 1px solid #f1f5f9;
+}
+
+.mv-table tbody tr.type-ADD { border-right: 5px solid #10b981; background: #f0fdf4; }
+.mv-table tbody tr.type-SUBTRACT { border-right: 5px solid #ef4444; background: #fef2f2; }
+.mv-table tbody tr.type-TRANSFER { border-right: 5px solid #3b82f6; background: #eff6ff; }
+.mv-table tbody tr.type-ADJUST { border-right: 5px solid #f59e0b; background: #fffbeb; }
+
+.col-code { width: 100px; }
+.col-name { min-width: 200px; }
+.col-type { width: 100px; text-align: center; }
+.col-accounts { min-width: 320px; }
+.col-status { width: 90px; text-align: center; }
+.col-actions { width: 130px; text-align: center; }
+
+.code-badge {
+    display: inline-block;
+    padding: 3px 9px;
+    border-radius: 5px;
+    font-family: 'Consolas', 'Monaco', monospace;
+    font-weight: 700;
+    font-size: 0.78rem;
+    background: #1e293b;
+    color: white;
+    border: 1px solid #0f172a;
+}
+
+.type-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: white;
+    white-space: nowrap;
+}
+.type-badge.ADD { background: #10b981; }
+.type-badge.SUBTRACT { background: #ef4444; }
+.type-badge.TRANSFER { background: #3b82f6; }
+.type-badge.ADJUST { background: #f59e0b; }
+
+.acc-badge {
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 0.72rem;
+    font-family: monospace;
+    font-weight: 700;
+    margin: 2px;
+    border: 1px solid;
+}
+.acc-badge.debit { background: #dbeafe; color: #1e40af; border-color: #bfdbfe; }
+.acc-badge.credit { background: #fce7f3; color: #9d174d; border-color: #fbcfe8; }
+.acc-badge.warehouse { background: #d1fae5; color: #065f46; border-color: #a7f3d0; }
+.acc-badge.tax { background: #fef3c7; color: #92400e; border-color: #fde68a; }
+.acc-badge.extra { background: #f3e8ff; color: #6b21a8; border-color: #e9d5ff; }
+.acc-badge.system { background: #e0f2fe; color: #0369a1; border-color: #bae6fd; }
+
+.badge-active { background: #d1fae5; color: #065f46; border: 1px solid #a7f3d0; padding: 3px 10px; border-radius: 12px; font-size: 0.72rem; font-weight: 700; }
+.badge-inactive { background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; padding: 3px 10px; border-radius: 12px; font-size: 0.72rem; font-weight: 700; }
+
+.action-btns { display: flex; gap: 4px; justify-content: center; }
+.btn-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    font-size: 0.78rem;
+    border-radius: 6px;
+    border: 1.5px solid;
+    background: white;
+    transition: all 0.15s;
+    cursor: pointer;
+}
+.btn-action:hover { transform: translateY(-2px); box-shadow: 0 3px 8px rgba(0,0,0,0.12); }
+.btn-action.view { color: #06b6d4; border-color: #06b6d4; }
+.btn-action.view:hover { background: #06b6d4; color: white; }
+.btn-action.edit { color: #f59e0b; border-color: #f59e0b; }
+.btn-action.edit:hover { background: #f59e0b; color: white; }
+.btn-action.del { color: #ef4444; border-color: #ef4444; }
+.btn-action.del:hover { background: #ef4444; color: white; }
+
+.mv-container {
+    max-height: calc(100vh - 320px);
+    overflow-y: auto;
+    overflow-x: auto;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    background: white;
+}
+
+.form-label { font-weight: 600; font-size: 0.85rem; color: #334155; }
+.form-section {
+    background: #f8fafc;
+    border-radius: 8px;
+    padding: 12px 14px;
+    margin-bottom: 12px;
+    border: 1px solid #e2e8f0;
+}
+.form-section h6 {
+    font-size: 0.85rem;
+    color: #1e3c72;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.type-selector {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin-bottom: 10px;
+}
+.type-option {
+    padding: 12px 8px;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    background: white;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.15s;
+}
+.type-option:hover { border-color: #3b82f6; }
+.type-option.selected { border-color: #1e3c72; background: #eff6ff; box-shadow: 0 0 0 3px rgba(30,60,114,0.1); }
+.type-option input { display: none; }
+.type-option .icon { font-size: 1.5rem; display: block; margin-bottom: 4px; }
+.type-option .label { font-size: 0.78rem; font-weight: 700; color: #334155; }
+
+.side-selector {
+    background: white;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 10px;
+    transition: all 0.15s;
+}
+.side-selector.debit { border-color: #3b82f6; background: #eff6ff; }
+.side-selector.credit { border-color: #ec4899; background: #fdf2f8; }
+.side-selector.tax { border-color: #f59e0b; background: #fffbeb; }
+.side-selector.extra { border-color: #8b5cf6; background: #faf5ff; }
+.side-selector label {
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: #334155;
+    margin-bottom: 6px;
+    display: block;
+}
+
+.select2-container { width: 100% !important; }
+
+.empty-state { text-align: center; padding: 60px 20px; color: #94a3b8; }
+.empty-state i { font-size: 4rem; margin-bottom: 15px; opacity: 0.5; }
+
+/* ============================================
+   إلغاء أسهم input[type=number]
+   ============================================ */
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none !important;
+    margin: 0 !important;
+}
+input[type=number] {
+    -moz-appearance: textfield !important;
+    appearance: textfield !important;
+}
+input[type="number"] {
+    -moz-appearance: textfield !important;
+}
+
+</style>
+<script src="permissions.js"></script>
+
+
+
+<style id="compact-spacing-global">
+/* ============================================
+   توحيد المسافات المضغوطة
+   ============================================ */
+
+.table td, .table th {
+    padding: 3px 6px !important;
+    font-size: 0.75rem !important;
+    vertical-align: middle !important;
+    line-height: 1.2 !important;
+}
+
+.table tbody tr {
+    height: auto !important;
+}
+
+.form-control, .form-select {
+    font-size: 0.75rem !important;
+    line-height: 1.2 !important;
+}
+
+.form-control-sm, .form-select-sm {
+    height: 26px !important;
+    padding: 2px 6px !important;
+    font-size: 0.72rem !important;
+    line-height: 1 !important;
+}
+
+.btn {
+    padding: 3px 8px !important;
+    font-size: 0.72rem !important;
+    line-height: 1.2 !important;
+}
+
+.btn-sm {
+    padding: 2px 6px !important;
+    font-size: 0.7rem !important;
+}
+
+.card {
+    margin-bottom: 6px !important;
+}
+
+.card-body, .card.p-2, .card.p-3, .card.p-4 {
+    padding: 6px 8px !important;
+}
+
+.modal-header {
+    padding: 6px 12px !important;
+}
+
+.modal-title {
+    font-size: 0.9rem !important;
+}
+
+.modal-body {
+    padding: 8px 12px !important;
+}
+
+.modal-footer {
+    padding: 6px 12px !important;
+}
+
+.modal-footer .btn {
+    padding: 4px 10px !important;
+    font-size: 0.75rem !important;
+}
+
+.mb-1, .mb-2, .mb-3, .mb-4 {
+    margin-bottom: 4px !important;
+}
+
+.mt-1, .mt-2, .mt-3, .mt-4 {
+    margin-top: 4px !important;
+}
+
+.ms-1, .ms-2, .ms-3 {
+    margin-right: 4px !important;
+}
+
+.me-1, .me-2, .me-3 {
+    margin-left: 4px !important;
+}
+
+.p-1, .p-2, .p-3, .p-4 {
+    padding: 4px !important;
+}
+
+.g-1, .g-2, .g-3 {
+    gap: 4px !important;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    line-height: 1.3 !important;
+}
+
+h1 { font-size: 1.2rem !important; margin-bottom: 6px !important; }
+h2 { font-size: 1.05rem !important; margin-bottom: 6px !important; }
+h3 { font-size: 0.95rem !important; margin-bottom: 4px !important; }
+h4 { font-size: 0.9rem !important; margin-bottom: 4px !important; }
+h5 { font-size: 0.85rem !important; margin-bottom: 4px !important; }
+h6 { font-size: 0.8rem !important; margin-bottom: 4px !important; }
+
+.alert {
+    padding: 6px 10px !important;
+    margin-bottom: 6px !important;
+    font-size: 0.78rem !important;
+}
+
+.badge {
+    padding: 2px 6px !important;
+    font-size: 0.68rem !important;
+}
+
+.nav-tabs .nav-link {
+    padding: 5px 12px !important;
+    font-size: 0.78rem !important;
+}
+
+hr {
+    margin: 6px 0 !important;
+}
+
+/* بطاقات الأعمار (aging) */
+.aging-card, .bucket-card, .stat-card {
+    padding: 6px 8px !important;
+    margin-bottom: 4px !important;
+}
+
+.aging-card .h4, .aging-card .h5,
+.bucket-card .h4, .bucket-card .h5 {
+    font-size: 1rem !important;
+    margin: 2px 0 !important;
+}
+
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none !important;
+    margin: 0 !important;
+}
+input[type=number] {
+    -moz-appearance: textfield !important;
+}
+</style>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 16 16%22><text y=%2214%22 font-size=%2214%22>📒</text></svg>">
+</head>
+<body>
+<div class="container-fluid">
+<div class="row">
+
+<!-- Sidebar -->
+<div class="col-md-2 sidebar p-0">
+<div class="brand">
+    <i class="bi bi-box-seam" style="font-size:2rem;"></i>
+    <h5 class="mt-2 mb-0">موديول المخازن</h5>
+</div>
+<nav class="mt-3">
+<a href="index.html#warehouse"><i class="bi bi-house-fill"></i> المخازن والأصناف</a>
+<a href="notifications.html"><i class="bi bi-bell"></i> الإشعارات</a>
+<a href="accounts.html"><i class="bi bi-book"></i> الدليل المحاسبي</a>
+<a href="warehouses.html"><i class="bi bi-building"></i> المستودعات</a>
+<a href="item_groups.html"><i class="bi bi-diagram-3"></i> مجموعات الأصناف</a>
+<a href="items.html"><i class="bi bi-box"></i> الأصناف</a>
+<a href="uom.html"><i class="bi bi-rulers"></i> وحدات القياس</a>
+<a href="stock_movements.html" class="active"><i class="bi bi-arrow-left-right"></i> أنواع حركات المخازن</a>
+<a href="suppliers.html"><i class="bi bi-truck"></i> الموردون</a>
+<a href="customers.html"><i class="bi bi-people"></i> العملاء</a>
+<a href="requisitions.html"><i class="bi bi-clipboard-check"></i> طلبات الاحتياج</a>
+<a href="purchase_orders.html"><i class="bi bi-file-earmark-text"></i> أوامر الشراء</a>
+<a href="purchase_invoices.html"><i class="bi bi-receipt"></i> فواتير الشراء</a>
+<a href="sales_invoices.html"><i class="bi bi-cart-check"></i> فواتير البيع</a>
+<a href="purchase_returns.html"><i class="bi bi-arrow-return-left"></i> مرتجع شراء</a>
+<a href="sales_returns.html"><i class="bi bi-arrow-return-right"></i> مرتجع بيع</a>
+<a href="payments.html"><i class="bi bi-cash-coin"></i> مدفوعات الموردين</a>
+<a href="customer_receipts.html"><i class="bi bi-cash-stack"></i> تحصيلات العملاء</a>
+<a href="receipts.html"><i class="bi bi-arrow-down-circle"></i> الاستلام</a>
+<a href="material_requests.html"><i class="bi bi-clipboard-plus"></i> طلبات الصرف</a>
+<a href="issues.html"><i class="bi bi-arrow-up-circle"></i> الصرف</a>
+<a href="transfers.html"><i class="bi bi-arrow-left-right"></i> التحويلات</a>
+<a href="counts.html"><i class="bi bi-clipboard-check"></i> الجرد</a>
+<a href="clearing.html"><i class="bi bi-shuffle"></i> الحسابات الوسيطة</a>
+<a href="financial_reports.html"><i class="bi bi-graph-up"></i> التقارير المالية</a>
+<a href="reports.html"><i class="bi bi-file-earmark-bar-graph"></i> التقارير</a>
+<a href="journal.html"><i class="bi bi-journal-text"></i> القيود</a>
+</nav>
+</div>
+
+<!-- Main -->
+<div class="col-md-10 p-2">
+
+<div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-1">
+<h5 class="mb-0"><i class="bi bi-arrow-left-right"></i> أنواع حركات المخازن</h5>
+<div class="d-flex gap-1 flex-wrap">
+<a href="index.html#warehouse" class="btn btn-sm btn-outline-secondary"><i class="bi bi-house-fill"></i></a>
+<button class="btn btn-sm btn-outline-secondary" onclick="load()"><i class="bi bi-arrow-clockwise"></i></button>
+<button class="btn btn-sm btn-primary" onclick="openAdd()"><i class="bi bi-plus-circle"></i> نوع حركة جديد</button>
+</div>
+</div>
+
+<!-- Stats -->
+<div class="row g-1 mb-2">
+<div class="col-3"><div class="card p-1 text-center"><small class="text-muted" style="font-size:0.68rem;">الإجمالي</small><div class="text-primary fw-bold" id="s-total" style="font-size:0.95rem;">-</div></div></div>
+<div class="col-3"><div class="card p-1 text-center"><small class="text-muted" style="font-size:0.68rem;">➕ إضافة</small><div class="text-success fw-bold" id="s-add" style="font-size:0.95rem;">-</div></div></div>
+<div class="col-3"><div class="card p-1 text-center"><small class="text-muted" style="font-size:0.68rem;">➖ خصم</small><div class="text-danger fw-bold" id="s-sub" style="font-size:0.95rem;">-</div></div></div>
+<div class="col-3"><div class="card p-1 text-center"><small class="text-muted" style="font-size:0.68rem;">🔄 نقل / ⚖️ تسوية</small><div class="text-info fw-bold" id="s-other" style="font-size:0.95rem;">-</div></div></div>
+</div>
+
+<!-- Filters -->
+<div class="card p-1 mb-2">
+<div class="row g-1 align-items-center">
+<div class="col-md-5"><input class="form-control form-control-sm" id="flt-search" placeholder="🔍 ابحث بالكود أو الاسم..." oninput="renderTable()"></div>
+<div class="col-md-3">
+<select class="form-select form-select-sm" id="flt-type" onchange="renderTable()">
+<option value="">كل الأنواع</option>
+<option value="ADD">➕ إضافة</option>
+<option value="SUBTRACT">➖ خصم</option>
+<option value="TRANSFER">🔄 نقل</option>
+<option value="ADJUST">⚖️ تسوية</option>
+</select></div>
+<div class="col-md-3">
+<select class="form-select form-select-sm" id="flt-status" onchange="renderTable()">
+<option value="">كل الحالات</option>
+<option value="1">نشط</option>
+<option value="0">موقوف</option>
+</select></div>
+<div class="col-md-1"><button class="btn btn-outline-secondary btn-sm w-100" onclick="resetFilters()"><i class="bi bi-x-circle"></i></button></div>
+</div>
+</div>
+
+<!-- Table -->
+<div class="card p-1">
+<div class="mv-container">
+<table class="mv-table">
+<thead>
+<tr>
+    <th class="col-code">الكود</th>
+    <th class="col-name">اسم الحركة</th>
+    <th class="col-type">النوع</th>
+    <th class="col-accounts">الحسابات</th>
+    <th class="col-status">الحالة</th>
+    <th class="col-actions">إجراءات</th>
+</tr>
+</thead>
+<tbody id="mv-body">
+<tr><td colspan="6" class="text-center text-muted p-4">جاري التحميل...</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+
+</div>
+</div>
+</div>
+
+<!-- Modal Add/Edit -->
+<div class="modal fade" id="mvModal" tabindex="-1">
+<div class="modal-dialog modal-xl">
+<div class="modal-content">
+<div class="modal-header bg-primary text-white">
+<h5 class="modal-title" id="modal-title"><i class="bi bi-plus-circle"></i> نوع حركة جديد</h5>
+<button class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+</div>
+<div class="modal-body">
+
+<!-- البيانات الأساسية -->
+<div class="form-section">
+<h6><i class="bi bi-info-circle"></i> البيانات الأساسية</h6>
+<div class="row g-3">
+<div class="col-md-4"><label class="form-label">الكود *</label><input class="form-control" id="f-code" placeholder="RECV, ISSUE, TRANS..."></div>
+<div class="col-md-4"><label class="form-label">الاسم بالعربي *</label><input class="form-control" id="f-name_ar" placeholder="استلام مشتريات"></div>
+<div class="col-md-4"><label class="form-label">الاسم بالإنجليزي</label><input class="form-control" id="f-name_en" placeholder="Purchase Receipt"></div>
+</div>
+</div>
+
+<!-- نوع العملية -->
+<div class="form-section">
+<h6><i class="bi bi-arrow-repeat"></i> نوع العملية</h6>
+<div class="type-selector">
+<label class="type-option" data-type="ADD">
+    <input type="radio" name="mv_type" value="ADD">
+    <span class="icon">➕</span>
+    <span class="label">إضافة مخزون</span>
+</label>
+<label class="type-option" data-type="SUBTRACT">
+    <input type="radio" name="mv_type" value="SUBTRACT">
+    <span class="icon">➖</span>
+    <span class="label">خصم مخزون</span>
+</label>
+<label class="type-option" data-type="TRANSFER">
+    <input type="radio" name="mv_type" value="TRANSFER">
+    <span class="icon">🔄</span>
+    <span class="label">نقل بين المخازن</span>
+</label>
+<label class="type-option" data-type="ADJUST">
+    <input type="radio" name="mv_type" value="ADJUST">
+    <span class="icon">⚖️</span>
+    <span class="label">تسوية جرد</span>
+</label>
+</div>
+</div>
+
+<!-- الحسابات -->
+<div class="form-section">
+<h6><i class="bi bi-book"></i> الحسابات من الدليل</h6>
+
+<div class="alert alert-info py-2 small mb-3">
+<i class="bi bi-info-circle"></i>
+<strong>ملاحظات:</strong>
+<ul class="mb-0 mt-1">
+<li><strong>WAREHOUSE</strong> = حساب المستودع (يتغير حسب المستودع)</li>
+<li><strong>WAREHOUSE_TO</strong> = حساب المستودع المستلم (في التحويل)</li>
+<li><strong>WAREHOUSE_FROM</strong> = حساب المستودع المُسلِّم (في التحويل)</li>
+<li>أو اختر حساب فعلي من القائمة</li>
+</ul>
+</div>
+
+<div class="row g-2">
+<div class="col-md-6">
+<div class="side-selector debit">
+<label>📤 الطرف المدين * (Debit)</label>
+<select class="form-select" id="f-debit_side"><option value="">— اختر —</option></select>
+</div>
+</div>
+<div class="col-md-6">
+<div class="side-selector credit">
+<label>📥 الطرف الدائن * (Credit)</label>
+<select class="form-select" id="f-credit_side"><option value="">— اختر —</option></select>
+</div>
+</div>
+</div>
+
+<div class="row g-2 mt-2">
+<div class="col-md-6">
+<div class="side-selector tax">
+<label>🧾 حساب الضريبة (اختياري)</label>
+<select class="form-select" id="f-tax_side"><option value="">— بدون —</option></select>
+</div>
+</div>
+<div class="col-md-6">
+<div class="side-selector extra">
+<label>➕ حساب إضافي (اختياري)</label>
+<select class="form-select" id="f-extra_side"><option value="">— بدون —</option></select>
+</div>
+</div>
+</div>
+</div>
+
+<!-- إعدادات -->
+<div class="form-section">
+<h6><i class="bi bi-gear"></i> إعدادات</h6>
+<div class="row g-3">
+<div class="col-md-3">
+<div class="form-check">
+<input class="form-check-input" type="checkbox" id="f-affects_quantity" checked>
+<label class="form-check-label">يؤثر على الكمية</label>
+</div>
+</div>
+<div class="col-md-3">
+<div class="form-check">
+<input class="form-check-input" type="checkbox" id="f-affects_value" checked>
+<label class="form-check-label">يؤثر على القيمة</label>
+</div>
+</div>
+<div class="col-md-3">
+<div class="form-check">
+<input class="form-check-input" type="checkbox" id="f-requires_reference">
+<label class="form-check-label">يحتاج رقم مرجع</label>
+</div>
+</div>
+<div class="col-md-3">
+<select class="form-select" id="f-is_active">
+<option value="1">✅ نشط</option>
+<option value="0">⛔ موقوف</option>
+</select>
+</div>
+</div>
+<div class="row g-3 mt-1">
+<div class="col-12">
+<label class="form-label">ملاحظات</label>
+<textarea class="form-control" id="f-notes" rows="2"></textarea>
+</div>
+</div>
+</div>
+
+</div>
+<div class="modal-footer">
+<button class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+<button class="btn btn-primary" onclick="save()"><i class="bi bi-check-circle"></i> حفظ</button>
+</div>
+</div></div></div>
+
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+<script>
+const API = 'http://localhost:5000/api/v1';
+const modal = new bootstrap.Modal(document.getElementById('mvModal'));
+let allMovements = [];
+let allAccounts = [];
+let editId = null;
+
+// ==================== Select2 ====================
+function initSearchable(selector, placeholder){
+    if (typeof $ === 'undefined') return;
+    if ($(selector).data('select2')) $(selector).select2('destroy');
+    $(selector).select2({
+        theme: 'bootstrap-5',
+        placeholder: placeholder || 'اكتب للبحث...',
+        allowClear: true,
+        width: '100%',
+        dropdownParent: $('#mvModal'),
+        language: {
+            noResults: () => "لا توجد نتائج",
+            searching: () => "جاري البحث..."
+        }
+    });
+}
+
+// ==================== Load Refs ====================
+async function loadRefs(){
+    try {
+        const a = await fetch(`${API}/accounts/leaf`).then(r => r.json());
+        allAccounts = a.data || [];
+    } catch(e) { console.error(e); }
+}
+
+// ==================== Load Movements ====================
+async function load(){
+    try {
+        const r = await fetch(`${API}/stock_movements/`).then(x => x.json());
+        allMovements = r.data || [];
+        renderTable();
+        renderStats();
+    } catch(e) {
+        document.getElementById('mv-body').innerHTML = 
+            '<tr><td colspan="6" class="text-center text-danger p-4">خطأ: ' + e.message + '</td></tr>';
+    }
+}
+
+function renderStats(){
+    document.getElementById('s-total').textContent = allMovements.length;
+    document.getElementById('s-add').textContent = allMovements.filter(m => m.movement_type === 'ADD').length;
+    document.getElementById('s-sub').textContent = allMovements.filter(m => m.movement_type === 'SUBTRACT').length;
+    document.getElementById('s-other').textContent = allMovements.filter(m => m.movement_type === 'TRANSFER' || m.movement_type === 'ADJUST').length;
+}
+
+// ==================== Render Table ====================
+function renderTable(){
+    const search = document.getElementById('flt-search').value.toLowerCase();
+    const type = document.getElementById('flt-type').value;
+    const status = document.getElementById('flt-status').value;
+    
+    let data = allMovements;
+    if (search) data = data.filter(m => 
+        (m.code||'').toLowerCase().includes(search) ||
+        (m.name_ar||'').includes(search) ||
+        (m.name_en||'').toLowerCase().includes(search)
+    );
+    if (type) data = data.filter(m => m.movement_type === type);
+    if (status !== '') data = data.filter(m => String(m.is_active?1:0) === status);
+    
+    if (!data.length) {
+        document.getElementById('mv-body').innerHTML = 
+            '<tr><td colspan="6"><div class="empty-state"><i class="bi bi-arrow-left-right"></i><h5>لا توجد حركات</h5></div></td></tr>';
+        return;
+    }
+    
+    const typeLabels = {
+        ADD: { txt: '➕ إضافة' },
+        SUBTRACT: { txt: '➖ خصم' },
+        TRANSFER: { txt: '🔄 نقل' },
+        ADJUST: { txt: '⚖️ تسوية' }
+    };
+    
+    let html = '';
+    data.forEach(m => {
+        const t = typeLabels[m.movement_type] || { txt: m.movement_type };
+        const statusBadge = m.is_active 
+            ? '<span class="badge-active">✅ نشط</span>'
+            : '<span class="badge-inactive">⛔ موقوف</span>';
+        
+        html += `
+            <tr class="type-${m.movement_type}">
+                <td class="col-code"><span class="code-badge">${m.code}</span></td>
+                <td class="col-name">
+                    <strong>${m.name_ar}</strong>
+                    ${m.name_en ? `<br><small class="text-muted">${m.name_en}</small>` : ''}
+                </td>
+                <td class="col-type"><span class="type-badge ${m.movement_type}">${t.txt}</span></td>
+                <td class="col-accounts">${renderAccounts(m)}</td>
+                <td class="col-status">${statusBadge}</td>
+                <td class="col-actions">
+                    <div class="action-btns">
+                        <button class="btn-action view" onclick="viewMv(${m.id})" title="عرض"><i class="bi bi-eye"></i></button>
+                        <button class="btn-action edit" onclick="openEdit(${m.id})" title="تعديل"><i class="bi bi-pencil"></i></button>
+                        <button class="btn-action del" onclick="del(${m.id},'${m.code}','${m.name_ar}')" title="حذف"><i class="bi bi-trash"></i></button>
+                    </div>
+                </td>
+            </tr>
+        `;
+    });
+    document.getElementById('mv-body').innerHTML = html;
+}
+
+function renderAccounts(m){
+    const acc = (code, cls, icon, title) => {
+        if (!code) return '';
+        const isSystem = code.startsWith('WAREHOUSE');
+        const display = isSystem ? code.replace('WAREHOUSE', '🏭') : code;
+        return `<span class="acc-badge ${isSystem ? 'system' : cls}" title="${title}">${icon} ${display}</span>`;
+    };
+    
+    const parts = [];
+    parts.push(acc(m.debit_side, 'debit', '📤', 'مدين'));
+    parts.push(acc(m.credit_side, 'credit', '📥', 'دائن'));
+    if (m.tax_side) parts.push(acc(m.tax_side, 'tax', '🧾', 'ضريبة'));
+    if (m.extra_side) parts.push(acc(m.extra_side, 'extra', '➕', 'إضافي'));
+    
+    return parts.join(' ');
+}
+
+function resetFilters(){
+    document.getElementById('flt-search').value = '';
+    document.getElementById('flt-type').value = '';
+    document.getElementById('flt-status').value = '';
+    renderTable();
+}
+
+// ==================== Type Selector ====================
+document.querySelectorAll('.type-option').forEach(el => {
+    el.addEventListener('click', function(){
+        document.querySelectorAll('.type-option').forEach(x => x.classList.remove('selected'));
+        this.classList.add('selected');
+        this.querySelector('input').checked = true;
+    });
+});
+
+// ==================== Build Account Options ====================
+function buildAccountOptions(includeSystem = true){
+    let opts = '<option value="">— اختر —</option>';
+    
+    if (includeSystem) {
+        opts += '<optgroup label="🏭 حسابات النظام (متغيرة)">';
+        opts += '<option value="WAREHOUSE">🏭 WAREHOUSE - حساب المستودع</option>';
+        opts += '<option value="WAREHOUSE_TO">🏭 WAREHOUSE_TO - المستودع المستلم</option>';
+        opts += '<option value="WAREHOUSE_FROM">🏭 WAREHOUSE_FROM - المستودع المُسلِّم</option>';
+        opts += '</optgroup>';
+    }
+    
+    opts += '<optgroup label="📚 الحسابات من الدليل">';
+    allAccounts.forEach(a => {
+        opts += `<option value="${a.code}">${a.code} - ${a.name_ar}</option>`;
+    });
+    opts += '</optgroup>';
+    
+    return opts;
+}
+
+function buildAccountOptionsOptional(){
+    let opts = '<option value="">— بدون —</option>';
+    opts += '<optgroup label="🏭 حسابات النظام (متغيرة)">';
+    opts += '<option value="WAREHOUSE">🏭 WAREHOUSE</option>';
+    opts += '<option value="WAREHOUSE_TO">🏭 WAREHOUSE_TO</option>';
+    opts += '<option value="WAREHOUSE_FROM">🏭 WAREHOUSE_FROM</option>';
+    opts += '</optgroup>';
+    opts += '<optgroup label="📚 الحسابات من الدليل">';
+    allAccounts.forEach(a => {
+        opts += `<option value="${a.code}">${a.code} - ${a.name_ar}</option>`;
+    });
+    opts += '</optgroup>';
+    return opts;
+}
+
+// ==================== Add ====================
+function openAdd(){
+    editId = null;
+    ['f-code','f-name_ar','f-name_en','f-notes'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('f-affects_quantity').checked = true;
+    document.getElementById('f-affects_value').checked = true;
+    document.getElementById('f-requires_reference').checked = false;
+    document.getElementById('f-is_active').value = '1';
+    document.getElementById('f-code').disabled = false;
+    document.querySelectorAll('.type-option').forEach(x => x.classList.remove('selected'));
+    
+    // املأ قوائم الحسابات
+    document.getElementById('f-debit_side').innerHTML = buildAccountOptions(true);
+    document.getElementById('f-credit_side').innerHTML = buildAccountOptions(true);
+    document.getElementById('f-tax_side').innerHTML = buildAccountOptionsOptional();
+    document.getElementById('f-extra_side').innerHTML = buildAccountOptionsOptional();
+    
+    document.getElementById('modal-title').innerHTML = '<i class="bi bi-plus-circle"></i> نوع حركة جديد';
+    
+    modal.show();
+    setTimeout(() => {
+        initSearchable('#f-debit_side', 'ابحث...');
+        initSearchable('#f-credit_side', 'ابحث...');
+        initSearchable('#f-tax_side', 'ابحث...');
+        initSearchable('#f-extra_side', 'ابحث...');
+    }, 200);
+}
+
+// ==================== Edit ====================
+function openEdit(id){
+    editId = id;
+    const m = allMovements.find(x => x.id === id);
+    if (!m) return;
+    
+    document.getElementById('f-code').value = m.code;
+    document.getElementById('f-code').disabled = true;
+    document.getElementById('f-name_ar').value = m.name_ar;
+    document.getElementById('f-name_en').value = m.name_en || '';
+    document.getElementById('f-notes').value = m.notes || '';
+    document.getElementById('f-affects_quantity').checked = m.affects_quantity == 1;
+    document.getElementById('f-affects_value').checked = m.affects_value == 1;
+    document.getElementById('f-requires_reference').checked = m.requires_reference == 1;
+    document.getElementById('f-is_active').value = m.is_active ? '1' : '0';
+    
+    document.querySelectorAll('.type-option').forEach(x => x.classList.remove('selected'));
+    const typeEl = document.querySelector(`.type-option[data-type="${m.movement_type}"]`);
+    if (typeEl) {
+        typeEl.classList.add('selected');
+        typeEl.querySelector('input').checked = true;
+    }
+    
+    // املأ قوائم الحسابات
+    document.getElementById('f-debit_side').innerHTML = buildAccountOptions(true);
+    document.getElementById('f-credit_side').innerHTML = buildAccountOptions(true);
+    document.getElementById('f-tax_side').innerHTML = buildAccountOptionsOptional();
+    document.getElementById('f-extra_side').innerHTML = buildAccountOptionsOptional();
+    
+    document.getElementById('modal-title').innerHTML = '<i class="bi bi-pencil"></i> تعديل الحركة';
+    modal.show();
+    
+    setTimeout(() => {
+        initSearchable('#f-debit_side', 'ابحث...');
+        initSearchable('#f-credit_side', 'ابحث...');
+        initSearchable('#f-tax_side', 'ابحث...');
+        initSearchable('#f-extra_side', 'ابحث...');
+        
+        $('#f-debit_side').val(m.debit_side || '').trigger('change');
+        $('#f-credit_side').val(m.credit_side || '').trigger('change');
+        $('#f-tax_side').val(m.tax_side || '').trigger('change');
+        $('#f-extra_side').val(m.extra_side || '').trigger('change');
+    }, 200);
+}
+
+// ==================== Save ====================
+async function save(){
+    const selectedType = document.querySelector('input[name="mv_type"]:checked');
+    
+    const data = {
+        name_ar: document.getElementById('f-name_ar').value.trim(),
+        name_en: document.getElementById('f-name_en').value.trim(),
+        movement_type: selectedType ? selectedType.value : null,
+        debit_side: document.getElementById('f-debit_side').value || null,
+        credit_side: document.getElementById('f-credit_side').value || null,
+        tax_side: document.getElementById('f-tax_side').value || null,
+        extra_side: document.getElementById('f-extra_side').value || null,
+        affects_quantity: document.getElementById('f-affects_quantity').checked ? 1 : 0,
+        affects_value: document.getElementById('f-affects_value').checked ? 1 : 0,
+        requires_reference: document.getElementById('f-requires_reference').checked ? 1 : 0,
+        notes: document.getElementById('f-notes').value.trim(),
+        is_active: document.getElementById('f-is_active').value === '1'
+    };
+    
+    if (!data.name_ar) { alert('الاسم مطلوب'); return; }
+    if (!data.movement_type) { alert('اختر نوع العملية'); return; }
+    if (!data.debit_side) { alert('الطرف المدين مطلوب'); return; }
+    if (!data.credit_side) { alert('الطرف الدائن مطلوب'); return; }
+    
+    try {
+        if (editId) {
+            const r = await fetch(`${API}/stock_movements/${editId}`, {
+                method: 'PUT',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(data)
+            }).then(x => x.json());
+            if (r.success) { modal.hide(); load(); }
+            else alert(r.message || 'خطأ');
+        } else {
+            data.code = document.getElementById('f-code').value.trim();
+            if (!data.code) { alert('الكود مطلوب'); return; }
+            const r = await fetch(`${API}/stock_movements/`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(data)
+            }).then(x => x.json());
+            if (r.success) { modal.hide(); load(); }
+            else alert(r.message || 'خطأ');
+        }
+    } catch(e) { alert('خطأ: ' + e.message); }
+}
+
+// ==================== View ====================
+function viewMv(id){
+    const m = allMovements.find(x => x.id === id);
+    if (!m) return;
+    alert(
+        `الكود: ${m.code}\n` +
+        `الاسم: ${m.name_ar}\n` +
+        `EN: ${m.name_en || '-'}\n` +
+        `النوع: ${m.movement_type}\n` +
+        `الطرف المدين: ${m.debit_side || '-'}\n` +
+        `الطرف الدائن: ${m.credit_side || '-'}\n` +
+        `حساب الضريبة: ${m.tax_side || '-'}\n` +
+        `حساب إضافي: ${m.extra_side || '-'}\n` +
+        `الحالة: ${m.is_active ? 'نشط' : 'موقوف'}`
+    );
+}
+
+// ==================== Delete ====================
+async function del(id, code, name){
+    if (!confirm(`حذف الحركة "${name}" (${code})؟`)) return;
+    try {
+        const r = await fetch(`${API}/stock_movements/${id}`, {method: 'DELETE'}).then(x => x.json());
+        if (r.success) load();
+        else alert(r.message || 'خطأ');
+    } catch(e) { alert('خطأ: ' + e.message); }
+}
+
+// ==================== Init ====================
+(async () => {
+    await loadRefs();
+    await load();
+})();
+</script>
+
+</body>
+</html>

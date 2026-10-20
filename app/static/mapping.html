@@ -1,0 +1,762 @@
+﻿<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>ربط الحسابات بالدليل</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800&display=swap" rel="stylesheet">
+<script src="permissions.js"></script>
+<style>
+* { font-family: 'Cairo', sans-serif; box-sizing: border-box; }
+body { background: #f1f5f9; margin: 0; padding: 8px; font-size: 13px; }
+.page-header {
+    background: white; padding: 10px 16px; border-radius: 10px;
+    margin-bottom: 8px; display: flex; justify-content: space-between;
+    align-items: center; flex-wrap: wrap; gap: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+.page-header h1 { font-size: 1.1rem; font-weight: 800; margin: 0;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.btn-mini { padding: 5px 12px; border-radius: 7px; border: 1px solid #e2e8f0;
+    background: white; color: #475569; text-decoration: none; font-size: 0.78rem;
+    font-weight: 700; display: inline-flex; align-items: center; gap: 4px;
+    transition: 0.15s; cursor: pointer; }
+.btn-mini:hover { border-color: #6366f1; color: #6366f1; background: #eef2ff; }
+.btn-mini.primary { background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    color: white; border-color: transparent; }
+.tabs-bar { display: flex; gap: 4px; margin-bottom: 8px; flex-wrap: wrap; }
+.tab-btn { padding: 8px 14px; border-radius: 8px; border: 1px solid #e2e8f0;
+    background: white; color: #64748b; cursor: pointer; font-size: 0.82rem;
+    font-weight: 700; display: inline-flex; align-items: center; gap: 6px;
+    transition: 0.15s; }
+.tab-btn:hover { border-color: #6366f1; color: #6366f1; }
+.tab-btn.active { background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    color: white; border-color: transparent; box-shadow: 0 4px 12px rgba(99,102,241,0.3); }
+.filter-bar { background: white; padding: 8px 12px; border-radius: 8px;
+    margin-bottom: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    display: flex; gap: 8px; align-items: center; }
+.filter-bar input { flex: 1; padding: 6px 12px; border: 1.5px solid #e2e8f0;
+    border-radius: 7px; font-size: 0.85rem; transition: 0.15s; }
+.filter-bar input:focus { outline: none; border-color: #6366f1;
+    box-shadow: 0 0 0 3px rgba(99,102,241,0.1); }
+.filter-bar .count { background: #eef2ff; color: #6366f1; padding: 4px 10px;
+    border-radius: 6px; font-size: 0.75rem; font-weight: 800; }
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+.table-card { background: white; border-radius: 10px; padding: 10px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06); overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 0.78rem; }
+th { background: #f1f5f9; padding: 8px 6px; text-align: right;
+    font-weight: 700; color: #475569; border-bottom: 2px solid #cbd5e1;
+    white-space: nowrap; font-size: 0.75rem; }
+td { padding: 6px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
+tr:hover { background: #fef9c3; }
+code { font-family: 'Consolas', monospace; font-size: 0.75rem;
+    background: #f1f5f9; padding: 2px 6px; border-radius: 4px; }
+.acc-code { background: #eef2ff; color: #6366f1; font-weight: 800;
+    font-family: 'Consolas', monospace; }
+.badge-type { padding: 2px 6px; border-radius: 4px; font-size: 0.68rem;
+    font-weight: 700; }
+.badge-PURCHASE { background: #d1fae5; color: #065f46; }
+.badge-ISSUE { background: #fee2e2; color: #991b1b; }
+.badge-RECEIPT { background: #dbeafe; color: #1e40af; }
+.badge-COUNT_ADJUST { background: #fef3c7; color: #92400e; }
+.badge-TRANSFER { background: #e0e7ff; color: #3730a3; }
+.item-type-badge { padding: 2px 6px; border-radius: 4px; font-size: 0.68rem;
+    font-weight: 700; background: #f5f3ff; color: #7c3aed; }
+.empty-row { text-align: center; color: #94a3b8; padding: 20px !important; }
+.edit-btn { padding: 3px 8px; border-radius: 5px; border: 1px solid #e2e8f0;
+    background: white; cursor: pointer; font-size: 0.75rem; transition: 0.15s; }
+.edit-btn:hover { border-color: #6366f1; color: #6366f1; }
+.del-btn { padding: 3px 8px; border-radius: 5px; border: 1px solid #fecaca;
+    background: white; color: #dc2626; cursor: pointer; font-size: 0.75rem; }
+.del-btn:hover { background: #fee2e2; }
+.modal-content { font-size: 0.85rem; }
+.modal-header { background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; }
+.form-label { font-weight: 700; font-size: 0.78rem; margin-bottom: 4px; }
+.search-results { max-height: 200px; overflow-y: auto;
+    border: 1px solid #e2e8f0; border-radius: 6px; margin-top: 4px; }
+.search-result-item { padding: 6px 10px; cursor: pointer; border-bottom: 1px solid #f1f5f9;
+    font-size: 0.78rem; transition: 0.15s; }
+.search-result-item:hover { background: #eef2ff; }
+.search-result-item:last-child { border-bottom: none; }
+.stat-box { background: linear-gradient(135deg, #eef2ff, #e0e7ff);
+    padding: 8px 12px; border-radius: 8px; text-align: center; }
+.stat-box .num { font-size: 1.2rem; font-weight: 900; color: #6366f1;
+    font-family: 'Consolas', monospace; }
+.stat-box .lbl { font-size: 0.68rem; color: #64748b; font-weight: 700; }
+
+/* ============================================
+   إلغاء أسهم input[type=number]
+   ============================================ */
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none !important;
+    margin: 0 !important;
+}
+input[type=number] {
+    -moz-appearance: textfield !important;
+    appearance: textfield !important;
+}
+input[type="number"] {
+    -moz-appearance: textfield !important;
+}
+
+</style>
+
+
+
+<style id="compact-spacing-global">
+/* ============================================
+   توحيد المسافات المضغوطة
+   ============================================ */
+
+.table td, .table th {
+    padding: 3px 6px !important;
+    font-size: 0.75rem !important;
+    vertical-align: middle !important;
+    line-height: 1.2 !important;
+}
+
+.table tbody tr {
+    height: auto !important;
+}
+
+.form-control, .form-select {
+    font-size: 0.75rem !important;
+    line-height: 1.2 !important;
+}
+
+.form-control-sm, .form-select-sm {
+    height: 26px !important;
+    padding: 2px 6px !important;
+    font-size: 0.72rem !important;
+    line-height: 1 !important;
+}
+
+.btn {
+    padding: 3px 8px !important;
+    font-size: 0.72rem !important;
+    line-height: 1.2 !important;
+}
+
+.btn-sm {
+    padding: 2px 6px !important;
+    font-size: 0.7rem !important;
+}
+
+.card {
+    margin-bottom: 6px !important;
+}
+
+.card-body, .card.p-2, .card.p-3, .card.p-4 {
+    padding: 6px 8px !important;
+}
+
+.modal-header {
+    padding: 6px 12px !important;
+}
+
+.modal-title {
+    font-size: 0.9rem !important;
+}
+
+.modal-body {
+    padding: 8px 12px !important;
+}
+
+.modal-footer {
+    padding: 6px 12px !important;
+}
+
+.modal-footer .btn {
+    padding: 4px 10px !important;
+    font-size: 0.75rem !important;
+}
+
+.mb-1, .mb-2, .mb-3, .mb-4 {
+    margin-bottom: 4px !important;
+}
+
+.mt-1, .mt-2, .mt-3, .mt-4 {
+    margin-top: 4px !important;
+}
+
+.ms-1, .ms-2, .ms-3 {
+    margin-right: 4px !important;
+}
+
+.me-1, .me-2, .me-3 {
+    margin-left: 4px !important;
+}
+
+.p-1, .p-2, .p-3, .p-4 {
+    padding: 4px !important;
+}
+
+.g-1, .g-2, .g-3 {
+    gap: 4px !important;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    line-height: 1.3 !important;
+}
+
+h1 { font-size: 1.2rem !important; margin-bottom: 6px !important; }
+h2 { font-size: 1.05rem !important; margin-bottom: 6px !important; }
+h3 { font-size: 0.95rem !important; margin-bottom: 4px !important; }
+h4 { font-size: 0.9rem !important; margin-bottom: 4px !important; }
+h5 { font-size: 0.85rem !important; margin-bottom: 4px !important; }
+h6 { font-size: 0.8rem !important; margin-bottom: 4px !important; }
+
+.alert {
+    padding: 6px 10px !important;
+    margin-bottom: 6px !important;
+    font-size: 0.78rem !important;
+}
+
+.badge {
+    padding: 2px 6px !important;
+    font-size: 0.68rem !important;
+}
+
+.nav-tabs .nav-link {
+    padding: 5px 12px !important;
+    font-size: 0.78rem !important;
+}
+
+hr {
+    margin: 6px 0 !important;
+}
+
+/* بطاقات الأعمار (aging) */
+.aging-card, .bucket-card, .stat-card {
+    padding: 6px 8px !important;
+    margin-bottom: 4px !important;
+}
+
+.aging-card .h4, .aging-card .h5,
+.bucket-card .h4, .bucket-card .h5 {
+    font-size: 1rem !important;
+    margin: 2px 0 !important;
+}
+
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none !important;
+    margin: 0 !important;
+}
+input[type=number] {
+    -moz-appearance: textfield !important;
+}
+</style>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 16 16%22><text y=%2214%22 font-size=%2214%22>📒</text></svg>">
+</head>
+<body>
+
+<!-- Header -->
+<div class="page-header">
+    <div>
+        <h1><i class="bi bi-link-45deg"></i> ربط الحسابات بالدليل</h1>
+        <div style="font-size: 0.75rem; color: #94a3b8; margin-top: 2px;">
+            ابحث في الدليل بكود الحساب أو جزء من اسمه
+        </div>
+    </div>
+    <div style="display: flex; gap: 5px;">
+        <a href="index.html" class="btn-mini"><i class="bi bi-house"></i> الرئيسية</a>
+        <a href="accounts.html" class="btn-mini"><i class="bi bi-book"></i> الدليل</a>
+    </div>
+</div>
+
+<!-- Stats -->
+<div style="display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin-bottom: 8px;">
+    <div class="stat-box"><div class="num" id="s-inv">-</div><div class="lbl">Mappings</div></div>
+    <div class="stat-box"><div class="num" id="s-set">-</div><div class="lbl">Settings</div></div>
+    <div class="stat-box"><div class="num" id="s-cust">-</div><div class="lbl">عملاء</div></div>
+    <div class="stat-box"><div class="num" id="s-sup">-</div><div class="lbl">موردين</div></div>
+    <div class="stat-box"><div class="num" id="s-wh">-</div><div class="lbl">مخازن</div></div>
+</div>
+
+<!-- Tabs -->
+<div class="tabs-bar">
+    <button class="tab-btn active" onclick="switchTab('inv', this)">
+        <i class="bi bi-box-seam"></i> Inventory Mappings
+    </button>
+    <button class="tab-btn" onclick="switchTab('set', this)">
+        <i class="bi bi-gear"></i> Settings Accounts
+    </button>
+    <button class="tab-btn" onclick="switchTab('cust', this)">
+        <i class="bi bi-people"></i> العملاء
+    </button>
+    <button class="tab-btn" onclick="switchTab('sup', this)">
+        <i class="bi bi-truck"></i> الموردين
+    </button>
+    <button class="tab-btn" onclick="switchTab('wh', this)">
+        <i class="bi bi-building"></i> المخازن
+    </button>
+</div>
+
+<!-- Filter -->
+<div class="filter-bar">
+    <i class="bi bi-search" style="color: #94a3b8;"></i>
+    <input type="text" id="search" placeholder="ابحث بكود الحساب أو جزء من اسمه..." oninput="applyFilter()">
+    <span class="count" id="count">0</span>
+    <button class="btn-mini" onclick="document.getElementById('search').value=''; applyFilter();">
+        <i class="bi bi-x-circle"></i> مسح
+    </button>
+</div>
+
+<!-- Tabs Content -->
+<div class="tab-content active" id="tab-inv">
+    <div class="table-card">
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>نوع الحركة</th>
+                    <th>نوع الصنف</th>
+                    <th>حساب مدين</th>
+                    <th>حساب دائن</th>
+                    <th>الوصف</th>
+                    <th>إجراءات</th>
+                </tr>
+            </thead>
+            <tbody id="body-inv"></tbody>
+        </table>
+    </div>
+</div>
+
+<div class="tab-content" id="tab-set">
+    <div class="table-card">
+        <table>
+            <thead>
+                <tr>
+                    <th>المفتاح</th>
+                    <th>القيمة (كود الحساب)</th>
+                    <th>اسم الحساب</th>
+                    <th>القسم</th>
+                    <th>الوصف</th>
+                    <th>إجراءات</th>
+                </tr>
+            </thead>
+            <tbody id="body-set"></tbody>
+        </table>
+    </div>
+</div>
+
+<div class="tab-content" id="tab-cust">
+    <div class="table-card">
+        <table>
+            <thead>
+                <tr>
+                    <th>الكود</th>
+                    <th>الاسم</th>
+                    <th>الهاتف</th>
+                    <th>كود الحساب</th>
+                    <th>اسم الحساب في الدليل</th>
+                    <th>إجراءات</th>
+                </tr>
+            </thead>
+            <tbody id="body-cust"></tbody>
+        </table>
+    </div>
+</div>
+
+<div class="tab-content" id="tab-sup">
+    <div class="table-card">
+        <table>
+            <thead>
+                <tr>
+                    <th>الكود</th>
+                    <th>الاسم</th>
+                    <th>الهاتف</th>
+                    <th>كود الحساب</th>
+                    <th>اسم الحساب في الدليل</th>
+                    <th>إجراءات</th>
+                </tr>
+            </thead>
+            <tbody id="body-sup"></tbody>
+        </table>
+    </div>
+</div>
+
+<div class="tab-content" id="tab-wh">
+    <div class="table-card">
+        <table>
+            <thead>
+                <tr>
+                    <th>الكود</th>
+                    <th>الاسم</th>
+                    <th>كود الحساب</th>
+                    <th>اسم الحساب في الدليل</th>
+                    <th>إجراءات</th>
+                </tr>
+            </thead>
+            <tbody id="body-wh"></tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modal للتعديل -->
+<div class="modal fade" id="editModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="bi bi-pencil"></i> <span id="modal-title">تعديل</span></h5>
+                <button class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="modal-body"></div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary btn-sm" data-bs-dismiss="modal">إلغاء</button>
+                <button class="btn btn-primary btn-sm" onclick="saveEdit()">
+                    <i class="bi bi-check-circle"></i> حفظ
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+const API = '/api/v1/mapping';
+let currentTab = 'inv';
+let currentData = {};
+let editContext = null;
+
+// ============================================================
+// Switch Tab
+// ============================================================
+function switchTab(tab, el) {
+    currentTab = tab;
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    if (el) el.classList.add('active');
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    document.getElementById('tab-' + tab).classList.add('active');
+    loadData(tab);
+}
+
+// ============================================================
+// Load Data
+// ============================================================
+async function loadData(tab) {
+    try {
+        const urls = {
+            'inv': `${API}/inventory-mappings`,
+            'set': `${API}/settings-accounts`,
+            'cust': `${API}/customers-accounts`,
+            'sup': `${API}/suppliers-accounts`,
+            'wh': `${API}/warehouses-accounts`,
+        };
+        
+        const r = await fetch(urls[tab]).then(x => x.json());
+        currentData[tab] = r.data || [];
+        renderTab(tab);
+        updateStats();
+    } catch (e) {
+        console.error(e);
+    }
+}
+
+function renderTab(tab) {
+    const data = currentData[tab] || [];
+    const tbody = document.getElementById('body-' + tab);
+    
+    if (!data.length) {
+        tbody.innerHTML = '<tr><td colspan="10" class="empty-row">لا توجد بيانات</td></tr>';
+        document.getElementById('count').textContent = '0';
+        return;
+    }
+
+    if (tab === 'inv') {
+        tbody.innerHTML = data.map((r, i) => `
+            <tr>
+                <td>${i + 1}</td>
+                <td><span class="badge-type badge-${r.transaction_type}">${r.transaction_type}</span></td>
+                <td><span class="item-type-badge">${r.item_type}</span></td>
+                <td><code class="acc-code">${r.debit_account}</code></td>
+                <td><code class="acc-code">${r.credit_account}</code></td>
+                <td>${r.description_ar || '-'}</td>
+                <td>
+                    <button class="edit-btn" onclick="editInvMapping(${r.id})"><i class="bi bi-pencil"></i></button>
+                    <button class="del-btn" onclick="delInvMapping(${r.id})"><i class="bi bi-trash"></i></button>
+                </td>
+            </tr>
+        `).join('');
+    }
+    else if (tab === 'set') {
+        tbody.innerHTML = data.map(r => `
+            <tr>
+                <td><code>${r.key}</code></td>
+                <td><code class="acc-code">${r.value}</code></td>
+                <td>${r.acc_name || '—'}</td>
+                <td><span class="item-type-badge">${r.category || '-'}</span></td>
+                <td>${r.label_ar || '-'}</td>
+                <td><button class="edit-btn" onclick="editSetting('${r.key}')"><i class="bi bi-pencil"></i></button></td>
+            </tr>
+        `).join('');
+    }
+    else if (tab === 'cust' || tab === 'sup') {
+        tbody.innerHTML = data.map(r => `
+            <tr>
+                <td><code>${r.code}</code></td>
+                <td><strong>${r.name_ar}</strong></td>
+                <td>${r.phone || '-'}</td>
+                <td><code class="acc-code">${r.account_code || '—'}</code></td>
+                <td>${r.acc_name || '<span style="color:#dc2626;">❌ مش موجود</span>'}</td>
+                <td><button class="edit-btn" onclick="editEntity('${tab}', ${r.id})"><i class="bi bi-pencil"></i></button></td>
+            </tr>
+        `).join('');
+    }
+    else if (tab === 'wh') {
+        tbody.innerHTML = data.map(r => `
+            <tr>
+                <td><code>${r.code}</code></td>
+                <td><strong>${r.name_ar}</strong></td>
+                <td><code class="acc-code">${r.account_code || '—'}</code></td>
+                <td>${r.acc_name || '<span style="color:#dc2626;">❌ مش موجود</span>'}</td>
+                <td><button class="edit-btn" onclick="editEntity('wh', ${r.id})"><i class="bi bi-pencil"></i></button></td>
+            </tr>
+        `).join('');
+    }
+    
+    document.getElementById('count').textContent = data.length;
+}
+
+function updateStats() {
+    const setEl = (id, val) => { const e = document.getElementById(id); if (e) e.textContent = val; };
+    setEl('s-inv', (currentData['inv'] || []).length);
+    setEl('s-set', (currentData['set'] || []).length);
+    setEl('s-cust', (currentData['cust'] || []).length);
+    setEl('s-sup', (currentData['sup'] || []).length);
+    setEl('s-wh', (currentData['wh'] || []).length);
+}
+
+// ============================================================
+// Filter
+// ============================================================
+function applyFilter() {
+    const q = document.getElementById('search').value.trim().toLowerCase();
+    const data = currentData[currentTab] || [];
+    
+    if (!q) {
+        renderTab(currentTab);
+        return;
+    }
+    
+    const filtered = data.filter(r => {
+        return JSON.stringify(r).toLowerCase().includes(q);
+    });
+    
+    const tbody = document.getElementById('body-' + currentTab);
+    
+    if (!filtered.length) {
+        tbody.innerHTML = '<tr><td colspan="10" class="empty-row">لا توجد نتائج</td></tr>';
+        document.getElementById('count').textContent = '0';
+        return;
+    }
+    
+    // نعمل render للبيانات المفلترة بنفس الطريقة
+    const originalData = currentData[currentTab];
+    currentData[currentTab] = filtered;
+    renderTab(currentTab);
+    currentData[currentTab] = originalData;
+}
+
+// ============================================================
+// Modals
+// ============================================================
+const editModal = new bootstrap.Modal(document.getElementById('editModal'));
+
+function editInvMapping(id) {
+    const r = currentData['inv'].find(x => x.id === id);
+    if (!r) return;
+    editContext = { type: 'inv', id: id };
+    
+    document.getElementById('modal-title').textContent = 'تعديل Mapping';
+    document.getElementById('modal-body').innerHTML = `
+        <div class="mb-2"><label class="form-label">نوع الحركة</label>
+            <input class="form-control form-control-sm" id="m-txt" value="${r.transaction_type}"></div>
+        <div class="mb-2"><label class="form-label">نوع الصنف</label>
+            <input class="form-control form-control-sm" id="m-itype" value="${r.item_type}"></div>
+        <div class="mb-2"><label class="form-label">حساب مدين</label>
+            <input class="form-control form-control-sm" id="m-debit" value="${r.debit_account}"></div>
+        <div class="mb-2"><label class="form-label">حساب دائن</label>
+            <input class="form-control form-control-sm" id="m-credit" value="${r.credit_account}"></div>
+        <div class="mb-2"><label class="form-label">الوصف</label>
+            <input class="form-control form-control-sm" id="m-desc" value="${r.description_ar || ''}"></div>
+    `;
+    editModal.show();
+}
+
+function editSetting(key) {
+    const r = currentData['set'].find(x => x.key === key);
+    if (!r) return;
+    editContext = { type: 'set', key: key };
+    
+    document.getElementById('modal-title').textContent = 'تعديل ' + key;
+    document.getElementById('modal-body').innerHTML = `
+        <div class="mb-2"><label class="form-label">المفتاح</label>
+            <input class="form-control form-control-sm" value="${r.key}" disabled></div>
+        <div class="mb-2"><label class="form-label">الوصف</label>
+            <input class="form-control form-control-sm" value="${r.label_ar || ''}" disabled></div>
+        <div class="mb-2"><label class="form-label">كود الحساب</label>
+            <input class="form-control form-control-sm" id="m-value" value="${r.value}"></div>
+        <div class="mb-2">
+            <label class="form-label">ابحث في الدليل</label>
+            <input class="form-control form-control-sm" id="acc-search" 
+                   placeholder="اكتب كود أو اسم الحساب..." oninput="searchAccounts()">
+            <div id="acc-results" class="search-results" style="display:none;"></div>
+        </div>
+    `;
+    editModal.show();
+}
+
+function editEntity(tab, id) {
+    const r = currentData[tab].find(x => x.id === id);
+    if (!r) return;
+    editContext = { type: tab, id: id };
+    
+    document.getElementById('modal-title').textContent = 'تعديل حساب: ' + r.name_ar;
+    document.getElementById('modal-body').innerHTML = `
+        <div class="mb-2"><label class="form-label">الكود</label>
+            <input class="form-control form-control-sm" value="${r.code}" disabled></div>
+        <div class="mb-2"><label class="form-label">الاسم</label>
+            <input class="form-control form-control-sm" value="${r.name_ar}" disabled></div>
+        <div class="mb-2"><label class="form-label">كود الحساب الحالي</label>
+            <input class="form-control form-control-sm" id="m-value" value="${r.account_code || ''}"></div>
+        <div class="mb-2">
+            <label class="form-label">ابحث في الدليل</label>
+            <input class="form-control form-control-sm" id="acc-search" 
+                   placeholder="اكتب كود أو اسم الحساب..." oninput="searchAccounts()">
+            <div id="acc-results" class="search-results" style="display:none;"></div>
+        </div>
+    `;
+    editModal.show();
+}
+
+// ============================================================
+// Search Accounts
+// ============================================================
+let searchTimeout = null;
+async function searchAccounts() {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(async () => {
+        const q = document.getElementById('acc-search').value.trim();
+        if (q.length < 2) {
+            document.getElementById('acc-results').style.display = 'none';
+            return;
+        }
+        
+        try {
+            const r = await fetch(`${API}/search-accounts?q=${encodeURIComponent(q)}`).then(x => x.json());
+            const results = r.data || [];
+            const el = document.getElementById('acc-results');
+            
+            if (!results.length) {
+                el.innerHTML = '<div class="search-result-item">لا توجد نتائج</div>';
+            } else {
+                el.innerHTML = results.map(a => `
+                    <div class="search-result-item" onclick="selectAccount('${a.code}', '${a.name_ar.replace(/'/g, "\\'")}')">
+                        <code class="acc-code">${a.code}</code> — ${a.name_ar}
+                        <span style="color:#94a3b8; font-size:0.7rem;"> (${a.level})</span>
+                    </div>
+                `).join('');
+            }
+            el.style.display = 'block';
+        } catch (e) {
+            console.error(e);
+        }
+    }, 300);
+}
+
+function selectAccount(code, name) {
+    document.getElementById('m-value').value = code;
+    document.getElementById('acc-results').style.display = 'none';
+    document.getElementById('acc-search').value = '';
+    // نضيف عرض اسم الحساب
+    const el = document.createElement('small');
+    el.style.color = '#059669';
+    el.style.fontWeight = '700';
+    el.textContent = '✅ ' + name;
+    document.getElementById('m-value').parentNode.appendChild(el);
+}
+
+// ============================================================
+// Save Edit
+// ============================================================
+async function saveEdit() {
+    if (!editContext) return;
+    
+    let url = '', method = 'PUT', body = {};
+    
+    if (editContext.type === 'inv') {
+        url = `${API}/inventory-mappings/${editContext.id}`;
+        body = {
+            transaction_type: document.getElementById('m-txt').value,
+            item_type: document.getElementById('m-itype').value,
+            debit_account: document.getElementById('m-debit').value,
+            credit_account: document.getElementById('m-credit').value,
+            description_ar: document.getElementById('m-desc').value,
+        };
+    }
+    else if (editContext.type === 'set') {
+        url = `${API}/settings-accounts/${editContext.key}`;
+        body = { value: document.getElementById('m-value').value };
+    }
+    else if (editContext.type === 'cust') {
+        url = `${API}/customers-accounts/${editContext.id}`;
+        body = { account_code: document.getElementById('m-value').value };
+    }
+    else if (editContext.type === 'sup') {
+        url = `${API}/suppliers-accounts/${editContext.id}`;
+        body = { account_code: document.getElementById('m-value').value };
+    }
+    else if (editContext.type === 'wh') {
+        url = `${API}/warehouses-accounts/${editContext.id}`;
+        body = { account_code: document.getElementById('m-value').value };
+    }
+    
+    try {
+        const r = await fetch(url, {
+            method: method,
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(body)
+        }).then(x => x.json());
+        
+        if (r.success) {
+            editModal.hide();
+            loadData(currentTab);
+        } else {
+            alert(r.message || 'خطأ');
+        }
+    } catch (e) {
+        alert('خطأ: ' + e.message);
+    }
+}
+
+// ============================================================
+// Delete Inventory Mapping
+// ============================================================
+async function delInvMapping(id) {
+    if (!confirm('حذف الـ mapping؟')) return;
+    try {
+        await fetch(`${API}/inventory-mappings/${id}`, { method: 'DELETE' });
+        loadData('inv');
+    } catch (e) {
+        alert('خطأ');
+    }
+}
+
+// ============================================================
+// Init
+// ============================================================
+loadData('inv');
+loadData('set');
+loadData('cust');
+loadData('sup');
+loadData('wh');
+</script>
+</body>
+</html>

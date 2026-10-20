@@ -1,0 +1,690 @@
+﻿<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>تقرير أعمار الديون</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<script src="permissions.js"></script>
+<style>
+* { font-family: 'Cairo', sans-serif; box-sizing: border-box; }
+body { background: #f1f5f9; padding: 8px; font-size: 13px; font-weight: 600; margin: 0; }
+
+.page-header {
+    background: white; padding: 10px 16px; border-radius: 10px;
+    margin-bottom: 8px; display: flex; justify-content: space-between;
+    align-items: center; flex-wrap: wrap; gap: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+}
+.page-header h1 {
+    font-size: 1.1rem; font-weight: 900; margin: 0;
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.page-header p { font-size: 0.72rem; color: #94a3b8; margin: 2px 0 0; }
+
+.btn-mini {
+    padding: 5px 12px; border-radius: 7px; border: 1.5px solid #e2e8f0;
+    background: white; color: #475569; text-decoration: none; font-size: 0.78rem;
+    font-weight: 700; display: inline-flex; align-items: center; gap: 4px;
+    transition: 0.15s; cursor: pointer;
+}
+.btn-mini:hover { border-color: #6366f1; color: #6366f1; background: #eef2ff; }
+.btn-mini.primary {
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    color: white; border-color: transparent;
+}
+
+.filter-bar {
+    background: white; padding: 8px 12px; border-radius: 10px;
+    margin-bottom: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+    display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 8px;
+    align-items: end;
+}
+.filter-item label {
+    display: block; font-size: 0.7rem; font-weight: 800;
+    color: #64748b; margin-bottom: 2px;
+}
+.filter-item select,
+.filter-item input {
+    width: 100%; padding: 5px 8px; border: 1.5px solid #e2e8f0;
+    border-radius: 7px; font-size: 0.78rem; font-weight: 700;
+    transition: 0.15s;
+}
+.filter-item select:hover,
+.filter-item input:hover { border-color: #94a3b8; }
+.filter-item select:focus,
+.filter-item input:focus {
+    outline: none; border-color: #6366f1; border-width: 2px;
+    box-shadow: 0 0 0 3px rgba(99,102,241,0.12);
+}
+
+.kpi-row {
+    display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px;
+    margin-bottom: 8px;
+}
+.kpi-card {
+    padding: 10px 12px; border-radius: 10px; text-align: center;
+    color: white; box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    transition: 0.2s; position: relative; overflow: hidden;
+}
+.kpi-card:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(0,0,0,0.15); }
+.kpi-card::before {
+    content: ''; position: absolute; top: -50%; left: -50%;
+    width: 200%; height: 200%;
+    background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 70%);
+}
+.kpi-total { background: linear-gradient(135deg, #6366f1, #8b5cf6); }
+.kpi-0-30 { background: linear-gradient(135deg, #10b981, #059669); }
+.kpi-31-60 { background: linear-gradient(135deg, #f59e0b, #d97706); }
+.kpi-61-90 { background: linear-gradient(135deg, #f97316, #ea580c); }
+.kpi-90-plus { background: linear-gradient(135deg, #ef4444, #dc2626); }
+.kpi-label {
+    font-size: 0.68rem; opacity: 0.9; font-weight: 700;
+    text-transform: uppercase; letter-spacing: 0.5px;
+}
+.kpi-value {
+    font-size: 1.3rem; font-weight: 900; font-family: 'Consolas', monospace;
+    margin: 4px 0; line-height: 1;
+}
+.kpi-sub { font-size: 0.65rem; opacity: 0.85; }
+
+.view-toggle {
+    display: flex; gap: 4px; margin-bottom: 8px;
+}
+.view-toggle button {
+    padding: 6px 14px; border-radius: 8px; border: 1.5px solid #e2e8f0;
+    background: white; cursor: pointer; font-weight: 800; font-size: 0.78rem;
+    transition: 0.15s; color: #64748b;
+}
+.view-toggle button.active {
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    color: white; border-color: transparent;
+    box-shadow: 0 2px 8px rgba(99,102,241,0.3);
+}
+.view-toggle button:hover:not(.active) { border-color: #6366f1; color: #6366f1; }
+
+.table-card {
+    background: white; border-radius: 10px; padding: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.06); overflow-x: auto;
+}
+table {
+    width: 100%; border-collapse: collapse; font-size: 0.76rem;
+}
+th {
+    background: linear-gradient(135deg, #1e3c72, #2a5298); color: white;
+    padding: 6px 8px; text-align: right; font-weight: 800;
+    font-size: 0.72rem; white-space: nowrap;
+    border: 1px solid #0f2555;
+}
+th.b0-30 { background: linear-gradient(135deg, #10b981, #059669); }
+th.b31-60 { background: linear-gradient(135deg, #f59e0b, #d97706); }
+th.b61-90 { background: linear-gradient(135deg, #f97316, #ea580c); }
+th.b90-plus { background: linear-gradient(135deg, #ef4444, #dc2626); }
+td {
+    padding: 5px 8px; border-bottom: 1px solid #f1f5f9;
+    vertical-align: middle;
+}
+td.num {
+    font-family: 'Consolas', monospace; font-weight: 700;
+    text-align: left; font-size: 0.74rem;
+}
+tr:hover { background: #fef9c3; }
+tr.total-row {
+    background: #fef3c7 !important; font-weight: 900;
+    border-top: 2px solid #f59e0b;
+}
+tr.total-row td { font-size: 0.82rem; padding: 8px; }
+.customer-name { font-weight: 800; }
+.customer-code { font-size: 0.68rem; color: #94a3b8; font-family: monospace; }
+.group-badge {
+    padding: 2px 8px; border-radius: 4px; font-size: 0.68rem;
+    font-weight: 800; white-space: nowrap; color: white;
+}
+.empty-row {
+    text-align: center; padding: 30px; color: #94a3b8;
+}
+.empty-row i { font-size: 2.5rem; opacity: 0.3; margin-bottom: 10px; }
+.loading {
+    text-align: center; padding: 40px; color: #94a3b8;
+}
+
+@media (max-width: 1200px) {
+    .kpi-row { grid-template-columns: repeat(3, 1fr); }
+}
+@media (max-width: 768px) {
+    .filter-bar { grid-template-columns: 1fr; }
+    .kpi-row { grid-template-columns: repeat(2, 1fr); }
+}
+
+/* ============================================
+   إلغاء أسهم input[type=number]
+   ============================================ */
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none !important;
+    margin: 0 !important;
+}
+input[type=number] {
+    -moz-appearance: textfield !important;
+    appearance: textfield !important;
+}
+input[type="number"] {
+    -moz-appearance: textfield !important;
+}
+
+</style>
+
+
+
+
+
+
+<style id="compact-spacing-global">
+/* ============================================
+   توحيد المسافات المضغوطة
+   ============================================ */
+
+.table td, .table th {
+    padding: 3px 6px !important;
+    font-size: 0.75rem !important;
+    vertical-align: middle !important;
+    line-height: 1.2 !important;
+}
+
+.table tbody tr {
+    height: auto !important;
+}
+
+.form-control, .form-select {
+    font-size: 0.75rem !important;
+    line-height: 1.2 !important;
+}
+
+.form-control-sm, .form-select-sm {
+    height: 26px !important;
+    padding: 2px 6px !important;
+    font-size: 0.72rem !important;
+    line-height: 1 !important;
+}
+
+.btn {
+    padding: 3px 8px !important;
+    font-size: 0.72rem !important;
+    line-height: 1.2 !important;
+}
+
+.btn-sm {
+    padding: 2px 6px !important;
+    font-size: 0.7rem !important;
+}
+
+.card {
+    margin-bottom: 6px !important;
+}
+
+.card-body, .card.p-2, .card.p-3, .card.p-4 {
+    padding: 6px 8px !important;
+}
+
+.modal-header {
+    padding: 6px 12px !important;
+}
+
+.modal-title {
+    font-size: 0.9rem !important;
+}
+
+.modal-body {
+    padding: 8px 12px !important;
+}
+
+.modal-footer {
+    padding: 6px 12px !important;
+}
+
+.modal-footer .btn {
+    padding: 4px 10px !important;
+    font-size: 0.75rem !important;
+}
+
+.mb-1, .mb-2, .mb-3, .mb-4 {
+    margin-bottom: 4px !important;
+}
+
+.mt-1, .mt-2, .mt-3, .mt-4 {
+    margin-top: 4px !important;
+}
+
+.ms-1, .ms-2, .ms-3 {
+    margin-right: 4px !important;
+}
+
+.me-1, .me-2, .me-3 {
+    margin-left: 4px !important;
+}
+
+.p-1, .p-2, .p-3, .p-4 {
+    padding: 4px !important;
+}
+
+.g-1, .g-2, .g-3 {
+    gap: 4px !important;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    line-height: 1.3 !important;
+}
+
+h1 { font-size: 1.2rem !important; margin-bottom: 6px !important; }
+h2 { font-size: 1.05rem !important; margin-bottom: 6px !important; }
+h3 { font-size: 0.95rem !important; margin-bottom: 4px !important; }
+h4 { font-size: 0.9rem !important; margin-bottom: 4px !important; }
+h5 { font-size: 0.85rem !important; margin-bottom: 4px !important; }
+h6 { font-size: 0.8rem !important; margin-bottom: 4px !important; }
+
+.alert {
+    padding: 6px 10px !important;
+    margin-bottom: 6px !important;
+    font-size: 0.78rem !important;
+}
+
+.badge {
+    padding: 2px 6px !important;
+    font-size: 0.68rem !important;
+}
+
+.nav-tabs .nav-link {
+    padding: 5px 12px !important;
+    font-size: 0.78rem !important;
+}
+
+hr {
+    margin: 6px 0 !important;
+}
+
+/* بطاقات الأعمار (aging) */
+.aging-card, .bucket-card, .stat-card {
+    padding: 6px 8px !important;
+    margin-bottom: 4px !important;
+}
+
+.aging-card .h4, .aging-card .h5,
+.bucket-card .h4, .bucket-card .h5 {
+    font-size: 1rem !important;
+    margin: 2px 0 !important;
+}
+
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none !important;
+    margin: 0 !important;
+}
+input[type=number] {
+    -moz-appearance: textfield !important;
+}
+</style>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 16 16%22><text y=%2214%22 font-size=%2214%22>📒</text></svg>">
+</head>
+<body>
+
+<div class="page-header">
+    <div>
+        <h1><i class="bi bi-clock-history"></i> تقرير أعمار الديون</h1>
+        <p>تحليل المستحقات حسب الفترات الزمنية</p>
+    </div>
+    <div style="display: flex; gap: 5px;">
+        <a href="customer_groups.html" class="btn-mini"><i class="bi bi-diagram-3-fill"></i> المجموعات</a>
+        <a href="customers.html" class="btn-mini"><i class="bi bi-people"></i> العملاء</a>
+        <a href="index.html#customers" class="btn-mini"><i class="bi bi-house"></i> الرئيسية</a>
+        <button class="btn-mini primary" onclick="load()"><i class="bi bi-search"></i> بحث</button>
+        <button class="btn-mini" onclick="window.print()"><i class="bi bi-printer"></i> طباعة</button>
+    </div>
+</div>
+
+<div class="filter-bar">
+    <div class="filter-item">
+        <label>📊 المجموعة</label>
+        <select id="f-group" onchange="onGroupChange()">
+            <option value="">كل المجموعات</option>
+        </select>
+    </div>
+    <div class="filter-item">
+        <label>👤 العميل</label>
+        <select id="f-customer" onchange="load()">
+            <option value="">كل العملاء</option>
+        </select>
+    </div>
+    <div class="filter-item">
+        <label>📅 بتاريخ</label>
+        <input type="date" id="f-date" onchange="load()">
+    </div>
+    <div class="filter-item">
+        <button class="btn-mini" onclick="resetFilters()" style="width:100%;">
+            <i class="bi bi-x-circle"></i> مسح
+        </button>
+    </div>
+</div>
+
+<div class="kpi-row">
+    <div class="kpi-card kpi-total">
+        <div class="kpi-label">💰 إجمالي المستحق</div>
+        <div class="kpi-value" id="kpi-total">-</div>
+        <div class="kpi-sub">ج.م · بتاريخ <span id="kpi-date">-</span></div>
+    </div>
+    <div class="kpi-card kpi-0-30">
+        <div class="kpi-label">🟢 0-30 يوم</div>
+        <div class="kpi-value" id="kpi-b0-30">-</div>
+        <div class="kpi-sub" id="kpi-pct-0-30">-</div>
+    </div>
+    <div class="kpi-card kpi-31-60">
+        <div class="kpi-label">🟡 31-60 يوم</div>
+        <div class="kpi-value" id="kpi-b31-60">-</div>
+        <div class="kpi-sub" id="kpi-pct-31-60">-</div>
+    </div>
+    <div class="kpi-card kpi-61-90">
+        <div class="kpi-label">🟠 61-90 يوم</div>
+        <div class="kpi-value" id="kpi-b61-90">-</div>
+        <div class="kpi-sub" id="kpi-pct-61-90">-</div>
+    </div>
+    <div class="kpi-card kpi-90-plus">
+        <div class="kpi-label">🔴 أكثر من 90 يوم</div>
+        <div class="kpi-value" id="kpi-b90-plus">-</div>
+        <div class="kpi-sub" id="kpi-pct-90-plus">-</div>
+    </div>
+</div>
+
+<div class="view-toggle">
+    <button id="btn-by-customer" class="active" onclick="setView('customer')">
+        <i class="bi bi-person"></i> حسب العميل
+    </button>
+    <button id="btn-by-group" onclick="setView('group')">
+        <i class="bi bi-diagram-3"></i> حسب المجموعة
+    </button>
+</div>
+
+<div class="table-card">
+    <table>
+        <thead>
+            <tr>
+                <th>العميل</th>
+                <th>المجموعة</th>
+                <th>🔢 عدد الفواتير</th>
+                <th class="b0-30">🟢 0-30</th>
+                <th class="b31-60">🟡 31-60</th>
+                <th class="b61-90">🟠 61-90</th>
+                <th class="b90-plus">🔴 +90</th>
+                <th>الإجمالي</th>
+            </tr>
+        </thead>
+        <tbody id="tbl-body">
+            <tr><td colspan="8" class="loading">
+                <i class="bi bi-hourglass-split"></i>
+                <div>جاري التحميل...</div>
+            </td></tr>
+        </tbody>
+    </table>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+const API = '/api/v1';
+let currentView = 'customer';
+let allGroups = [];
+let allCustomers = [];
+
+async function init() {
+    const dateEl = document.getElementById('f-date');
+    if (dateEl) dateEl.value = new Date().toISOString().split('T')[0];
+    
+    await loadGroups();
+    await loadCustomers(null);
+    await load();
+}
+
+async function loadGroups() {
+    try {
+        const r = await fetch(`${API}/customer-groups/`).then(x => x.json());
+        allGroups = r.data || [];
+        const sel = document.getElementById('f-group');
+        if (sel) {
+            sel.innerHTML = '<option value="">كل المجموعات</option>' + 
+                allGroups.map(g => '<option value="' + g.id + '">' + g.name_ar + ' (' + g.customers_count + ' عميل)</option>').join('');
+        }
+    } catch(e) { console.error('loadGroups:', e); }
+}
+
+async function loadCustomers(groupId) {
+    try {
+        const r = await fetch(`${API}/customers/`).then(x => x.json());
+        let customers = r.data || [];
+        
+        if (groupId) {
+            customers = customers.filter(c => String(c.group_id) === String(groupId));
+        }
+        
+        allCustomers = customers;
+        const sel = document.getElementById('f-customer');
+        if (sel) {
+            sel.innerHTML = '<option value="">كل العملاء (' + customers.length + ')</option>' + 
+                customers.map(c => '<option value="' + c.id + '">' + c.code + ' - ' + c.name_ar + '</option>').join('');
+        }
+        console.log('✅ تم تحميل ' + customers.length + ' عميل');
+    } catch(e) { console.error('loadCustomers:', e); }
+}
+
+async function onGroupChange() {
+    const groupId = document.getElementById('f-group').value;
+    await loadCustomers(groupId);
+    await load();
+}
+
+async function load() {
+    const groupId = document.getElementById('f-group').value;
+    const customerId = document.getElementById('f-customer').value;
+    const asOf = document.getElementById('f-date').value;
+    
+    if (currentView === 'group') {
+        return loadByGroup(asOf);
+    }
+    
+    let url = `${API}/customer-groups/aging?`;
+    if (groupId) url += `group_id=${groupId}&`;
+    if (customerId) url += `customer_id=${customerId}&`;
+    if (asOf) url += `as_of=${asOf}&`;
+    
+    document.getElementById('tbl-body').innerHTML = 
+        '<tr><td colspan="8" class="loading"><i class="bi bi-hourglass-split"></i><div>جاري التحميل...</div></td></tr>';
+    
+    try {
+        const r = await fetch(url).then(x => x.json());
+        if (!r.success) { alert(r.message || 'خطأ'); return; }
+        
+        renderByCustomer(r.data, r.totals);
+    } catch(e) {
+        console.error('load:', e);
+        document.getElementById('tbl-body').innerHTML = 
+            '<tr><td colspan="8" class="empty-row"><i class="bi bi-wifi-off"></i><div>خطأ في الاتصال</div></td></tr>';
+    }
+}
+
+async function loadByGroup(asOf) {
+    let url = `${API}/customer-groups/aging-by-group?`;
+    if (asOf) url += `as_of=${asOf}&`;
+    
+    document.getElementById('tbl-body').innerHTML = 
+        '<tr><td colspan="8" class="loading"><i class="bi bi-hourglass-split"></i><div>جاري التحميل...</div></td></tr>';
+    
+    try {
+        const r = await fetch(url).then(x => x.json());
+        if (!r.success) { alert(r.message || 'خطأ'); return; }
+        
+        renderByGroup(r.data);
+    } catch(e) {
+        console.error('loadByGroup:', e);
+        document.getElementById('tbl-body').innerHTML = 
+            '<tr><td colspan="8" class="empty-row"><i class="bi bi-wifi-off"></i><div>خطأ في الاتصال</div></td></tr>';
+    }
+}
+
+function renderByCustomer(data, totals) {
+    updateKPIs(totals);
+    
+    if (!data.length) {
+        document.getElementById('tbl-body').innerHTML = 
+            '<tr><td colspan="8" class="empty-row"><i class="bi bi-inbox"></i><div>لا توجد مستحقات</div></td></tr>';
+        return;
+    }
+    
+    let html = '';
+    let sumB0 = 0, sumB31 = 0, sumB61 = 0, sumB90 = 0, sumTotal = 0, sumInvoices = 0;
+    
+    data.forEach(c => {
+        sumB0 += c.b0_30 || 0;
+        sumB31 += c.b31_60 || 0;
+        sumB61 += c.b61_90 || 0;
+        sumB90 += c.b90_plus || 0;
+        sumTotal += c.total || 0;
+        sumInvoices += c.invoices_count || 0;
+        
+        const groupColor = getGroupColor(c.group_name);
+        
+        html += '<tr>' +
+            '<td>' +
+                '<div class="customer-name">' + c.customer_name + '</div>' +
+                '<div class="customer-code">' + c.customer_code + '</div>' +
+            '</td>' +
+            '<td><span class="group-badge" style="background:' + groupColor + ';">' + (c.group_name || '—') + '</span></td>' +
+            '<td style="text-align:center;"><span style="background:#eef2ff; color:#6366f1; padding:2px 8px; border-radius:10px; font-weight:800; font-size:0.72rem;">' + (c.invoices_count || 0) + '</span></td>' +
+            '<td class="num">' + (c.b0_30 > 0 ? c.b0_30.toFixed(2) : '—') + '</td>' +
+            '<td class="num">' + (c.b31_60 > 0 ? c.b31_60.toFixed(2) : '—') + '</td>' +
+            '<td class="num">' + (c.b61_90 > 0 ? c.b61_90.toFixed(2) : '—') + '</td>' +
+            '<td class="num">' + (c.b90_plus > 0 ? c.b90_plus.toFixed(2) : '—') + '</td>' +
+            '<td class="num" style="font-weight:900; color:#6366f1;">' + c.total.toFixed(2) + '</td>' +
+        '</tr>';
+    });
+    
+    html += '<tr class="total-row">' +
+        '<td colspan="2" style="text-align:left;">📊 الإجمالي:</td>' +
+        '<td style="text-align:center;">' + sumInvoices + '</td>' +
+        '<td class="num">' + sumB0.toFixed(2) + '</td>' +
+        '<td class="num">' + sumB31.toFixed(2) + '</td>' +
+        '<td class="num">' + sumB61.toFixed(2) + '</td>' +
+        '<td class="num">' + sumB90.toFixed(2) + '</td>' +
+        '<td class="num" style="color:#dc2626;">' + sumTotal.toFixed(2) + '</td>' +
+    '</tr>';
+    
+    document.getElementById('tbl-body').innerHTML = html;
+}
+
+function renderByGroup(data) {
+    let totals = {b0_30: 0, b31_60: 0, b61_90: 0, b90_plus: 0, total: 0};
+    data.forEach(g => {
+        totals.b0_30 += g.b0_30 || 0;
+        totals.b31_60 += g.b31_60 || 0;
+        totals.b61_90 += g.b61_90 || 0;
+        totals.b90_plus += g.b90_plus || 0;
+        totals.total += g.total || 0;
+    });
+    updateKPIs(totals);
+    
+    if (!data.length) {
+        document.getElementById('tbl-body').innerHTML = 
+            '<tr><td colspan="8" class="empty-row"><i class="bi bi-inbox"></i><div>لا توجد مستحقات</div></td></tr>';
+        return;
+    }
+    
+    let html = '';
+    let sumCustomers = 0;
+    
+    data.forEach(g => {
+        sumCustomers += g.customers_count || 0;
+        html += '<tr>' +
+            '<td colspan="2">' +
+                '<span class="group-badge" style="background:' + g.group_color + '; font-size:0.75rem; padding:4px 10px;">' +
+                    '<i class="bi bi-diagram-3"></i> ' + g.group_name +
+                '</span>' +
+            '</td>' +
+            '<td style="text-align:center;"><span style="background:#eef2ff; color:#6366f1; padding:2px 8px; border-radius:10px; font-weight:800; font-size:0.72rem;">' + (g.customers_count || 0) + ' عميل</span></td>' +
+            '<td class="num">' + (g.b0_30 > 0 ? g.b0_30.toFixed(2) : '—') + '</td>' +
+            '<td class="num">' + (g.b31_60 > 0 ? g.b31_60.toFixed(2) : '—') + '</td>' +
+            '<td class="num">' + (g.b61_90 > 0 ? g.b61_90.toFixed(2) : '—') + '</td>' +
+            '<td class="num">' + (g.b90_plus > 0 ? g.b90_plus.toFixed(2) : '—') + '</td>' +
+            '<td class="num" style="font-weight:900; color:#6366f1;">' + g.total.toFixed(2) + '</td>' +
+        '</tr>';
+    });
+    
+    html += '<tr class="total-row">' +
+        '<td colspan="2" style="text-align:left;">📊 الإجمالي:</td>' +
+        '<td style="text-align:center;">' + sumCustomers + ' عميل</td>' +
+        '<td class="num">' + totals.b0_30.toFixed(2) + '</td>' +
+        '<td class="num">' + totals.b31_60.toFixed(2) + '</td>' +
+        '<td class="num">' + totals.b61_90.toFixed(2) + '</td>' +
+        '<td class="num">' + totals.b90_plus.toFixed(2) + '</td>' +
+        '<td class="num" style="color:#dc2626;">' + totals.total.toFixed(2) + '</td>' +
+    '</tr>';
+    
+    document.getElementById('tbl-body').innerHTML = html;
+}
+
+function updateKPIs(totals) {
+    const t = totals.total || 0;
+    
+    const dateEl = document.getElementById('kpi-date');
+    if (dateEl) {
+        const asOf = document.getElementById('f-date').value || new Date().toISOString().split('T')[0];
+        dateEl.textContent = asOf;
+    }
+    
+    document.getElementById('kpi-total').textContent = formatNum(t);
+    document.getElementById('kpi-b0-30').textContent = formatNum(totals.b0_30 || 0);
+    document.getElementById('kpi-b31-60').textContent = formatNum(totals.b31_60 || 0);
+    document.getElementById('kpi-b61-90').textContent = formatNum(totals.b61_90 || 0);
+    document.getElementById('kpi-b90-plus').textContent = formatNum(totals.b90_plus || 0);
+    
+    if (t > 0) {
+        document.getElementById('kpi-pct-0-30').textContent = ((totals.b0_30 / t) * 100).toFixed(1) + '%';
+        document.getElementById('kpi-pct-31-60').textContent = ((totals.b31_60 / t) * 100).toFixed(1) + '%';
+        document.getElementById('kpi-pct-61-90').textContent = ((totals.b61_90 / t) * 100).toFixed(1) + '%';
+        document.getElementById('kpi-pct-90-plus').textContent = ((totals.b90_plus / t) * 100).toFixed(1) + '%';
+    }
+}
+
+function formatNum(n) {
+    if (n >= 1000000) return (n / 1000000).toFixed(1) + 'M';
+    if (n >= 1000) return (n / 1000).toFixed(1) + 'K';
+    return n.toFixed(0);
+}
+
+function getGroupColor(name) {
+    const colors = {
+        'أفراد': '#10b981',
+        'نقابات': '#6366f1',
+        'شركات': '#f59e0b',
+        'تأمين طبي': '#8b5cf6',
+        'صيدليات': '#06b6d4',
+        'مستشفيات': '#ef4444',
+        'معامل': '#a18cd1',
+        'موزعين': '#0ea5e9',
+    };
+    return colors[name] || '#64748b';
+}
+
+function setView(view) {
+    currentView = view;
+    document.getElementById('btn-by-customer').classList.toggle('active', view === 'customer');
+    document.getElementById('btn-by-group').classList.toggle('active', view === 'group');
+    load();
+}
+
+function resetFilters() {
+    document.getElementById('f-group').value = '';
+    document.getElementById('f-date').value = new Date().toISOString().split('T')[0];
+    loadCustomers(null).then(() => load());
+}
+
+document.addEventListener('DOMContentLoaded', init);
+</script>
+</body>
+</html>

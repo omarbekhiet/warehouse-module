@@ -1,0 +1,1227 @@
+﻿﻿<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>القوائم المالية المقارنة - IFRS 18</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="style.css" rel="stylesheet">
+<script src="permissions.js"></script>
+<style>
+* { font-family: 'IBM Plex Sans Arabic', 'Cairo', 'Segoe UI', Tahoma, sans-serif; box-sizing: border-box; }
+body { background: #f0f2f5; padding: 6px; font-size: 13px; margin: 0; }
+.container-fluid { padding: 0 !important; }
+.col-md-10 { padding: 6px 10px !important; }
+
+h2 { font-size: 1.05rem; margin: 0 !important; font-weight: 700; }
+.c-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px; margin-bottom: 6px; }
+
+.card { border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.05); border: none; margin-bottom: 6px; }
+.card.p-3 { padding: 8px !important; }
+
+/* Tabs */
+.nav-tabs { border-bottom: 2px solid #e2e8f0; margin-bottom: 6px; }
+.nav-tabs .nav-link {
+    color: #64748b;
+    font-weight: 700;
+    font-size: 0.8rem;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px 6px 0 0;
+}
+.nav-tabs .nav-link:hover { color: #2563eb; background: #f8fafc; }
+.nav-tabs .nav-link.active {
+    color: white;
+    background: linear-gradient(135deg, #1e3c72, #2563eb);
+    border-bottom: 3px solid #1e3c72;
+}
+
+/* Period Selector — حقلين لفترة واحدة */
+.period-selector {
+    display: flex;
+    gap: 10px;
+    align-items: flex-end;
+    margin-bottom: 8px;
+    background: white;
+    padding: 8px 12px;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+    border-right: 4px solid #2563eb;
+}
+
+.period-field {
+    display: flex;
+    flex-direction: column;
+    min-width: 140px;
+}
+.period-field label {
+    font-size: 0.68rem;
+    font-weight: 800;
+    color: #2563eb;
+    margin-bottom: 3px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+.period-field input {
+    height: 32px;
+    font-size: 0.78rem;
+    padding: 3px 8px;
+    text-align: center;
+    border-width: 2px;
+    border-radius: 5px;
+    border-color: #93c5fd;
+    background: #eff6ff;
+    font-family: 'Consolas', monospace;
+    font-weight: 700;
+}
+.period-field input:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37,99,235,0.15);
+}
+
+.period-arrow {
+    display: flex;
+    align-items: center;
+    padding: 0 4px;
+    color: #94a3b8;
+    font-weight: 700;
+    font-size: 0.9rem;
+    margin-bottom: 4px;
+}
+
+.period-info {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    padding: 0 8px;
+    min-width: 180px;
+}
+.period-info .info-label {
+    font-size: 0.62rem;
+    font-weight: 700;
+    color: #64748b;
+    margin-bottom: 3px;
+}
+.period-info .info-value {
+    font-size: 0.76rem;
+    font-weight: 800;
+    color: #475569;
+    font-family: 'Consolas', monospace;
+    padding: 4px 8px;
+    background: #f8fafc;
+    border-radius: 5px;
+    border: 1.5px dashed #cbd5e1;
+    text-align: center;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.period-buttons {
+    display: flex;
+    gap: 6px;
+    align-items: flex-end;
+    margin-bottom: 0;
+}
+.period-buttons .btn {
+    height: 32px;
+    font-size: 0.76rem;
+    padding: 4px 12px;
+    font-weight: 700;
+}
+
+/* Table */
+.table-container {
+    max-height: calc(100vh - 380px);
+    overflow-y: auto;
+    overflow-x: auto;
+    border-radius: 6px;
+    background: white;
+}
+.comp-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.76rem;
+    table-layout: fixed;
+}
+.comp-table thead th {
+    background: linear-gradient(135deg, #1e3c72, #2a5298);
+    color: white;
+    padding: 8px 6px;
+    font-weight: 700;
+    font-size: 0.72rem;
+    text-align: center;
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    white-space: nowrap;
+}
+.comp-table thead th.th-code { width: 90px; }
+.comp-table thead th.th-name { width: auto; text-align: right; padding-right: 12px; }
+.comp-table thead th.th-amount { width: 130px; }
+.comp-table thead th.th-diff { width: 110px; }
+.comp-table thead th.th-pct { width: 80px; }
+
+.comp-table thead th.col-current { background: linear-gradient(135deg, #1e40af, #2563eb); }
+.comp-table thead th.col-previous { background: linear-gradient(135deg, #475569, #64748b); }
+.comp-table thead th.col-diff { background: linear-gradient(135deg, #7c3aed, #8b5cf6); }
+.comp-table thead th.col-pct { background: linear-gradient(135deg, #d97706, #f59e0b); }
+
+.comp-table tbody td {
+    padding: 5px 6px;
+    vertical-align: middle;
+    border-bottom: 1px solid #f1f5f9;
+}
+.comp-table tbody tr:hover { background: #fef9c3; }
+
+/* Section headers */
+.section-row td {
+    background: linear-gradient(90deg, #1e3c72, #2a5298);
+    color: white;
+    font-weight: 800;
+    font-size: 0.78rem;
+    padding: 6px 12px;
+}
+.section-row.operating td { background: linear-gradient(90deg, #1e3c72, #2563eb); }
+.section-row.investing td { background: linear-gradient(90deg, #b45309, #f59e0b); }
+.section-row.financing td { background: linear-gradient(90deg, #5b21b6, #7c3aed); }
+.section-row.tax td { background: linear-gradient(90deg, #374151, #6b7280); }
+
+/* Item rows */
+.code-cell {
+    font-family: 'Consolas', monospace;
+    font-size: 0.7rem;
+    color: #475467;
+    text-align: center;
+    font-weight: 600;
+}
+.name-cell {
+    text-align: right;
+    padding-right: 12px !important;
+    color: #1e293b;
+    font-weight: 600;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.amount-cell {
+    text-align: center;
+    font-family: 'Consolas', monospace;
+    font-weight: 700;
+    font-size: 0.76rem;
+}
+.amount-cell.current { color: #1e40af; }
+.amount-cell.previous { color: #475569; }
+.amount-cell.negative { color: #dc2626; }
+
+.diff-cell {
+    text-align: center;
+    font-family: 'Consolas', monospace;
+    font-weight: 700;
+    font-size: 0.75rem;
+}
+.diff-positive { color: #059669; }
+.diff-negative { color: #dc2626; }
+.diff-zero { color: #94a3b8; }
+
+.pct-cell {
+    text-align: center;
+    font-family: 'Consolas', monospace;
+    font-size: 0.72rem;
+    font-weight: 700;
+}
+.pct-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
+    padding: 2px 7px;
+    border-radius: 10px;
+    font-size: 0.68rem;
+}
+.pct-badge.up { background: #d1fae5; color: #065f46; }
+.pct-badge.down { background: #fee2e2; color: #991b1b; }
+.pct-badge.flat { background: #f1f5f9; color: #64748b; }
+
+/* Total rows */
+.total-row td {
+    color: white;
+    font-weight: 900;
+    font-size: 0.82rem;
+    padding: 8px 6px;
+}
+.total-row td.name { text-align: right; padding-right: 12px; }
+.total-row td.amount-current { background: linear-gradient(90deg, #1e3c72, #2563eb); }
+.total-row td.amount-previous { background: linear-gradient(90deg, #475569, #64748b); }
+.total-row.gross td { background: linear-gradient(90deg, #065f46, #10b981); }
+.total-row.operating td { background: linear-gradient(90deg, #1e3c72, #2a5298); }
+.total-row.ebit td { background: linear-gradient(90deg, #7c3aed, #8b5cf6); }
+.total-row.pbt td { background: linear-gradient(90deg, #b45309, #f59e0b); }
+.total-row.net td { background: linear-gradient(90deg, #065f46, #10b981); }
+.total-row.net.loss td { background: linear-gradient(90deg, #991b1b, #dc2626); }
+
+/* KPI */
+.kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 6px;
+    margin-bottom: 8px;
+}
+.kpi-card {
+    background: white;
+    border-radius: 8px;
+    padding: 8px 10px;
+    text-align: center;
+    border-right: 4px solid;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+.kpi-label { font-size: 0.62rem; color: #64748b; font-weight: 700; margin-bottom: 3px; }
+.kpi-values {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    font-size: 0.78rem;
+    font-family: 'Consolas', monospace;
+    font-weight: 900;
+}
+.kpi-current { color: #1e40af; }
+.kpi-prev { color: #64748b; font-size: 0.72rem; font-weight: 600; }
+.kpi-arrow { color: #cbd5e1; font-size: 0.7rem; }
+.kpi-card.revenue { border-color: #2563eb; }
+.kpi-card.cogs { border-color: #dc2626; }
+.kpi-card.gross { border-color: #059669; }
+.kpi-card.operating { border-color: #7c3aed; }
+.kpi-card.net { border-color: #10b981; }
+.kpi-card.net.loss { border-color: #dc2626; }
+
+@media print {
+    body { background: white; }
+    .sidebar, .no-print, .period-selector, .c-header .btn, .nav-tabs, .kpi-grid { display: none !important; }
+    .col-md-10 { width: 100% !important; padding: 0 !important; }
+    .table-container { max-height: none !important; overflow: visible !important; }
+    @page { size: A4 landscape; margin: 8mm; }
+}
+
+/* ============================================
+   إلغاء أسهم input[type=number]
+   ============================================ */
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none !important;
+    margin: 0 !important;
+}
+input[type=number] {
+    -moz-appearance: textfield !important;
+    appearance: textfield !important;
+}
+input[type="number"] {
+    -moz-appearance: textfield !important;
+}
+
+</style>
+
+
+
+<style id="compact-spacing-global">
+/* ============================================
+   توحيد المسافات المضغوطة
+   ============================================ */
+
+.table td, .table th {
+    padding: 3px 6px !important;
+    font-size: 0.75rem !important;
+    vertical-align: middle !important;
+    line-height: 1.2 !important;
+}
+
+.table tbody tr {
+    height: auto !important;
+}
+
+.form-control, .form-select {
+    font-size: 0.75rem !important;
+    line-height: 1.2 !important;
+}
+
+.form-control-sm, .form-select-sm {
+    height: 26px !important;
+    padding: 2px 6px !important;
+    font-size: 0.72rem !important;
+    line-height: 1 !important;
+}
+
+.btn {
+    padding: 3px 8px !important;
+    font-size: 0.72rem !important;
+    line-height: 1.2 !important;
+}
+
+.btn-sm {
+    padding: 2px 6px !important;
+    font-size: 0.7rem !important;
+}
+
+.card {
+    margin-bottom: 6px !important;
+}
+
+.card-body, .card.p-2, .card.p-3, .card.p-4 {
+    padding: 6px 8px !important;
+}
+
+.modal-header {
+    padding: 6px 12px !important;
+}
+
+.modal-title {
+    font-size: 0.9rem !important;
+}
+
+.modal-body {
+    padding: 8px 12px !important;
+}
+
+.modal-footer {
+    padding: 6px 12px !important;
+}
+
+.modal-footer .btn {
+    padding: 4px 10px !important;
+    font-size: 0.75rem !important;
+}
+
+.mb-1, .mb-2, .mb-3, .mb-4 {
+    margin-bottom: 4px !important;
+}
+
+.mt-1, .mt-2, .mt-3, .mt-4 {
+    margin-top: 4px !important;
+}
+
+.ms-1, .ms-2, .ms-3 {
+    margin-right: 4px !important;
+}
+
+.me-1, .me-2, .me-3 {
+    margin-left: 4px !important;
+}
+
+.p-1, .p-2, .p-3, .p-4 {
+    padding: 4px !important;
+}
+
+.g-1, .g-2, .g-3 {
+    gap: 4px !important;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    line-height: 1.3 !important;
+}
+
+h1 { font-size: 1.2rem !important; margin-bottom: 6px !important; }
+h2 { font-size: 1.05rem !important; margin-bottom: 6px !important; }
+h3 { font-size: 0.95rem !important; margin-bottom: 4px !important; }
+h4 { font-size: 0.9rem !important; margin-bottom: 4px !important; }
+h5 { font-size: 0.85rem !important; margin-bottom: 4px !important; }
+h6 { font-size: 0.8rem !important; margin-bottom: 4px !important; }
+
+.alert {
+    padding: 6px 10px !important;
+    margin-bottom: 6px !important;
+    font-size: 0.78rem !important;
+}
+
+.badge {
+    padding: 2px 6px !important;
+    font-size: 0.68rem !important;
+}
+
+.nav-tabs .nav-link {
+    padding: 5px 12px !important;
+    font-size: 0.78rem !important;
+}
+
+hr {
+    margin: 6px 0 !important;
+}
+
+/* بطاقات الأعمار (aging) */
+.aging-card, .bucket-card, .stat-card {
+    padding: 6px 8px !important;
+    margin-bottom: 4px !important;
+}
+
+.aging-card .h4, .aging-card .h5,
+.bucket-card .h4, .bucket-card .h5 {
+    font-size: 1rem !important;
+    margin: 2px 0 !important;
+}
+
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none !important;
+    margin: 0 !important;
+}
+input[type=number] {
+    -moz-appearance: textfield !important;
+}
+</style>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 16 16%22><text y=%2214%22 font-size=%2214%22>📒</text></svg>">
+</head>
+<body>
+
+<div class="container-fluid">
+<div class="row">
+
+<div class="col-md-2 sidebar p-0">
+<div class="brand"><i class="bi bi-box-seam" style="font-size:2rem;"></i><h5 class="mt-2 mb-0">موديول المخازن</h5></div>
+<nav class="mt-3">
+<a href="index.html#reports"><i class="bi bi-house-fill"></i> التقارير الختامية</a>
+<a href="accounts.html"><i class="bi bi-book"></i> الدليل المحاسبي</a>
+<a href="journal.html"><i class="bi bi-journal-text"></i> القيود</a>
+<a href="financial_reports.html"><i class="bi bi-graph-up"></i> التقارير المالية</a>
+<a href="trial_balance.html"><i class="bi bi-list-check"></i> ميزان المراجعة</a>
+<a href="income_statement.html"><i class="bi bi-graph-up-arrow"></i> قائمة الدخل</a>
+<a href="balance_sheet.html"><i class="bi bi-file-earmark-bar-graph"></i> الميزانية</a>
+<a href="comparative_statements.html" class="active"><i class="bi bi-bar-chart-line"></i> القوائم المقارنة</a>
+<a href="ifrs18_admin.html"><i class="bi bi-tags"></i> إدارة التصنيفات</a>
+</nav>
+</div>
+
+<div class="col-md-10">
+
+<div class="c-header">
+<div>
+<div style="margin-bottom:10px;"><a href="index.html#reports" class="btn btn-sm btn-outline-secondary"><i class="bi bi-house"></i> التقارير الختامية</a></div>
+<h2><i class="bi bi-bar-chart-line"></i> القوائم المالية المقارنة</h2>
+<small class="text-muted" style="font-size: 0.7rem;">
+<i class="bi bi-patch-check-fill" style="color: #10b981;"></i>
+مقارنة بين فترتين — حسب IAS 1 + IFRS 18
+</small>
+</div>
+<div class="d-flex gap-1 no-print">
+<button class="btn btn-sm btn-outline-success" onclick="exportExcel()"><i class="bi bi-file-earmark-excel"></i> Excel</button>
+<button class="btn btn-sm btn-success" onclick="window.print()"><i class="bi bi-printer-fill"></i> طباعة A4</button>
+<a href="index.html#reports" class="btn btn-sm btn-outline-secondary"><i class="bi bi-house"></i> التقارير الختامية</a>
+<button class="btn btn-sm btn-outline-primary" onclick="loadCurrent()"><i class="bi bi-arrow-clockwise"></i> تحديث</button>
+</div>
+</div>
+
+<!-- Tabs -->
+<ul class="nav nav-tabs no-print" id="comp-tabs">
+<li class="nav-item">
+<button class="nav-link active" data-tab="income" onclick="switchTab('income')">
+<i class="bi bi-graph-up-arrow"></i> قائمة الدخل
+</button>
+</li>
+<li class="nav-item">
+<button class="nav-link" data-tab="balance" onclick="switchTab('balance')">
+<i class="bi bi-file-earmark-bar-graph"></i> الميزانية
+</button>
+</li>
+<li class="nav-item">
+<button class="nav-link" data-tab="trial" onclick="switchTab('trial')">
+<i class="bi bi-list-check"></i> ميزان المراجعة
+</button>
+</li>
+</ul>
+
+<!-- Period Selector — حقلين فقط -->
+<div class="period-selector no-print">
+
+<div class="period-field">
+<label><i class="bi bi-calendar-range"></i> من تاريخ</label>
+<input type="text" id="p1-from" placeholder="يوم/شهر/سنة" maxlength="10" dir="ltr">
+</div>
+
+<div class="period-arrow">←</div>
+
+<div class="period-field">
+<label><i class="bi bi-calendar-range-fill"></i> إلى تاريخ</label>
+<input type="text" id="p1-to" placeholder="يوم/شهر/سنة" maxlength="10" dir="ltr">
+</div>
+
+<div class="period-info">
+<div class="info-label">🔄 الفترة السابقة (تلقائية)</div>
+<div class="info-value" id="prev-period-info">—</div>
+</div>
+
+<div class="period-buttons">
+<button class="btn btn-primary btn-sm" onclick="loadCurrent()"><i class="bi bi-search"></i> تطبيق</button>
+<button class="btn btn-outline-secondary btn-sm" onclick="clearDates()"><i class="bi bi-x-circle"></i> مسح</button>
+</div>
+
+</div>
+
+<!-- Quick Dates -->
+<div class="d-flex gap-2 mb-2 no-print flex-wrap">
+<button class="btn btn-sm btn-outline-primary" onclick="quickDates('year')">📅 سنة كاملة</button>
+<button class="btn btn-sm btn-outline-primary" onclick="quickDates('quarter')">📅 ربع سنة</button>
+<button class="btn btn-sm btn-outline-info" onclick="quickDates('month')">📅 شهر</button>
+<button class="btn btn-sm btn-outline-secondary" onclick="quickDates('prev_year')">📅 السنة السابقة</button>
+<button class="btn btn-sm btn-primary" onclick="loadCurrent()"><i class="bi bi-search"></i> تطبيق</button>
+<button class="btn btn-sm btn-outline-secondary" onclick="clearDates()"><i class="bi bi-x-circle"></i> مسح</button>
+</div>
+
+<!-- KPI Cards -->
+<div class="kpi-grid no-print" id="kpi-grid">
+<div class="kpi-card revenue">
+<div class="kpi-label">الإيرادات</div>
+<div class="kpi-values">
+<span class="kpi-current" id="kpi-rev-cur">—</span>
+<span class="kpi-arrow">←</span>
+<span class="kpi-prev" id="kpi-rev-prev">—</span>
+</div>
+</div>
+<div class="kpi-card cogs">
+<div class="kpi-label">تكلفة المبيعات</div>
+<div class="kpi-values">
+<span class="kpi-current" id="kpi-cogs-cur">—</span>
+<span class="kpi-arrow">←</span>
+<span class="kpi-prev" id="kpi-cogs-prev">—</span>
+</div>
+</div>
+<div class="kpi-card gross">
+<div class="kpi-label">إجمالي الربح</div>
+<div class="kpi-values">
+<span class="kpi-current" id="kpi-gross-cur">—</span>
+<span class="kpi-arrow">←</span>
+<span class="kpi-prev" id="kpi-gross-prev">—</span>
+</div>
+</div>
+<div class="kpi-card operating">
+<div class="kpi-label">الربح التشغيلي</div>
+<div class="kpi-values">
+<span class="kpi-current" id="kpi-op-cur">—</span>
+<span class="kpi-arrow">←</span>
+<span class="kpi-prev" id="kpi-op-prev">—</span>
+</div>
+</div>
+<div class="kpi-card net" id="kpi-net-card">
+<div class="kpi-label">صافي الربح</div>
+<div class="kpi-values">
+<span class="kpi-current" id="kpi-net-cur">—</span>
+<span class="kpi-arrow">←</span>
+<span class="kpi-prev" id="kpi-net-prev">—</span>
+</div>
+</div>
+</div>
+
+<!-- Content -->
+<div id="comp-content">
+<div class="text-center py-5"><i class="bi bi-arrow-clockwise" style="font-size:2rem;"></i><br>جاري التحميل...</div>
+</div>
+
+</div>
+</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+const API = '/api/v1';
+let currentTab = 'income';
+
+function escapeHtml(s) {
+    return String(s ?? '').replace(/[&<>"']/g, c => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+    }[c]));
+}
+
+function fmtMoney(v) {
+    const n = Number(v) || 0;
+    return n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+
+function fmtShort(v) {
+    const n = Number(v) || 0;
+    if (Math.abs(n) >= 1000000) return (n / 1000000).toFixed(2) + 'M';
+    if (Math.abs(n) >= 1000) return (n / 1000).toFixed(1) + 'K';
+    return n.toFixed(2);
+}
+
+function parseDateDMY(dmy) {
+    if (!dmy) return '';
+    const p = String(dmy).trim().split('/');
+    if (p.length !== 3) return dmy;
+    return p[2] + '-' + p[1].padStart(2, '0') + '-' + p[0].padStart(2, '0');
+}
+
+function toDMY(iso) {
+    if (!iso) return '';
+    const p = String(iso).split('-');
+    if (p.length !== 3) return iso;
+    return p[2] + '/' + p[1] + '/' + p[0];
+}
+
+function setupDateField(id) {
+    const el = document.getElementById(id);
+    if (!el) return;
+    el.addEventListener('input', function() {
+        let v = this.value.replace(/[^0-9]/g, '');
+        if (v.length >= 3) v = v.slice(0, 2) + '/' + v.slice(2);
+        if (v.length >= 6) v = v.slice(0, 5) + '/' + v.slice(5);
+        this.value = v.slice(0, 10);
+        updatePrevPeriodInfo();
+    });
+    el.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') { e.preventDefault(); loadCurrent(); }
+    });
+}
+
+function getPeriods() {
+    const p1From = parseDateDMY(document.getElementById('p1-from').value);
+    const p1To = parseDateDMY(document.getElementById('p1-to').value);
+
+    // حساب الفترة السابقة تلقائياً (نفس الفترة - سنة)
+    let p2From = '', p2To = '';
+    if (p1From) p2From = subYear(p1From);
+    if (p1To) p2To = subYear(p1To);
+
+    return {
+        p1_from: p1From, p1_to: p1To,
+        p2_from: p2From, p2_to: p2To,
+    };
+}
+
+// تنقيص سنة من تاريخ ISO
+function subYear(iso) {
+    if (!iso) return '';
+    const parts = String(iso).split('-');
+    if (parts.length !== 3) return iso;
+    const y = parseInt(parts[0]) - 1;
+    return y + '-' + parts[1] + '-' + parts[2];
+}
+
+// تحديث عرض الفترة السابقة
+function updatePrevPeriodInfo() {
+    const p = getPeriods();
+    const info = document.getElementById('prev-period-info');
+    if (!info) return;
+    if (p.p2_from && p.p2_to) {
+        info.textContent = toDMY(p.p2_from) + '  ←  ' + toDMY(p.p2_to);
+    } else {
+        info.textContent = '—';
+    }
+}
+
+function buildQS(obj) {
+    const p = new URLSearchParams();
+    for (const k in obj) {
+        if (obj[k]) p.append(k, obj[k]);
+    }
+    const s = p.toString();
+    return s ? '?' + s : '';
+}
+
+function switchTab(tab) {
+    currentTab = tab;
+    document.querySelectorAll('#comp-tabs .nav-link').forEach(b => b.classList.remove('active'));
+    document.querySelector(`#comp-tabs .nav-link[data-tab="${tab}"]`).classList.add('active');
+    loadCurrent();
+}
+
+function loadCurrent() {
+    if (currentTab === 'income') loadIncomeComparative();
+    else if (currentTab === 'balance') loadBalanceComparative();
+    else if (currentTab === 'trial') loadTrialComparative();
+}
+
+// ============================================================
+// Quick Dates
+// ============================================================
+function quickDates(type) {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = now.getMonth();
+    
+    let p1From, p1To;
+    
+    if (type === 'year') {
+        p1From = `${year}-01-01`; p1To = `${year}-12-31`;
+    } else if (type === 'quarter') {
+        const q = Math.floor(month / 3);
+        const qStart = q * 3;
+        p1From = `${year}-${String(qStart+1).padStart(2,'0')}-01`;
+        p1To = `${year}-${String(qStart+3).padStart(2,'0')}-${new Date(year, qStart+3, 0).getDate()}`;
+    } else if (type === 'month') {
+        p1From = `${year}-${String(month+1).padStart(2,'0')}-01`;
+        p1To = `${year}-${String(month+1).padStart(2,'0')}-${new Date(year, month+1, 0).getDate()}`;
+    } else if (type === 'prev_year') {
+        p1From = `${year-1}-01-01`; p1To = `${year-1}-12-31`;
+    }
+    
+    document.getElementById('p1-from').value = toDMY(p1From);
+    document.getElementById('p1-to').value = toDMY(p1To);
+    updatePrevPeriodInfo();
+    loadCurrent();
+}
+
+function clearDates() {
+    ['p1-from', 'p1-to'].forEach(id => document.getElementById(id).value = '');
+    updatePrevPeriodInfo();
+    loadCurrent();
+}
+
+// ============================================================
+// Helper: build row
+// ============================================================
+function buildRow(code, name, cur, prev, indent = false) {
+    const curNum = Number(cur) || 0;
+    const prevNum = Number(prev) || 0;
+    const diff = curNum - prevNum;
+    const diffPct = prevNum !== 0 ? (diff / Math.abs(prevNum)) * 100 : null;
+    
+    const curClass = curNum < 0 ? 'amount-cell current negative' : 'amount-cell current';
+    const prevClass = prevNum < 0 ? 'amount-cell previous negative' : 'amount-cell previous';
+    
+    let diffClass = 'diff-zero';
+    if (diff > 0.01) diffClass = 'diff-positive';
+    else if (diff < -0.01) diffClass = 'diff-negative';
+    
+    let pctBadge = '<span class="pct-badge flat">—</span>';
+    if (diffPct !== null) {
+        if (diffPct > 0.5) {
+            pctBadge = `<span class="pct-badge up"><i class="bi bi-arrow-up"></i> ${diffPct.toFixed(1)}%</span>`;
+        } else if (diffPct < -0.5) {
+            pctBadge = `<span class="pct-badge down"><i class="bi bi-arrow-down"></i> ${Math.abs(diffPct).toFixed(1)}%</span>`;
+        } else {
+            pctBadge = `<span class="pct-badge flat">${diffPct.toFixed(1)}%</span>`;
+        }
+    }
+    
+    return `
+        <tr>
+            <td class="code-cell">${escapeHtml(code || '')}</td>
+            <td class="name-cell" style="padding-right:${indent ? '24px' : '12px'} !important;">${escapeHtml(name)}</td>
+            <td class="${curClass}">${fmtMoney(cur)}</td>
+            <td class="${prevClass}">${fmtMoney(prev)}</td>
+            <td class="diff-cell ${diffClass}">${diff >= 0 ? '+' : ''}${fmtMoney(diff)}</td>
+            <td class="pct-cell">${pctBadge}</td>
+        </tr>
+    `;
+}
+
+function buildTotalRow(label, cur, prev, className, icon = 'trophy') {
+    const diff = (Number(cur) || 0) - (Number(prev) || 0);
+    const diffPct = (Number(prev) || 0) !== 0 ? (diff / Math.abs(prev)) * 100 : null;
+    
+    let pctText = '—';
+    if (diffPct !== null) {
+        pctText = (diffPct >= 0 ? '+' : '') + diffPct.toFixed(1) + '%';
+    }
+    
+    return `
+        <tr class="total-row ${className}">
+            <td colspan="2" class="name"><i class="bi bi-${icon}"></i> ${label}</td>
+            <td class="amount-current" style="text-align:center;font-family:Consolas,monospace;font-weight:900;">${fmtMoney(cur)}</td>
+            <td class="amount-previous" style="text-align:center;font-family:Consolas,monospace;font-weight:900;">${fmtMoney(prev)}</td>
+            <td style="text-align:center;font-family:Consolas,monospace;font-weight:900;">${diff >= 0 ? '+' : ''}${fmtMoney(diff)}</td>
+            <td style="text-align:center;font-size:0.72rem;">${pctText}</td>
+        </tr>
+    `;
+}
+
+function sectionHeader(icon, title, cls = 'operating') {
+    return `<tr class="section-row ${cls}"><td colspan="6"><i class="bi bi-${icon}"></i> ${title}</td></tr>`;
+}
+
+// ============================================================
+// Comparative Income Statement
+// ============================================================
+async function loadIncomeComparative() {
+    const content = document.getElementById('comp-content');
+    content.innerHTML = '<div class="text-center py-5"><i class="bi bi-arrow-clockwise" style="font-size:2rem;"></i><br>جاري التحميل...</div>';
+    
+    const p = getPeriods();
+    const qs = buildQS({
+        period1_from: p.p1_from, period1_to: p.p1_to,
+        period2_from: p.p2_from, period2_to: p.p2_to
+    });
+    
+    try {
+        const r = await fetch(`${API}/financial-reports/comparative/income-statement${qs}`).then(x => x.json());
+        const d = r.data || {};
+        const p1 = d.period1 || {};
+        const p2 = d.period2 || {};
+        const t1 = p1.totals || {};
+        const t2 = p2.totals || {};
+        
+        // KPI
+        document.getElementById('kpi-rev-cur').textContent = fmtShort(t1.total_revenue);
+        document.getElementById('kpi-rev-prev').textContent = fmtShort(t2.total_revenue);
+        document.getElementById('kpi-cogs-cur').textContent = fmtShort(t1.total_cogs);
+        document.getElementById('kpi-cogs-prev').textContent = fmtShort(t2.total_cogs);
+        document.getElementById('kpi-gross-cur').textContent = fmtShort(t1.gross_profit);
+        document.getElementById('kpi-gross-prev').textContent = fmtShort(t2.gross_profit);
+        document.getElementById('kpi-op-cur').textContent = fmtShort(t1.operating_profit);
+        document.getElementById('kpi-op-prev').textContent = fmtShort(t2.operating_profit);
+        document.getElementById('kpi-net-cur').textContent = fmtShort(t1.net_profit);
+        document.getElementById('kpi-net-prev').textContent = fmtShort(t2.net_profit);
+        
+        const netCard = document.getElementById('kpi-net-card');
+        netCard.classList.toggle('loss', (t1.net_profit || 0) < 0);
+        
+        // Table
+        let html = `
+            <div class="card p-2">
+            <div class="table-container">
+            <table class="comp-table">
+                <thead>
+                    <tr>
+                        <th class="th-code">الكود</th>
+                        <th class="th-name">البند</th>
+                        <th class="th-amount col-current">${p1.totals ? 'الفترة الحالية' : 'الحالية'}</th>
+                        <th class="th-amount col-previous">${p2.totals ? 'الفترة السابقة' : 'السابقة'}</th>
+                        <th class="th-diff col-diff">الفرق</th>
+                        <th class="th-pct col-pct">%</th>
+                    </tr>
+                </thead>
+                <tbody>
+        `;
+        
+        // الإيرادات
+        html += sectionHeader('cash-coin', 'الإيرادات التشغيلية', 'operating');
+        const p2RevMap = {};
+        (p2.revenue || []).forEach(x => { p2RevMap[x.code] = x.amount; });
+        (p1.revenue || []).forEach(x => {
+            html += buildRow(x.code, x.name_ar, x.amount, p2RevMap[x.code] || 0);
+        });
+        // إضافة بنود الفترة السابقة اللي مش في الحالية
+        (p2.revenue || []).forEach(x => {
+            if (!(p1.revenue || []).find(y => y.code === x.code)) {
+                html += buildRow(x.code, x.name_ar, 0, x.amount);
+            }
+        });
+        html += buildRow('', 'إجمالي الإيرادات', t1.total_revenue, t2.total_revenue);
+        
+        // تكلفة المبيعات
+        html += sectionHeader('box-seam', 'تكلفة المبيعات (COGS)', 'operating');
+        const p2CogsMap = {};
+        (p2.cogs || []).forEach(x => { p2CogsMap[x.code] = x.amount; });
+        (p1.cogs || []).forEach(x => {
+            html += buildRow(x.code, x.name_ar, x.amount, p2CogsMap[x.code] || 0);
+        });
+        html += buildRow('', 'إجمالي التكلفة', t1.total_cogs, t2.total_cogs);
+        
+        // إجمالي الربح
+        html += buildTotalRow('إجمالي الربح (GROSS PROFIT)', t1.gross_profit, t2.gross_profit, 'gross', 'graph-up');
+        
+        // المصروفات التشغيلية
+        const hasOpex = (p1.selling || []).length || (p1.admin || []).length || 
+                       (p1.depreciation || []).length || (p2.selling || []).length ||
+                       (p2.admin || []).length || (p2.depreciation || []).length;
+        
+        if (hasOpex) {
+            html += sectionHeader('receipt-cutoff', 'المصروفات التشغيلية', 'operating');
+            
+            // إدارية
+            if ((p1.admin || []).length || (p2.admin || []).length) {
+                const p2Map = {};
+                (p2.admin || []).forEach(x => { p2Map[x.code] = x.amount; });
+                html += `<tr class="section-row operating"><td colspan="6" style="padding:4px 16px;font-size:0.72rem;"><i class="bi bi-briefcase"></i> مصروفات إدارية</td></tr>`;
+                (p1.admin || []).forEach(x => {
+                    html += buildRow(x.code, x.name_ar, x.amount, p2Map[x.code] || 0, true);
+                });
+            }
+            
+            // بيعية
+            if ((p1.selling || []).length || (p2.selling || []).length) {
+                const p2Map = {};
+                (p2.selling || []).forEach(x => { p2Map[x.code] = x.amount; });
+                html += `<tr class="section-row operating"><td colspan="6" style="padding:4px 16px;font-size:0.72rem;"><i class="bi bi-megaphone"></i> مصروفات بيعية</td></tr>`;
+                (p1.selling || []).forEach(x => {
+                    html += buildRow(x.code, x.name_ar, x.amount, p2Map[x.code] || 0, true);
+                });
+            }
+            
+            // إهلاك
+            if ((p1.depreciation || []).length || (p2.depreciation || []).length) {
+                const p2Map = {};
+                (p2.depreciation || []).forEach(x => { p2Map[x.code] = x.amount; });
+                html += `<tr class="section-row operating"><td colspan="6" style="padding:4px 16px;font-size:0.72rem;"><i class="bi bi-building-gear"></i> الإهلاك والإطفاء</td></tr>`;
+                (p1.depreciation || []).forEach(x => {
+                    html += buildRow(x.code, x.name_ar, x.amount, p2Map[x.code] || 0, true);
+                });
+            }
+            
+            html += buildRow('', 'إجمالي المصروفات التشغيلية', t1.total_opex, t2.total_opex);
+        }
+        
+        // الربح التشغيلي
+        html += buildTotalRow('الربح التشغيلي (OPERATING PROFIT)', t1.operating_profit, t2.operating_profit, 'operating', 'graph-up-arrow');
+        
+        // الإيرادات الاستثمارية
+        if ((p1.investing_income || []).length || (p2.investing_income || []).length) {
+            html += sectionHeader('bank', 'الإيرادات الاستثمارية', 'investing');
+            const p2Map = {};
+            (p2.investing_income || []).forEach(x => { p2Map[x.code] = x.amount; });
+            (p1.investing_income || []).forEach(x => {
+                html += buildRow(x.code, x.name_ar, x.amount, p2Map[x.code] || 0);
+            });
+            
+            html += buildTotalRow('EBIT (الأرباح قبل الفوائد والضرائب)', t1.ebit, t2.ebit, 'ebit', 'cash-stack');
+        }
+        
+        // تكاليف التمويل
+        if ((p1.finance_costs || []).length || (p2.finance_costs || []).length) {
+            html += sectionHeader('bank2', 'تكاليف التمويل', 'financing');
+            const p2Map = {};
+            (p2.finance_costs || []).forEach(x => { p2Map[x.code] = x.amount; });
+            (p1.finance_costs || []).forEach(x => {
+                html += buildRow(x.code, x.name_ar, x.amount, p2Map[x.code] || 0);
+            });
+        }
+        
+        // الربح قبل الضريبة
+        html += buildTotalRow('الربح قبل الضريبة', t1.profit_before_tax, t2.profit_before_tax, 'pbt', 'calculator');
+        
+        // الضرائب
+        if ((p1.taxes || []).length || (p2.taxes || []).length) {
+            html += sectionHeader('percent', 'الضرائب', 'tax');
+            const p2Map = {};
+            (p2.taxes || []).forEach(x => { p2Map[x.code] = x.amount; });
+            (p1.taxes || []).forEach(x => {
+                html += buildRow(x.code, x.name_ar, x.amount, p2Map[x.code] || 0);
+            });
+        }
+        
+        // صافي الربح
+        const netClass = (t1.net_profit || 0) >= 0 ? 'net' : 'net loss';
+        html += buildTotalRow('صافي الربح (NET PROFIT)', t1.net_profit, t2.net_profit, netClass, 'check-circle-fill');
+        
+        html += `
+                </tbody>
+            </table>
+            </div>
+            </div>
+        `;
+        
+        content.innerHTML = html;
+        
+    } catch (e) {
+        console.error(e);
+        content.innerHTML = '<div class="alert alert-danger">فشل تحميل البيانات</div>';
+    }
+}
+
+// ============================================================
+// Comparative Balance Sheet
+// ============================================================
+async function loadBalanceComparative() {
+    const content = document.getElementById('comp-content');
+    content.innerHTML = '<div class="text-center py-5"><i class="bi bi-arrow-clockwise" style="font-size:2rem;"></i><br>جاري التحميل...</div>';
+    
+    // الفترة الحالية من الحقلين
+    const p1To = parseDateDMY(document.getElementById('p1-to').value) || parseDateDMY(document.getElementById('p1-from').value);
+    
+    // الفترة السابقة = نفس التاريخ - سنة (تلقائي)
+    const p2To = p1To ? subYear(p1To) : '';
+    
+    const qs = buildQS({ as_of1: p1To, as_of2: p2To });
+    
+    try {
+        const r = await fetch(`${API}/financial-reports/comparative/balance-sheet${qs}`).then(x => x.json());
+        const d = r.data || {};
+        const p1 = d.period1 || {};
+        const p2 = d.period2 || {};
+        const t1 = p1.totals || {};
+        const t2 = p2.totals || {};
+        
+        // KPI
+        document.getElementById('kpi-rev-cur').textContent = fmtShort(t1.assets);
+        document.getElementById('kpi-rev-prev').textContent = fmtShort(t2.assets);
+        document.getElementById('kpi-cogs-cur').textContent = fmtShort(t1.liabilities);
+        document.getElementById('kpi-cogs-prev').textContent = fmtShort(t2.liabilities);
+        document.getElementById('kpi-gross-cur').textContent = fmtShort(t1.equity);
+        document.getElementById('kpi-gross-prev').textContent = fmtShort(t2.equity);
+        document.getElementById('kpi-op-cur').textContent = fmtShort(t1.liab_plus_equity);
+        document.getElementById('kpi-op-prev').textContent = fmtShort(t2.liab_plus_equity);
+        document.getElementById('kpi-net-cur').textContent = t1.balanced ? '✅' : '⚠️';
+        document.getElementById('kpi-net-prev').textContent = t2.balanced ? '✅' : '⚠️';
+        
+        let html = `
+            <div class="card p-2">
+            <div class="table-container">
+            <table class="comp-table">
+                <thead>
+                    <tr>
+                        <th class="th-code">الكود</th>
+                        <th class="th-name">البند</th>
+                        <th class="th-amount col-current">${escapeHtml(d.period1_date || 'الحالية')}</th>
+                        <th class="th-amount col-previous">${escapeHtml(d.period2_date || 'السابقة')}</th>
+                        <th class="th-diff col-diff">الفرق</th>
+                        <th class="th-pct col-pct">%</th>
+                    </tr>
+                </thead>
+                <tbody>
+        `;
+        
+        // الأصول
+        html += sectionHeader('building', 'الأصول', 'operating');
+        const p2AssetsMap = {};
+        (p2.assets || []).forEach(x => { p2AssetsMap[x.code] = x.balance; });
+        (p1.assets || []).forEach(x => {
+            html += buildRow(x.code, x.name_ar, x.balance, p2AssetsMap[x.code] || 0, true);
+        });
+        html += buildTotalRow('إجمالي الأصول', t1.assets, t2.assets, 'operating', 'trophy');
+        
+        // الالتزامات
+        html += sectionHeader('bank', 'الالتزامات', 'financing');
+        const p2LiabMap = {};
+        (p2.liabilities || []).forEach(x => { p2LiabMap[x.code] = x.balance; });
+        (p1.liabilities || []).forEach(x => {
+            html += buildRow(x.code, x.name_ar, x.balance, p2LiabMap[x.code] || 0, true);
+        });
+        html += buildTotalRow('إجمالي الالتزامات', t1.liabilities, t2.liabilities, 'financing', 'exclamation-triangle');
+        
+        // حقوق الملكية
+        html += sectionHeader('people', 'حقوق الملكية', 'investing');
+        const p2EqMap = {};
+        (p2.equity || []).forEach(x => { p2EqMap[x.code] = x.balance; });
+        (p1.equity || []).forEach(x => {
+            html += buildRow(x.code, x.name_ar, x.balance, p2EqMap[x.code] || 0, true);
+        });
+        html += buildTotalRow('إجمالي حقوق الملكية', t1.equity, t2.equity, 'investing', 'people');
+        
+        // الإجمالي
+        html += buildTotalRow('الالتزامات + حقوق الملكية', t1.liab_plus_equity, t2.liab_plus_equity, 'pbt', 'calculator');
+        
+        html += `
+                </tbody>
+            </table>
+            </div>
+            </div>
+        `;
+        
+        content.innerHTML = html;
+        
+    } catch (e) {
+        console.error(e);
+        content.innerHTML = '<div class="alert alert-danger">فشل تحميل البيانات</div>';
+    }
+}
+
+// ============================================================
+// Comparative Trial Balance
+// ============================================================
+async function loadTrialComparative() {
+    const content = document.getElementById('comp-content');
+    content.innerHTML = '<div class="text-center py-5"><i class="bi bi-arrow-clockwise" style="font-size:2rem;"></i><br>جاري التحميل...</div>';
+    
+    const p = getPeriods();
+    const qs = buildQS({
+        period1_from: p.p1_from, period1_to: p.p1_to,
+        period2_from: p.p2_from, period2_to: p.p2_to
+    });
+    
+    try {
+        const r = await fetch(`${API}/financial-reports/comparative/trial-balance${qs}`).then(x => x.json());
+        const d = r.data || {};
+        const p1 = d.period1 || [];
+        const p2 = d.period2 || [];
+        
+        // دمج حسب الكود
+        const codes = new Set([...p1.map(x => x.code), ...p2.map(x => x.code)]);
+        const p1Map = {}; p1.forEach(x => p1Map[x.code] = x);
+        const p2Map = {}; p2.forEach(x => p2Map[x.code] = x);
+        
+        let html = `
+            <div class="card p-2">
+            <div class="table-container">
+            <table class="comp-table">
+                <thead>
+                    <tr>
+                        <th class="th-code">الكود</th>
+                        <th class="th-name">اسم الحساب</th>
+                        <th class="th-amount col-current">مدين (الحالية)</th>
+                        <th class="th-amount col-current">دائن (الحالية)</th>
+                        <th class="th-amount col-previous">مدين (السابقة)</th>
+                        <th class="th-amount col-previous">دائن (السابقة)</th>
+                        <th class="th-diff col-diff">الفرق (صافي)</th>
+                    </tr>
+                </thead>
+                <tbody>
+        `;
+        
+        let totalD1 = 0, totalC1 = 0, totalD2 = 0, totalC2 = 0;
+        
+        Array.from(codes).sort().forEach(code => {
+            const a1 = p1Map[code] || {};
+            const a2 = p2Map[code] || {};
+            const d1 = Number(a1.closing_debit) || 0;
+            const c1 = Number(a1.closing_credit) || 0;
+            const d2 = Number(a2.closing_debit) || 0;
+            const c2 = Number(a2.closing_credit) || 0;
+            
+            totalD1 += d1; totalC1 += c1;
+            totalD2 += d2; totalC2 += c2;
+            
+            const net1 = d1 - c1;
+            const net2 = d2 - c2;
+            const diff = net1 - net2;
+            
+            const name = (a1.name_ar || a2.name_ar || '');
+            
+            let diffClass = 'diff-zero';
+            if (diff > 0.01) diffClass = 'diff-positive';
+            else if (diff < -0.01) diffClass = 'diff-negative';
+            
+            html += `
+                <tr>
+                    <td class="code-cell">${escapeHtml(code)}</td>
+                    <td class="name-cell">${escapeHtml(name)}</td>
+                    <td class="amount-cell current">${d1 > 0 ? fmtMoney(d1) : '—'}</td>
+                    <td class="amount-cell current negative">${c1 > 0 ? fmtMoney(c1) : '—'}</td>
+                    <td class="amount-cell previous">${d2 > 0 ? fmtMoney(d2) : '—'}</td>
+                    <td class="amount-cell previous negative">${c2 > 0 ? fmtMoney(c2) : '—'}</td>
+                    <td class="diff-cell ${diffClass}">${diff >= 0 ? '+' : ''}${fmtMoney(diff)}</td>
+                </tr>
+            `;
+        });
+        
+        html += `
+                </tbody>
+                <tfoot>
+                    <tr class="total-row operating">
+                        <td colspan="2" class="name"><i class="bi bi-trophy"></i> الإجمالي</td>
+                        <td style="text-align:center;font-family:Consolas;">${fmtMoney(totalD1)}</td>
+                        <td style="text-align:center;font-family:Consolas;">${fmtMoney(totalC1)}</td>
+                        <td style="text-align:center;font-family:Consolas;">${fmtMoney(totalD2)}</td>
+                        <td style="text-align:center;font-family:Consolas;">${fmtMoney(totalC2)}</td>
+                        <td style="text-align:center;font-family:Consolas;">${fmtMoney((totalD1-totalC1) - (totalD2-totalC2))}</td>
+                    </tr>
+                </tfoot>
+            </table>
+            </div>
+            </div>
+        `;
+        
+        content.innerHTML = html;
+        
+    } catch (e) {
+        console.error(e);
+        content.innerHTML = '<div class="alert alert-danger">فشل تحميل البيانات</div>';
+    }
+}
+
+function exportExcel() {
+    alert('تصدير Excel سيتم إضافته قريباً');
+}
+
+// Init
+setupDateField('p1-from');
+setupDateField('p1-to');
+
+// تواريخ افتراضية: السنة الحالية
+quickDates('year');
+
+// تحديث عرض الفترة السابقة
+setTimeout(updatePrevPeriodInfo, 100);
+</script>
+</body>
+</html>

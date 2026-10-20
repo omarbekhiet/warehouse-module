@@ -16,3 +16,75 @@ logs/
 .DS_Store
 *.swp
 *.swo
+
+# Temporary dev scripts
+check_*.py
+fix_*.py
+show_*.py
+test_*.py
+add_*.py
+remove_*.py
+update_*.py
+verify_*.py
+seed_*.py
+backup_*.zip
+*.bak
+*.bak2
+*.bak3
+*.old
+_archive_*/
+_backup_*/
+
+# Build artifacts
+build/
+dist/
+*.spec
+
+# Pycache
+__pycache__/
+*.pyc
+
+# Temp reports
+db_report*.txt
+style_dump.txt
+types_report.txt
+engine_report.txt
+venv/
+__pycache__/
+*.pyc
+*.bak
+*.bak2
+*.bak3
+*.old
+build/
+dist/
+_archive_*/
+_backup_*/
+backup_*.zip
+db_report*.txt
+style_dump.txt
+types_report.txt
+engine_report.txt
+
+# Ignore all backup variants
+*.bak_*
+*.bak.*
+*.bak-*
+*.before_*
+*.before-*
+*.final_backup
+*.backup
+*.old
+*.corrupt*
+
+# Ignore DB backups (keep main DB tracked if needed)
+*.db.bak_*
+*.db.bak-*
+*.db.bak.*
+*.db-journal
+*.db-shm
+*.db-wal
+
+# Ignore duplicate style files
+style 1.css
+style 2.css

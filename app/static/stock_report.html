@@ -1,0 +1,496 @@
+﻿<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>تقرير حركات الإضافة والمنصرف</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="permissions.js"></script>
+<style>
+body { background: #f8fafc; font-family: 'Cairo', sans-serif; font-size: 0.85rem; padding: 10px; }
+.page-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.page-head h4 { margin: 0; font-weight: 800; }
+.filter-bar { background: white; padding: 10px; border-radius: 8px; margin-bottom: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+.stats-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 10px; }
+.stat-card { border-radius: 8px; padding: 10px; text-align: center; color: white; }
+.stat-card .label { font-size: 0.7rem; opacity: 0.9; }
+.stat-card .value { font-size: 1.3rem; font-weight: 800; }
+.stat-in { background: linear-gradient(135deg, #10b981, #059669); }
+.stat-out { background: linear-gradient(135deg, #ef4444, #dc2626); }
+.stat-balance { background: linear-gradient(135deg, #3b82f6, #2563eb); }
+.stat-value { background: linear-gradient(135deg, #8b5cf6, #7c3aed); }
+.table-card { background: white; border-radius: 8px; padding: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.06); }
+table { width: 100%; border-collapse: collapse; font-size: 0.78rem; }
+th { background: linear-gradient(135deg, #1e3c72, #2a5298); color: white; padding: 6px 4px; text-align: center; font-weight: 700; white-space: nowrap; }
+th.group-in { background: linear-gradient(135deg, #065f46, #047857); }
+th.group-out { background: linear-gradient(135deg, #991b1b, #b91c1c); }
+td { padding: 5px 4px; text-align: center; border-bottom: 1px solid #f1f5f9; }
+td.text-start { text-align: right; }
+td.num { font-family: 'Consolas', monospace; font-weight: 600; }
+tr:hover { background: #fef9c3; }
+tr.row-in { background: #f0fdf4; }
+tr.row-out { background: #fef2f2; }
+tr.row-total { background: #fef3c7 !important; font-weight: 800; }
+tr.row-total td { border-top: 2px solid #f59e0b; font-size: 0.82rem; }
+.badge-type { padding: 2px 6px; border-radius: 4px; font-size: 0.65rem; font-weight: 700; }
+.badge-RECEIPT { background: #d1fae5; color: #065f46; }
+.badge-ISSUE { background: #fee2e2; color: #991b1b; }
+.badge-TRANSFER { background: #dbeafe; color: #1e40af; }
+.badge-ADJUSTMENT { background: #fef3c7; color: #92400e; }
+.badge-WASTE { background: #fce7f3; color: #9d174d; }
+.badge-JE { background: #ede9fe; color: #6d28d9; padding: 2px 6px; border-radius: 4px; font-size: 0.65rem; text-decoration: none; }
+.badge-JE:hover { background: #ddd6fe; }
+.view-toggle { display: flex; gap: 4px; }
+.view-toggle .btn { font-size: 0.75rem; padding: 3px 10px; }
+.view-toggle .btn.active { background: #6366f1; color: white; border-color: #6366f1; }
+
+/* ============================================
+   إلغاء أسهم input[type=number]
+   ============================================ */
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none !important;
+    margin: 0 !important;
+}
+input[type=number] {
+    -moz-appearance: textfield !important;
+    appearance: textfield !important;
+}
+input[type="number"] {
+    -moz-appearance: textfield !important;
+}
+
+</style>
+
+
+
+<style id="compact-spacing-global">
+/* ============================================
+   توحيد المسافات المضغوطة
+   ============================================ */
+
+.table td, .table th {
+    padding: 3px 6px !important;
+    font-size: 0.75rem !important;
+    vertical-align: middle !important;
+    line-height: 1.2 !important;
+}
+
+.table tbody tr {
+    height: auto !important;
+}
+
+.form-control, .form-select {
+    font-size: 0.75rem !important;
+    line-height: 1.2 !important;
+}
+
+.form-control-sm, .form-select-sm {
+    height: 26px !important;
+    padding: 2px 6px !important;
+    font-size: 0.72rem !important;
+    line-height: 1 !important;
+}
+
+.btn {
+    padding: 3px 8px !important;
+    font-size: 0.72rem !important;
+    line-height: 1.2 !important;
+}
+
+.btn-sm {
+    padding: 2px 6px !important;
+    font-size: 0.7rem !important;
+}
+
+.card {
+    margin-bottom: 6px !important;
+}
+
+.card-body, .card.p-2, .card.p-3, .card.p-4 {
+    padding: 6px 8px !important;
+}
+
+.modal-header {
+    padding: 6px 12px !important;
+}
+
+.modal-title {
+    font-size: 0.9rem !important;
+}
+
+.modal-body {
+    padding: 8px 12px !important;
+}
+
+.modal-footer {
+    padding: 6px 12px !important;
+}
+
+.modal-footer .btn {
+    padding: 4px 10px !important;
+    font-size: 0.75rem !important;
+}
+
+.mb-1, .mb-2, .mb-3, .mb-4 {
+    margin-bottom: 4px !important;
+}
+
+.mt-1, .mt-2, .mt-3, .mt-4 {
+    margin-top: 4px !important;
+}
+
+.ms-1, .ms-2, .ms-3 {
+    margin-right: 4px !important;
+}
+
+.me-1, .me-2, .me-3 {
+    margin-left: 4px !important;
+}
+
+.p-1, .p-2, .p-3, .p-4 {
+    padding: 4px !important;
+}
+
+.g-1, .g-2, .g-3 {
+    gap: 4px !important;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    line-height: 1.3 !important;
+}
+
+h1 { font-size: 1.2rem !important; margin-bottom: 6px !important; }
+h2 { font-size: 1.05rem !important; margin-bottom: 6px !important; }
+h3 { font-size: 0.95rem !important; margin-bottom: 4px !important; }
+h4 { font-size: 0.9rem !important; margin-bottom: 4px !important; }
+h5 { font-size: 0.85rem !important; margin-bottom: 4px !important; }
+h6 { font-size: 0.8rem !important; margin-bottom: 4px !important; }
+
+.alert {
+    padding: 6px 10px !important;
+    margin-bottom: 6px !important;
+    font-size: 0.78rem !important;
+}
+
+.badge {
+    padding: 2px 6px !important;
+    font-size: 0.68rem !important;
+}
+
+.nav-tabs .nav-link {
+    padding: 5px 12px !important;
+    font-size: 0.78rem !important;
+}
+
+hr {
+    margin: 6px 0 !important;
+}
+
+/* بطاقات الأعمار (aging) */
+.aging-card, .bucket-card, .stat-card {
+    padding: 6px 8px !important;
+    margin-bottom: 4px !important;
+}
+
+.aging-card .h4, .aging-card .h5,
+.bucket-card .h4, .bucket-card .h5 {
+    font-size: 1rem !important;
+    margin: 2px 0 !important;
+}
+
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none !important;
+    margin: 0 !important;
+}
+input[type=number] {
+    -moz-appearance: textfield !important;
+}
+</style>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 16 16%22><text y=%2214%22 font-size=%2214%22>📒</text></svg>">
+</head>
+<body>
+
+<div class="page-head">
+    <h4><i class="bi bi-file-earmark-bar-graph-fill"></i> تقرير حركات الإضافة والمنصرف</h4>
+    <div class="d-flex gap-2">
+        <a href="index.html#warehouse" class="btn btn-sm btn-outline-secondary">
+            <i class="bi bi-house-fill"></i> الرئيسية
+        </a>
+        <button class="btn btn-sm btn-outline-primary" onclick="window.print()">
+            <i class="bi bi-printer-fill"></i> طباعة
+        </button>
+    </div>
+</div>
+
+<div class="filter-bar">
+    <div class="row g-2 align-items-end">
+        <div class="col-md-2">
+            <label class="form-label" style="font-size:0.75rem;">من تاريخ</label>
+            <input type="date" class="form-control form-control-sm" id="flt-from">
+        </div>
+        <div class="col-md-2">
+            <label class="form-label" style="font-size:0.75rem;">إلى تاريخ</label>
+            <input type="date" class="form-control form-control-sm" id="flt-to">
+        </div>
+        <div class="col-md-2">
+            <label class="form-label" style="font-size:0.75rem;">المخزن</label>
+            <select class="form-select form-select-sm" id="flt-wh">
+                <option value="">كل المخازن</option>
+            </select>
+        </div>
+        <div class="col-md-2">
+            <label class="form-label" style="font-size:0.75rem;">نوع الحركة</label>
+            <select class="form-select form-select-sm" id="flt-type">
+                <option value="">الكل</option>
+                <option value="RECEIPT">استلام (وارد)</option>
+                <option value="ISSUE">صرف (منصرف)</option>
+                <option value="TRANSFER">تحويل</option>
+                <option value="ADJUSTMENT">تسوية</option>
+                <option value="WASTE">هالك</option>
+            </select>
+        </div>
+        <div class="col-md-2">
+            <label class="form-label" style="font-size:0.75rem;">طريقة العرض</label>
+            <div class="view-toggle">
+                <button class="btn btn-outline-primary active" id="btn-detailed" onclick="setView('detailed')">
+                    <i class="bi bi-list-ul"></i> تفصيلي
+                </button>
+                <button class="btn btn-outline-primary" id="btn-summary" onclick="setView('summary')">
+                    <i class="bi bi-calculator"></i> إجمالي
+                </button>
+            </div>
+        </div>
+        <div class="col-md-2">
+            <button class="btn btn-sm btn-primary w-100" onclick="load()">
+                <i class="bi bi-search"></i> بحث
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="stats-row">
+    <div class="stat-card stat-in">
+        <div class="label"><i class="bi bi-arrow-down-circle"></i> إجمالي الوارد</div>
+        <div class="value" id="s-in">-</div>
+    </div>
+    <div class="stat-card stat-out">
+        <div class="label"><i class="bi bi-arrow-up-circle"></i> إجمالي المنصرف</div>
+        <div class="value" id="s-out">-</div>
+    </div>
+    <div class="stat-card stat-balance">
+        <div class="label"><i class="bi bi-calculator"></i> الصافي</div>
+        <div class="value" id="s-balance">-</div>
+    </div>
+    <div class="stat-card stat-value">
+        <div class="label"><i class="bi bi-cash-stack"></i> القيمة</div>
+        <div class="value" id="s-value">-</div>
+    </div>
+</div>
+
+<div class="table-card">
+    <table>
+        <thead>
+            <tr>
+                <th rowspan="2" style="min-width:85px;">التاريخ</th>
+                <th rowspan="2" style="min-width:100px;">رقم الحركة</th>
+                <th rowspan="2" style="min-width:80px;">رقم القيد</th>
+                <th rowspan="2" style="min-width:90px;">النوع</th>
+                <th rowspan="2">الصنف</th>
+                <th rowspan="2" style="min-width:70px;">المخزن</th>
+                <th class="group-in" colspan="3">📥 الوارد</th>
+                <th class="group-out" colspan="3">📤 المنصرف</th>
+            </tr>
+            <tr>
+                <th style="min-width:45px;">كمية</th>
+                <th style="min-width:45px;">سعر</th>
+                <th style="min-width:55px;">قيمة</th>
+                <th style="min-width:45px;">كمية</th>
+                <th style="min-width:45px;">سعر</th>
+                <th style="min-width:55px;">قيمة</th>
+            </tr>
+        </thead>
+        <tbody id="tbl">
+            <tr><td colspan="12" class="text-center text-muted p-3">اضغط "بحث" لعرض البيانات</td></tr>
+        </tbody>
+    </table>
+</div>
+
+<script>
+const API = '/api/v1';
+let currentView = 'detailed';
+let allData = [];
+
+const TYPE_LABELS = {
+    RECEIPT: '📥 استلام',
+    ISSUE: '📤 صرف',
+    TRANSFER: '🔄 تحويل',
+    ADJUSTMENT: '⚖️ تسوية',
+    WASTE: '🗑️ هالك'
+};
+
+const IN_TYPES = ['RECEIPT', 'TRANSFER_IN', 'SALE_RETURN'];
+const OUT_TYPES = ['ISSUE', 'TRANSFER_OUT', 'WASTE', 'PURCHASE_RETURN'];
+
+async function loadWarehouses() {
+    try {
+        const r = await fetch(`${API}/warehouses/`).then(x => x.json());
+        const whs = r.data || [];
+        document.getElementById('flt-wh').innerHTML = '<option value="">كل المخازن</option>' +
+            whs.map(w => `<option value="${w.id}">${w.code} - ${w.name_ar}</option>`).join('');
+    } catch(e) { console.error(e); }
+}
+
+function setView(view) {
+    currentView = view;
+    document.getElementById('btn-detailed').classList.toggle('active', view === 'detailed');
+    document.getElementById('btn-summary').classList.toggle('active', view === 'summary');
+    renderTable();
+}
+
+async function load() {
+    const from = document.getElementById('flt-from').value;
+    const to = document.getElementById('flt-to').value;
+    const wh = document.getElementById('flt-wh').value;
+    const type = document.getElementById('flt-type').value;
+
+    let url = `${API}/reports/stock-movements?`;
+    if (from) url += `date_from=${from}&`;
+    if (to) url += `date_to=${to}&`;
+    if (wh) url += `warehouse_id=${wh}&`;
+    if (type) url += `transaction_type=${type}&`;
+
+    try {
+        const r = await fetch(url).then(x => x.json());
+        if (!r.success) { alert(r.message || 'خطأ'); return; }
+
+        allData = r.data || [];
+        renderTable();
+    } catch(e) {
+        console.error(e);
+        document.getElementById('tbl').innerHTML = '<tr><td colspan="12" class="text-center text-danger p-3">خطأ في الاتصال</td></tr>';
+    }
+}
+
+function renderTable() {
+    const rows = allData;
+    if (!rows.length) {
+        document.getElementById('tbl').innerHTML = '<tr><td colspan="12" class="text-center text-muted p-3">لا توجد بيانات</td></tr>';
+        document.getElementById('s-in').textContent = '0';
+        document.getElementById('s-out').textContent = '0';
+        document.getElementById('s-balance').textContent = '0';
+        document.getElementById('s-value').textContent = '0 ج';
+        return;
+    }
+
+    let totalIn = 0, totalOut = 0, totalValue = 0;
+    let html = '';
+
+    if (currentView === 'summary') {
+        // عرض إجمالي: اجمع حسب النوع
+        const grouped = {};
+        rows.forEach(m => {
+            const type = m.transaction_type;
+            if (!grouped[type]) grouped[type] = { qty: 0, value: 0, count: 0 };
+            const qty = parseFloat(m.base_quantity || 0);
+            const val = parseFloat(m.total_cost || 0);
+            grouped[type].qty += qty;
+            grouped[type].value += val;
+            grouped[type].count += 1;
+        });
+
+        for (const [type, data] of Object.entries(grouped)) {
+            const isIn = IN_TYPES.includes(type);
+            const isOut = OUT_TYPES.includes(type);
+            const rowClass = isIn ? 'row-in' : (isOut ? 'row-out' : '');
+            const badgeClass = 'badge-' + type;
+            
+            if (isIn) { totalIn += data.qty; totalValue += data.value; }
+            if (isOut) { totalOut += data.qty; totalValue += data.value; }
+
+            html += `<tr class="${rowClass}">
+                <td colspan="4" class="text-start"><strong>${TYPE_LABELS[type] || type}</strong> <small class="text-muted">(${data.count} حركة)</small></td>
+                <td colspan="2" class="text-center">—</td>
+                <td class="num">${isIn ? data.qty.toFixed(2) : '—'}</td>
+                <td class="num">${isIn ? (data.value / data.qty).toFixed(2) : '—'}</td>
+                <td class="num">${isIn ? data.value.toFixed(2) : '—'}</td>
+                <td class="num">${isOut ? data.qty.toFixed(2) : '—'}</td>
+                <td class="num">${isOut ? (data.value / data.qty).toFixed(2) : '—'}</td>
+                <td class="num">${isOut ? data.value.toFixed(2) : '—'}</td>
+            </tr>`;
+        }
+
+        // صف الإجمالي
+        html += `<tr class="row-total">
+            <td colspan="6" class="text-end"><i class="bi bi-calculator-fill"></i> الإجمالي:</td>
+            <td class="num">${totalIn.toFixed(2)}</td>
+            <td class="num">—</td>
+            <td class="num">—</td>
+            <td class="num">${totalOut.toFixed(2)}</td>
+            <td class="num">—</td>
+            <td class="num">—</td>
+        </tr>`;
+
+    } else {
+        // عرض تفصيلي: كل حركة في سطر
+        rows.forEach(m => {
+            const qty = parseFloat(m.base_quantity || 0);
+            const cost = parseFloat(m.unit_cost || 0);
+            const value = parseFloat(m.total_cost || 0);
+            
+            const isIn = IN_TYPES.includes(m.transaction_type);
+            const isOut = OUT_TYPES.includes(m.transaction_type);
+            
+            if (isIn) { totalIn += qty; totalValue += value; }
+            if (isOut) { totalOut += qty; totalValue += value; }
+
+            const rowClass = isIn ? 'row-in' : (isOut ? 'row-out' : '');
+            const badgeClass = 'badge-' + m.transaction_type;
+
+            // رقم القيد (لو موجود)
+            const jeNo = m.journal_entry_no 
+                ? `<a href="journal.html?id=${m.journal_entry_id}" class="badge-JE" title="عرض القيد"><i class="bi bi-journal-text"></i> ${m.journal_entry_no}</a>` 
+                : '<span class="text-muted">—</span>';
+
+            html += `<tr class="${rowClass}">
+                <td>${m.transaction_date}</td>
+                <td><code>${m.transaction_no}</code></td>
+                <td>${jeNo}</td>
+                <td><span class="badge-type ${badgeClass}">${TYPE_LABELS[m.transaction_type] || m.transaction_type}</span></td>
+                <td class="text-start">${m.item_code || ''} - ${m.item_name || ''}</td>
+                <td>${m.warehouse_code || '-'}</td>
+                <td class="num">${isIn ? qty.toFixed(2) : '—'}</td>
+                <td class="num">${isIn ? cost.toFixed(2) : '—'}</td>
+                <td class="num">${isIn ? value.toFixed(2) : '—'}</td>
+                <td class="num">${isOut ? qty.toFixed(2) : '—'}</td>
+                <td class="num">${isOut ? cost.toFixed(2) : '—'}</td>
+                <td class="num">${isOut ? value.toFixed(2) : '—'}</td>
+            </tr>`;
+        });
+
+        // صف الإجمالي
+        html += `<tr class="row-total">
+            <td colspan="6" class="text-end"><i class="bi bi-calculator-fill"></i> الإجمالي:</td>
+            <td class="num">${totalIn.toFixed(2)}</td>
+            <td class="num">—</td>
+            <td class="num">—</td>
+            <td class="num">${totalOut.toFixed(2)}</td>
+            <td class="num">—</td>
+            <td class="num">—</td>
+        </tr>`;
+    }
+
+    document.getElementById('tbl').innerHTML = html;
+    document.getElementById('s-in').textContent = totalIn.toFixed(2);
+    document.getElementById('s-out').textContent = totalOut.toFixed(2);
+    document.getElementById('s-balance').textContent = (totalIn - totalOut).toFixed(2);
+    document.getElementById('s-value').textContent = totalValue.toFixed(2) + ' ج';
+}
+
+loadWarehouses();
+</script>
+</body>
+</html>

@@ -1,6 +1,6 @@
-﻿from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify
 from app.database import db
-from app.utils import json_safe, to_decimal, round_decimal
+from app.utils import json_safe, to_decimal, round_decimal, get_user_id, enrich_with_user
 from datetime import datetime
 
 pr_bp = Blueprint('purchase_returns', __name__)
@@ -52,6 +52,7 @@ def list_returns():
             ORDER BY pr.id DESC LIMIT 200""",
         vals
     )
+    rows = enrich_with_user(rows)
     return jsonify({'success': True, 'data': json_safe(rows)})
 
 
@@ -161,17 +162,19 @@ def post_return(rid):
                 return jsonify({'success': False, 'message': f'الكمية غير كافية للصنف #{line["item_id"]}'}), 400
 
         # Create ISSUE transaction
-        txn_no = _next_txn_no(conn, 'PRT', 'ISSUE')
+                txn_no = _next_txn_no(conn, 'PRT', 'ISSUE')
+        user_id = get_user_id()
         cur = conn.execute(
             """INSERT INTO stock_transactions
                (transaction_no, transaction_type, transaction_date,
                 from_warehouse_id, reference_type, reference_no,
                 status, notes, created_by)
-               VALUES (?, 'ISSUE', ?, ?, 'PURCHASE_RETURN', ?, 'POSTED', ?, 1)""",
+               VALUES (?, 'ISSUE', ?, ?, 'PURCHASE_RETURN', ?, 'POSTED', ?, ?)""",
             (txn_no, r['return_date'], r['warehouse_id'], r['return_no'],
-             f"مرتجع شراء {r['return_no']}")
+             f"مرتجع شراء {r['return_no']}", user_id)
         )
         txn_id = cur.lastrowid
+
 
         # Process lines + deduct stock
         for i, line in enumerate(lines, start=1):
@@ -199,11 +202,12 @@ def post_return(rid):
 
         # Journal entry (reversed)
         je_no = f"JE-{datetime.now().year}-{str(conn.execute('SELECT COUNT(*)+1 as n FROM journal_entries').fetchone()['n']).zfill(6)}"
+        user_id = get_user_id()
         cur = conn.execute(
             """INSERT INTO journal_entries
-               (entry_no, entry_date, reference_type, reference_id, reference_no, description, status)
-               VALUES (?, ?, 'PURCHASE_RETURN', ?, ?, ?, 'POSTED')""",
-            (je_no, r['return_date'], rid, r['return_no'], f"قيد مرتجع شراء {r['return_no']}")
+               (entry_no, entry_date, reference_type, reference_id, reference_no, description, status, created_by)
+               VALUES (?, ?, 'PURCHASE_RETURN', ?, ?, ?, 'POSTED', ?)""",
+            (je_no, r['return_date'], rid, r['return_no'], f"قيد مرتجع شراء {r['return_no']}", user_id)
         )
         je_id = cur.lastrowid
 

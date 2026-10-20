@@ -1,267 +1,660 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ar" dir="rtl">
-<head><meta charset="UTF-8"><title>الاستلام</title>
+<head>
+<meta charset="UTF-8">
+<title>إذون الاستلام</title>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
-<link href="style.css" rel="stylesheet"></head>
-<body><div class="container-fluid"><div class="row">
+<link href="style.css" rel="stylesheet">
+<script src="permissions.js"></script>
+<style>
+.info-box {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 10px 12px;
+}
+.info-box small { display: block; margin-bottom: 4px; }
+
+/* ============================================
+   إلغاء أسهم input[type=number]
+   ============================================ */
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none !important;
+    margin: 0 !important;
+}
+input[type=number] {
+    -moz-appearance: textfield !important;
+    appearance: textfield !important;
+}
+input[type="number"] {
+    -moz-appearance: textfield !important;
+}
+
+</style>
+
+
+
+<style id="compact-spacing-global">
+/* ============================================
+   توحيد المسافات المضغوطة
+   ============================================ */
+
+.table td, .table th {
+    padding: 3px 6px !important;
+    font-size: 0.75rem !important;
+    vertical-align: middle !important;
+    line-height: 1.2 !important;
+}
+
+.table tbody tr {
+    height: auto !important;
+}
+
+.form-control, .form-select {
+    font-size: 0.75rem !important;
+    line-height: 1.2 !important;
+}
+
+.form-control-sm, .form-select-sm {
+    height: 26px !important;
+    padding: 2px 6px !important;
+    font-size: 0.72rem !important;
+    line-height: 1 !important;
+}
+
+.btn {
+    padding: 3px 8px !important;
+    font-size: 0.72rem !important;
+    line-height: 1.2 !important;
+}
+
+.btn-sm {
+    padding: 2px 6px !important;
+    font-size: 0.7rem !important;
+}
+
+.card {
+    margin-bottom: 6px !important;
+}
+
+.card-body, .card.p-2, .card.p-3, .card.p-4 {
+    padding: 6px 8px !important;
+}
+
+.modal-header {
+    padding: 6px 12px !important;
+}
+
+.modal-title {
+    font-size: 0.9rem !important;
+}
+
+.modal-body {
+    padding: 8px 12px !important;
+}
+
+.modal-footer {
+    padding: 6px 12px !important;
+}
+
+.modal-footer .btn {
+    padding: 4px 10px !important;
+    font-size: 0.75rem !important;
+}
+
+.mb-1, .mb-2, .mb-3, .mb-4 {
+    margin-bottom: 4px !important;
+}
+
+.mt-1, .mt-2, .mt-3, .mt-4 {
+    margin-top: 4px !important;
+}
+
+.ms-1, .ms-2, .ms-3 {
+    margin-right: 4px !important;
+}
+
+.me-1, .me-2, .me-3 {
+    margin-left: 4px !important;
+}
+
+.p-1, .p-2, .p-3, .p-4 {
+    padding: 4px !important;
+}
+
+.g-1, .g-2, .g-3 {
+    gap: 4px !important;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    line-height: 1.3 !important;
+}
+
+h1 { font-size: 1.2rem !important; margin-bottom: 6px !important; }
+h2 { font-size: 1.05rem !important; margin-bottom: 6px !important; }
+h3 { font-size: 0.95rem !important; margin-bottom: 4px !important; }
+h4 { font-size: 0.9rem !important; margin-bottom: 4px !important; }
+h5 { font-size: 0.85rem !important; margin-bottom: 4px !important; }
+h6 { font-size: 0.8rem !important; margin-bottom: 4px !important; }
+
+.alert {
+    padding: 6px 10px !important;
+    margin-bottom: 6px !important;
+    font-size: 0.78rem !important;
+}
+
+.badge {
+    padding: 2px 6px !important;
+    font-size: 0.68rem !important;
+}
+
+.nav-tabs .nav-link {
+    padding: 5px 12px !important;
+    font-size: 0.78rem !important;
+}
+
+hr {
+    margin: 6px 0 !important;
+}
+
+/* بطاقات الأعمار (aging) */
+.aging-card, .bucket-card, .stat-card {
+    padding: 6px 8px !important;
+    margin-bottom: 4px !important;
+}
+
+.aging-card .h4, .aging-card .h5,
+.bucket-card .h4, .bucket-card .h5 {
+    font-size: 1rem !important;
+    margin: 2px 0 !important;
+}
+
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none !important;
+    margin: 0 !important;
+}
+input[type=number] {
+    -moz-appearance: textfield !important;
+}
+</style>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 16 16%22><text y=%2214%22 font-size=%2214%22>📒</text></svg>">
+</head>
+<body>
+<div class="container-fluid"><div class="row">
+
 <div class="col-md-2 sidebar p-0">
-<div class="brand"><i class="bi bi-box-seam" style="font-size:2rem;"></i><h5 class="mt-2 mb-0">موديول المخازن</h5></div>
+<div class="brand">
+    <i class="bi bi-box-seam" style="font-size:2rem;"></i>
+    <h5 class="mt-2 mb-0">موديول المخازن</h5>
+</div>
 <nav class="mt-3">
-<a href="index.html"><i class="bi bi-speedometer2"></i> لوحة التحكم</a>
-<a href="notifications.html"><i class="bi bi-bell"></i> الإشعارات</a>
+<a href="index.html#warehouse"><i class="bi bi-house-fill"></i> المخازن والأصناف</a>
 <a href="accounts.html"><i class="bi bi-book"></i> الدليل المحاسبي</a>
 <a href="warehouses.html"><i class="bi bi-building"></i> المستودعات</a>
-<a href="item_groups.html"><i class="bi bi-diagram-3"></i> مجموعات الأصناف</a>
-<a href="suppliers.html"><i class="bi bi-truck"></i> الموردون</a>
-<a href="customers.html"><i class="bi bi-people"></i> العملاء</a>
-<a href="requisitions.html"><i class="bi bi-clipboard-check"></i> طلبات الاحتياج</a>
-<a href="purchase_orders.html"><i class="bi bi-file-earmark-text"></i> أوامر الشراء</a>
-<a href="purchase_invoices.html"><i class="bi bi-receipt"></i> فواتير الشراء</a>
-<a href="sales_invoices.html"><i class="bi bi-cart-check"></i> فواتير البيع</a>
-<a href="purchase_returns.html"><i class="bi bi-arrow-return-left"></i> مرتجع شراء</a>
-<a href="sales_returns.html"><i class="bi bi-arrow-return-right"></i> مرتجع بيع</a>
-<a href="payments.html"><i class="bi bi-cash-coin"></i> مدفوعات الموردين</a>
-<a href="customer_receipts.html"><i class="bi bi-cash-stack"></i> تحصيلات العملاء</a>
 <a href="items.html"><i class="bi bi-box"></i> الأصناف</a>
-<a href="uom.html"><i class="bi bi-rulers"></i> وحدات القياس</a>
+<a href="stock_movements.html"><i class="bi bi-arrow-left-right"></i> أنواع الحركات</a>
+<a href="purchase_invoices.html"><i class="bi bi-receipt"></i> فواتير الشراء</a>
 <a href="receipts.html" class="active"><i class="bi bi-arrow-down-circle"></i> الاستلام</a>
-<a href="material_requests.html"><i class="bi bi-clipboard-plus"></i> طلبات الصرف</a>
 <a href="issues.html"><i class="bi bi-arrow-up-circle"></i> الصرف</a>
 <a href="transfers.html"><i class="bi bi-arrow-left-right"></i> التحويلات</a>
-<a href="counts.html"><i class="bi bi-clipboard-check"></i> الجرد</a>
-<a href="clearing.html"><i class="bi bi-arrow-left-right"></i> الحسابات الوسيطة</a>
-<a href="financial_reports.html"><i class="bi bi-graph-up"></i> التقارير المالية</a>
-<a href="reports.html"><i class="bi bi-file-earmark-bar-graph"></i> التقارير</a>
 <a href="journal.html"><i class="bi bi-journal-text"></i> القيود</a>
-</nav></div>
+</nav>
+</div>
+
 <div class="col-md-10 p-4">
+
 <div class="d-flex justify-content-between mb-4">
 <h2><i class="bi bi-arrow-down-circle text-success"></i> إذون الاستلام</h2>
-<button class="btn btn-success" onclick="openAdd()"><i class="bi bi-plus-circle"></i> إذن استلام جديد</button>
+<div class="d-flex gap-2">
+<a href="index.html#warehouse" class="btn btn-outline-secondary">
+    <i class="bi bi-house-fill"></i> الرئيسية
+</a>
+<button class="btn btn-success" onclick="openAdd()">
+    <i class="bi bi-plus-circle"></i> إذن استلام جديد
+</button>
 </div>
+</div>
+
+<div class="row g-2 mb-3">
+<div class="col-3"><div class="card p-2 text-center"><small class="text-muted">الإجمالي</small><div class="text-primary fw-bold" id="s-total">-</div></div></div>
+<div class="col-3"><div class="card p-2 text-center"><small class="text-muted">مرحّل</small><div class="text-success fw-bold" id="s-posted">-</div></div></div>
+<div class="col-3"><div class="card p-2 text-center"><small class="text-muted">مفوتَر</small><div class="text-info fw-bold" id="s-invoiced">-</div></div></div>
+<div class="col-3"><div class="card p-2 text-center"><small class="text-muted">بانتظار الفاتورة</small><div class="text-warning fw-bold" id="s-pending">-</div></div></div>
+</div>
+
 <div class="card p-3">
 <table class="table table-hover">
-<thead><tr><th>رقم الإذن</th><th>التاريخ</th><th>المستودع</th><th>الكمية</th><th>القيمة</th><th>الحالة</th><th>إجراءات</th></tr></thead>
+<thead>
+<tr>
+<th>رقم الإذن</th>
+<th>التاريخ</th>
+<th>المستودع</th>
+<th>الكمية</th>
+<th>الحالة</th>
+<th>الفاتورة</th>
+<th>إجراءات</th>
+</tr>
+</thead>
 <tbody id="tbl"><tr><td colspan="7" class="text-center">جاري التحميل...</td></tr></tbody>
-</table></div></div></div></div>
+</table>
+</div>
+
+</div>
+</div>
+</div>
+
+<div class="modal fade" id="viewModal" tabindex="-1">
+<div class="modal-dialog modal-xl">
+<div class="modal-content">
+<div class="modal-header bg-info text-white">
+<h5 class="modal-title" id="view-title"><i class="bi bi-eye"></i> تفاصيل الإذن</h5>
+<button class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+</div>
+<div class="modal-body" id="viewBody">
+    <div class="text-center p-4"><div class="spinner-border text-primary"></div></div>
+</div>
+<div class="modal-footer" id="viewFooter">
+    <button class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button>
+</div>
+</div></div></div>
 
 <div class="modal fade" id="txnModal" tabindex="-1">
 <div class="modal-dialog modal-xl">
 <div class="modal-content">
-<div class="modal-header bg-success text-white"><h5 class="modal-title" id="modal-title"><i class="bi bi-plus-circle"></i> إذن استلام</h5><button class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
-<div class="modal-body">
-<div class="row g-3 mb-3">
-<div class="col-md-4"><label class="form-label">التاريخ *</label><input type="date" class="form-control" id="r-date"></div>
-<div class="col-md-4"><label class="form-label">المستودع *</label><select class="form-select" id="r-warehouse"></select></div>
-<div class="col-md-4"><label class="form-label">مرجع</label><input class="form-control" id="r-ref"></div>
+<div class="modal-header bg-success text-white">
+<h5 class="modal-title" id="modal-title"><i class="bi bi-plus-circle"></i> إذن استلام جديد</h5>
+<button class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
 </div>
-<div class="mb-3"><label class="form-label">ملاحظات</label><input class="form-control" id="r-notes"></div>
-<h6>البنود</h6>
+<div class="modal-body">
+
+<div class="row g-3 mb-3">
+<div class="col-md-4">
+    <label class="form-label">📅 التاريخ *</label>
+    <input type="date" class="form-control" id="r-date">
+</div>
+<div class="col-md-4">
+    <label class="form-label">🏭 المستودع *</label>
+    <select class="form-select" id="r-warehouse"></select>
+</div>
+<div class="col-md-4">
+    <label class="form-label">📄 المرجع</label>
+    <input class="form-control" id="r-ref">
+</div>
+</div>
+
+<div class="mb-3">
+    <label class="form-label">📝 ملاحظات</label>
+    <input class="form-control" id="r-notes">
+</div>
+
+<h6><i class="bi bi-list-ul"></i> البنود (كميات فقط)</h6>
+
+<div class="alert alert-info small py-2">
+    <i class="bi bi-info-circle"></i>
+    <strong>ملاحظة:</strong> الأسعار والقيم تُحدد لاحقاً في فاتورة المورد.
+</div>
+
 <table class="table table-bordered">
 <thead class="table-light">
-<tr><th style="width:25%">الصنف</th><th style="width:20%">الوحدة</th><th style="width:15%">الكمية</th><th style="width:15%">سعر الوحدة</th><th style="width:15%">الإجمالي</th><th style="width:10%"></th></tr>
+<tr>
+<th style="width:50%">الصنف</th>
+<th style="width:25%">الوحدة</th>
+<th style="width:15%">الكمية</th>
+<th style="width:10%">حذف</th>
+</tr>
 </thead>
 <tbody id="r-lines"></tbody>
 </table>
-<button class="btn btn-outline-success btn-sm" onclick="addLine()"><i class="bi bi-plus"></i> إضافة بند</button>
-<div class="alert alert-info mt-3 mb-0 small">
-<i class="bi bi-info-circle"></i> عند اختيار الصنف، تظهر فقط وحداته الثلاث (كبرى / متوسطة / صغرى). المخزون يُحفظ دائماً بالوحدة الصغرى تلقائياً.
-</div>
+
+<button class="btn btn-outline-success btn-sm" onclick="addLine()">
+    <i class="bi bi-plus"></i> إضافة بند
+</button>
+
 </div>
 <div class="modal-footer">
 <button class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
-<button class="btn btn-success" onclick="save(true)"><i class="bi bi-check-circle"></i> حفظ وترحيل</button>
+<button class="btn btn-success" onclick="save(true)">
+    <i class="bi bi-check-circle"></i> حفظ وترحيل
+</button>
 <button class="btn btn-outline-success" onclick="save(false)">حفظ كمسودة</button>
 </div>
 </div></div></div>
 
-<div class="modal fade" id="viewModal" tabindex="-1">
-<div class="modal-dialog modal-lg">
-<div class="modal-content">
-<div class="modal-header bg-info text-white"><h5 class="modal-title"><i class="bi bi-eye"></i> تفاصيل الإذن</h5><button class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
-<div class="modal-body" id="viewBody"></div>
-</div></div></div>
-
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
 <script>
-const API='http://localhost:5000/api/v1';
+const API = 'http://localhost:5000/api/v1';
 const txnModal = new bootstrap.Modal(document.getElementById('txnModal'));
 const viewModal = new bootstrap.Modal(document.getElementById('viewModal'));
-let itemsList=[], warehousesList=[], itemTiersMap={};
+let itemsList = [], warehousesList = [], itemTiersMap = {};
 let editId = null;
 
-async function loadLists(){
- const [i,w] = await Promise.all([
-  fetch(`${API}/items/`).then(r=>r.json()),
-  fetch(`${API}/warehouses/`).then(r=>r.json())]);
- itemsList = i.data||[];
- warehousesList = w.data||[];
- document.getElementById('r-warehouse').innerHTML = warehousesList.map(w=>`<option value="${w.id}">${w.code} - ${w.name_ar}</option>`).join('');
- // Preload tiers for each item
- itemTiersMap = {};
- for (const it of itemsList) {
-  const r = await fetch(`${API}/tiers/item/${it.id}`).then(x=>x.json());
-  if (r.success) itemTiersMap[it.id] = r.data.tiers||[];
- }
+async function loadLists() {
+    const [i, w] = await Promise.all([
+        fetch(`${API}/items/`).then(r => r.json()),
+        fetch(`${API}/warehouses/`).then(r => r.json())
+    ]);
+    itemsList = i.data || [];
+    warehousesList = w.data || [];
+    
+    document.getElementById('r-warehouse').innerHTML = 
+        warehousesList.map(w => `<option value="${w.id}">${w.code} - ${w.name_ar}</option>`).join('');
+    
+    itemTiersMap = {};
+    for (const it of itemsList) {
+        const r = await fetch(`${API}/tiers/item/${it.id}`).then(x => x.json());
+        if (r.success) itemTiersMap[it.id] = r.data.tiers || [];
+    }
 }
 
-async function load(){
- const res = await fetch(`${API}/receipts/`).then(r=>r.json());
- const rows = res.data||[];
- document.getElementById('tbl').innerHTML = rows.length?rows.map(r=>`
-  <tr><td><code>${r.transaction_no}</code></td>
-  <td>${r.transaction_date}</td>
-  <td>${r.warehouse_name||'-'}</td>
-  <td>${r.total_qty}</td>
-  <td>${r.total_value}</td>
-  <td><span class="badge-status badge-${r.status}">${r.status}</span></td>
-  <td>
-   <button class="btn btn-sm btn-outline-info" onclick="viewTxn(${r.id})" title="عرض"><i class="bi bi-eye"></i></button>
-   ${r.status==='DRAFT'?`
-    <button class="btn btn-sm btn-outline-warning" onclick="editTxn(${r.id})" title="تعديل"><i class="bi bi-pencil"></i></button>
-    <button class="btn btn-sm btn-outline-danger" onclick="delTxn(${r.id})" title="حذف"><i class="bi bi-trash"></i></button>
-    <button class="btn btn-sm btn-success" onclick="postTxn(${r.id})" title="ترحيل"><i class="bi bi-check-circle"></i></button>
-   `:''}
-  </td></tr>`).join(''):'<tr><td colspan="7" class="text-center text-muted">لا توجد أذون</td></tr>';
+async function load() {
+    const r = await fetch(`${API}/receipts/`).then(x => x.json());
+    const rows = r.data || [];
+    
+    document.getElementById('s-total').textContent = rows.length;
+    document.getElementById('s-posted').textContent = rows.filter(t => t.status === 'POSTED').length;
+    
+    try {
+        const invR = await fetch(`${API}/purchase-invoices/`).then(x => x.json());
+        const invoices = invR.data || [];
+        const invoicedSet = new Set(invoices.filter(i => i.receipt_id).map(i => i.receipt_id));
+        
+        document.getElementById('s-invoiced').textContent = rows.filter(t => invoicedSet.has(t.id)).length;
+        document.getElementById('s-pending').textContent = rows.filter(t => 
+            t.status === 'POSTED' && !invoicedSet.has(t.id)
+        ).length;
+        
+        rows.forEach(t => t._isInvoiced = invoicedSet.has(t.id));
+    } catch(e) {}
+    
+    document.getElementById('tbl').innerHTML = rows.length ? rows.map(t => {
+        const statusClass = t.status === 'POSTED' ? 'bg-success' : 'bg-warning text-dark';
+        
+        let invoiceBadge = '';
+        if (t._isInvoiced) {
+            invoiceBadge = '<span class="badge bg-info">✅ مفوتَر</span>';
+        } else if (t.status === 'POSTED') {
+            invoiceBadge = '<span class="badge bg-warning text-dark">⏳ بانتظار</span>';
+        } else {
+            invoiceBadge = '<span class="badge bg-secondary">— مسودة</span>';
+        }
+        
+        let actions = `<button class="btn btn-sm btn-outline-info" onclick="viewTxn(${t.id})" title="عرض"><i class="bi bi-eye"></i></button>`;
+        
+        // مسودة
+        if (t.status === 'DRAFT' && !t._isInvoiced) {
+            actions += `
+                <button class="btn btn-sm btn-outline-warning" onclick="editTxn(${t.id})" title="تعديل"><i class="bi bi-pencil"></i></button>
+                <button class="btn btn-sm btn-success" onclick="postTxn(${t.id})" title="ترحيل"><i class="bi bi-check-circle"></i></button>
+                <button class="btn btn-sm btn-outline-danger" onclick="delTxn(${t.id})" title="حذف"><i class="bi bi-trash"></i></button>
+            `;
+        }
+        // مُرحّل غير مفوتَر
+        else if (t.status === 'POSTED' && !t._isInvoiced) {
+            actions += `
+                <button class="btn btn-sm btn-warning" onclick="unpostTxn(${t.id})" title="فك الترحيل"><i class="bi bi-arrow-counterclockwise"></i></button>
+                <button class="btn btn-sm btn-outline-danger" onclick="delTxn(${t.id})" title="حذف"><i class="bi bi-trash"></i></button>
+            `;
+        }
+        // مفوتَر
+        else if (t._isInvoiced) {
+            actions += `<span class="badge bg-secondary ms-1" title="محجوز — الفاتورة مرتبطة">🔒</span>`;
+        }
+        
+        return `<tr>
+            <td><code>${t.transaction_no}</code></td>
+            <td>${t.transaction_date}</td>
+            <td>${t.warehouse_name || '-'}</td>
+            <td>${t.total_qty}</td>
+            <td><span class="badge ${statusClass}">${t.status}</span></td>
+            <td>${invoiceBadge}</td>
+            <td>${actions}</td>
+        </tr>`;
+    }).join('') : '<tr><td colspan="7" class="text-center text-muted">لا توجد أذون</td></tr>';
 }
 
-function openAdd(){
- editId = null;
- document.getElementById('r-date').value = new Date().toISOString().split('T')[0];
- document.getElementById('r-warehouse').value = warehousesList[0]?.id||'';
- document.getElementById('r-ref').value = '';
- document.getElementById('r-notes').value = '';
- document.getElementById('r-lines').innerHTML = '';
- document.getElementById('modal-title').innerHTML = '<i class="bi bi-plus-circle"></i> إذن استلام';
- addLine();
- txnModal.show();
+async function viewTxn(id) {
+    document.getElementById('viewBody').innerHTML = 
+        '<div class="text-center p-4"><div class="spinner-border text-primary"></div></div>';
+    viewModal.show();
+    
+    try {
+        const r = await fetch(`${API}/receipts/${id}/details`).then(x => x.json());
+        if (!r.success) {
+            document.getElementById('viewBody').innerHTML = 
+                '<div class="alert alert-danger">' + r.message + '</div>';
+            return;
+        }
+        
+        const t = r.data;
+        document.getElementById('view-title').innerHTML = 
+            `<i class="bi bi-receipt"></i> تفاصيل الإذن: ${t.transaction_no}`;
+        
+        let html = `
+        <div class="row g-3 mb-3">
+            <div class="col-md-3"><div class="info-box"><small class="text-muted">التاريخ</small><div class="fw-bold">${t.transaction_date}</div></div></div>
+            <div class="col-md-3"><div class="info-box"><small class="text-muted">المستودع</small><div class="fw-bold">${t.warehouse_name || '-'}</div></div></div>
+            <div class="col-md-3"><div class="info-box"><small class="text-muted">المرجع</small><div class="fw-bold">${t.reference_no || '-'}</div></div></div>
+            <div class="col-md-3"><div class="info-box"><small class="text-muted">الحالة</small><div><span class="badge ${t.status === 'POSTED' ? 'bg-success' : 'bg-warning text-dark'}">${t.status}</span></div></div></div>
+        </div>
+        
+        <h6><i class="bi bi-list-ul"></i> البنود (كميات):</h6>
+        <table class="table table-sm table-bordered">
+            <thead class="table-light">
+                <tr><th>#</th><th>الصنف</th><th>الوحدة</th><th class="text-end">الكمية</th></tr>
+            </thead>
+            <tbody>`;
+        
+        t.lines.forEach((l, i) => {
+            html += `<tr>
+                <td>${i + 1}</td>
+                <td><strong>${l.item_name || '-'}</strong><br><small class="text-muted">${l.item_code || ''}</small></td>
+                <td>${l.uom_name || '-'}</td>
+                <td class="text-end"><strong>${l.quantity}</strong></td>
+            </tr>`;
+        });
+        
+        html += `</tbody>
+            <tfoot>
+                <tr class="table-primary">
+                    <td colspan="3" class="text-end"><strong>إجمالي الكمية:</strong></td>
+                    <td class="text-end"><strong>${parseFloat(t.total_qty || 0).toFixed(2)}</strong></td>
+                </tr>
+            </tfoot>
+        </table>`;
+        
+        html += `<div class="row g-3 mt-3">
+            <div class="col-md-6"><div class="info-box"><small class="text-muted"><i class="bi bi-receipt"></i> الفاتورة</small><div class="fw-bold">`;
+        
+        if (t.is_invoiced) {
+            html += `<span class="text-success">✅ ${t.invoice.invoice_no}</span>
+                    <br><small class="text-muted">${t.invoice.invoice_date} — ${parseFloat(t.invoice.total_amount || 0).toFixed(2)} ج</small>`;
+        } else if (t.status === 'POSTED') {
+            html += `<span class="text-warning">⏳ بانتظار الفاتورة</span>`;
+        } else {
+            html += `<span class="text-muted">الإذن مسودة</span>`;
+        }
+        
+        html += `</div></div></div></div>`;
+        
+        document.getElementById('viewBody').innerHTML = html;
+        
+        let footer = '<button class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button>';
+        
+        if (t.status === 'POSTED' && !t.is_invoiced) {
+            footer = `<button class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button>
+                <button class="btn btn-warning" onclick="unpostTxn(${t.id})">
+                <i class="bi bi-arrow-counterclockwise"></i> فك الترحيل
+                </button>
+                <button class="btn btn-success" onclick="createInvoiceFromReceipt(${t.id})">
+                <i class="bi bi-receipt"></i> 🧾 إنشاء فاتورة
+                </button>`;
+        } else if (t.is_invoiced) {
+            footer = `<button class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button>
+                <a href="purchase_invoices.html" class="btn btn-info">
+                <i class="bi bi-eye"></i> عرض الفواتير
+                </a>`;
+        }
+        
+        document.getElementById('viewFooter').innerHTML = footer;
+    } catch(e) {
+        document.getElementById('viewBody').innerHTML = 
+            '<div class="alert alert-danger">خطأ: ' + e.message + '</div>';
+    }
 }
 
-async function editTxn(id){
- editId = id;
- const r = await fetch(`${API}/txn/${id}`).then(x=>x.json());
- if (!r.success) { alert('خطأ'); return; }
- const t = r.data;
- document.getElementById('r-date').value = t.transaction_date;
- document.getElementById('r-warehouse').value = t.to_warehouse_id;
- document.getElementById('r-ref').value = t.reference_no||'';
- document.getElementById('r-notes').value = t.notes||'';
- document.getElementById('r-lines').innerHTML = '';
- t.lines.forEach(l=>{
-  addLine({item_id:l.item_id, uom_id:l.uom_id, quantity:l.quantity, unit_cost:l.unit_cost});
- });
- document.getElementById('modal-title').innerHTML = '<i class="bi bi-pencil"></i> تعديل الإذن';
- txnModal.show();
+function createInvoiceFromReceipt(receiptId) {
+    viewModal.hide();
+    window.location.href = `purchase_invoices.html?receipt_id=${receiptId}`;
 }
 
-function addLine(data={}){
- const tr = document.createElement('tr');
- const itemOpts = itemsList.map(i=>`<option value="${i.id}" ${data.item_id==i.id?'selected':''}>${i.code} - ${i.name_ar}</option>`).join('');
- tr.innerHTML = `
-  <td><select class="form-select form-select-sm item-sel">${itemOpts}</select></td>
-  <td><select class="form-select form-select-sm uom-sel"></select></td>
-  <td><input type="number" class="form-control form-control-sm qty-in" value="${data.quantity||1}" step="0.0001" min="0.0001"></td>
-  <td><input type="number" class="form-control form-control-sm cost-in" value="${data.unit_cost||0}" step="0.0001" min="0"></td>
-  <td class="total-cell">0.00</td>
-  <td><button class="btn btn-sm btn-danger" onclick="this.closest('tr').remove(); calcTotals()"><i class="bi bi-trash"></i></button></td>`;
- document.getElementById('r-lines').appendChild(tr);
- const itemSel = tr.querySelector('.item-sel');
- const uomSel = tr.querySelector('.uom-sel');
- const refreshUoms = ()=>{
-  const itemId = parseInt(itemSel.value);
-  const tiers = itemTiersMap[itemId] || [];
-  const order = {MAJOR:1, MEDIUM:2, MINOR:3};
-  const sorted = [...tiers].sort((a,b)=>order[a.tier]-order[b.tier]);
-  const labels = {MAJOR:'🔵', MEDIUM:'🟡', MINOR:'🟢'};
-  uomSel.innerHTML = sorted.map(t=>`<option value="${t.uom_id}" ${data.uom_id==t.uom_id?'selected':''}>${labels[t.tier]} ${t.uom_name} (${t.uom_code})</option>`).join('');
- };
- itemSel.addEventListener('change', refreshUoms);
- refreshUoms();
- tr.querySelectorAll('.qty-in,.cost-in').forEach(inp=>inp.addEventListener('input',calcTotals));
- calcTotals();
+async function postTxn(id) {
+    if (!confirm('ترحيل الإذن؟ سيتم خصم/إضافة الكميات للمخزون.')) return;
+    const res = await fetch(`${API}/receipts/${id}/post`, { method: 'POST' }).then(r => r.json());
+    if (res.success) { viewModal.hide(); load(); }
+    else alert(res.message || 'خطأ');
 }
 
-function calcTotals(){
- document.querySelectorAll('#r-lines tr').forEach(tr=>{
-  const q = parseFloat(tr.querySelector('.qty-in').value)||0;
-  const c = parseFloat(tr.querySelector('.cost-in').value)||0;
-  tr.querySelector('.total-cell').textContent = (q*c).toFixed(2);
- });
+async function unpostTxn(id) {
+    if (!confirm('فك الترحيل؟ سيتم إرجاع الكميات وتحويل الإذن لمسودة للتعديل.')) return;
+    const res = await fetch(`${API}/receipts/${id}/unpost`, { method: 'POST' }).then(r => r.json());
+    if (res.success) { viewModal.hide(); load(); }
+    else alert(res.message || 'خطأ');
 }
 
-async function save(postNow){
- const lines = [];
- document.querySelectorAll('#r-lines tr').forEach(tr=>{
-  const item_id = parseInt(tr.querySelector('.item-sel').value);
-  const uom_id = parseInt(tr.querySelector('.uom-sel').value);
-  const quantity = parseFloat(tr.querySelector('.qty-in').value);
-  const unit_cost = parseFloat(tr.querySelector('.cost-in').value);
-  if (quantity>0 && uom_id) lines.push({item_id,uom_id,quantity,unit_cost});
- });
- if (!lines.length) { alert('أضف بنداً'); return; }
-
- if (editId) {
-  const body = {
-   transaction_date: document.getElementById('r-date').value,
-   reference_no: document.getElementById('r-ref').value,
-   notes: document.getElementById('r-notes').value,
-   lines
-  };
-  const res = await fetch(`${API}/txn/${editId}`,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}).then(r=>r.json());
-  if (!res.success) { alert(res.message||'خطأ'); return; }
-  if (postNow) await fetch(`${API}/receipts/${editId}/post`,{method:'POST'});
-  txnModal.hide(); load(); return;
- }
-
- const body = {
-  transaction_date: document.getElementById('r-date').value,
-  warehouse_id: parseInt(document.getElementById('r-warehouse').value),
-  reference_no: document.getElementById('r-ref').value,
-  notes: document.getElementById('r-notes').value,
-  lines
- };
- const res = await fetch(`${API}/receipts/`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}).then(r=>r.json());
- if (!res.success) { alert(res.message||'خطأ'); return; }
- if (postNow) await fetch(`${API}/receipts/${res.data.id}/post`,{method:'POST'});
- txnModal.hide(); load();
+async function delTxn(id) {
+    if (!confirm('حذف الإذن؟')) return;
+    const res = await fetch(`${API}/receipts/${id}`, { method: 'DELETE' }).then(r => r.json());
+    if (res.success) { viewModal.hide(); load(); }
+    else alert(res.message || 'خطأ');
 }
 
-async function viewTxn(id){
- const r = await fetch(`${API}/txn/${id}`).then(x=>x.json());
- if (!r.success) return;
- const t = r.data;
- let html = `
-  <div class="row mb-3">
-   <div class="col-md-6"><strong>رقم الإذن:</strong> ${t.transaction_no}</div>
-   <div class="col-md-6"><strong>التاريخ:</strong> ${t.transaction_date}</div>
-   <div class="col-md-6"><strong>الحالة:</strong> <span class="badge-status badge-${t.status}">${t.status}</span></div>
-   <div class="col-md-6"><strong>المرجع:</strong> ${t.reference_no||'-'}</div>
-  </div>
-  <h6>البنود:</h6>
-  <table class="table table-sm table-bordered">
-   <thead><tr><th>#</th><th>الصنف</th><th>الوحدة</th><th>الكمية</th><th>السعر</th><th>الإجمالي</th></tr></thead><tbody>`;
- t.lines.forEach((l,i)=>{
-  html += `<tr><td>${i+1}</td><td>${l.item_name}</td><td>${l.uom_name||'-'}</td><td>${l.quantity}</td><td>${l.unit_cost}</td><td>${l.total_cost}</td></tr>`;
- });
- html += '</tbody></table>';
- document.getElementById('viewBody').innerHTML = html;
- viewModal.show();
+function openAdd() {
+    editId = null;
+    document.getElementById('r-date').value = new Date().toISOString().split('T')[0];
+    document.getElementById('r-warehouse').value = warehousesList[0]?.id || '';
+    document.getElementById('r-ref').value = '';
+    document.getElementById('r-notes').value = '';
+    document.getElementById('r-lines').innerHTML = '';
+    document.getElementById('modal-title').innerHTML = '<i class="bi bi-plus-circle"></i> إذن استلام جديد';
+    document.getElementById('r-warehouse').disabled = false;
+    addLine();
+    txnModal.show();
 }
 
-async function postTxn(id){
- if (!confirm('ترحيل الإذن؟')) return;
- const res = await fetch(`${API}/receipts/${id}/post`,{method:'POST'}).then(r=>r.json());
- if (res.success) load();
- else alert(res.message||'خطأ');
+async function editTxn(id) {
+    editId = id;
+    const r = await fetch(`${API}/receipts/${id}`).then(x => x.json());
+    if (!r.success) { alert('خطأ'); return; }
+    
+    const t = r.data;
+    document.getElementById('r-date').value = t.transaction_date;
+    document.getElementById('r-warehouse').value = t.to_warehouse_id;
+    document.getElementById('r-warehouse').disabled = true;  // ما نغيرش المستودع
+    document.getElementById('r-ref').value = t.reference_no || '';
+    document.getElementById('r-notes').value = t.notes || '';
+    document.getElementById('r-lines').innerHTML = '';
+    document.getElementById('modal-title').innerHTML = '<i class="bi bi-pencil"></i> تعديل الإذن';
+    
+    t.lines.forEach(l => {
+        addLine({ item_id: l.item_id, uom_id: l.uom_id, quantity: l.quantity });
+    });
+    
+    txnModal.show();
 }
 
-async function delTxn(id){
- if (!confirm('حذف الإذن؟')) return;
- const res = await fetch(`${API}/txn/${id}`,{method:'DELETE'}).then(r=>r.json());
- if (res.success) load();
- else alert(res.message||'خطأ');
+function addLine(data = {}) {
+    const tr = document.createElement('tr');
+    const itemOpts = itemsList.map(i => 
+        `<option value="${i.id}" ${data.item_id == i.id ? 'selected' : ''}>${i.code} - ${i.name_ar}</option>`
+    ).join('');
+    
+    tr.innerHTML = `
+        <td><select class="form-select form-select-sm item-sel">${itemOpts}</select></td>
+        <td><select class="form-select form-select-sm uom-sel"></select></td>
+        <td><input type="number" class="form-control form-control-sm qty-in" value="${data.quantity || 1}" step="0.0001" min="0.0001"></td>
+        <td><button class="btn btn-sm btn-danger" onclick="this.closest('tr').remove()"><i class="bi bi-trash"></i></button></td>`;
+    
+    document.getElementById('r-lines').appendChild(tr);
+    
+    const itemSel = tr.querySelector('.item-sel');
+    const uomSel = tr.querySelector('.uom-sel');
+    
+    const refreshUoms = () => {
+        const itemId = parseInt(itemSel.value);
+        const tiers = itemTiersMap[itemId] || [];
+        const order = {MAJOR: 1, MEDIUM: 2, MINOR: 3};
+        const sorted = [...tiers].sort((a, b) => order[a.tier] - order[b.tier]);
+        const labels = {MAJOR: '🔵', MEDIUM: '🟡', MINOR: '🟢'};
+        uomSel.innerHTML = sorted.map(t => 
+            `<option value="${t.uom_id}" ${data.uom_id == t.uom_id ? 'selected' : ''}>${labels[t.tier]} ${t.uom_name} (${t.uom_code})</option>`
+        ).join('');
+    };
+    
+    itemSel.addEventListener('change', refreshUoms);
+    refreshUoms();
 }
 
-(async()=>{ await loadLists(); await load(); })();
-</script></body></html>
+async function save(postNow) {
+    const lines = [];
+    document.querySelectorAll('#r-lines tr').forEach(tr => {
+        const item_id = parseInt(tr.querySelector('.item-sel').value);
+        const uom_id = parseInt(tr.querySelector('.uom-sel').value);
+        const quantity = parseFloat(tr.querySelector('.qty-in').value);
+        if (quantity > 0 && uom_id) {
+            lines.push({ item_id, uom_id, quantity });
+        }
+    });
+    
+    if (!lines.length) { alert('أضف بنداً'); return; }
+    
+    const body = {
+        transaction_date: document.getElementById('r-date').value,
+        warehouse_id: parseInt(document.getElementById('r-warehouse').value),
+        reference_no: document.getElementById('r-ref').value,
+        notes: document.getElementById('r-notes').value,
+        lines
+    };
+    
+    try {
+        let txnId;
+        if (editId) {
+            const r = await fetch(`${API}/receipts/${editId}`, {
+                method: 'PUT',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(body)
+            }).then(x => x.json());
+            if (!r.success) { alert(r.message || 'خطأ'); return; }
+            txnId = editId;
+        } else {
+            const r = await fetch(`${API}/receipts/`, {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(body)
+            }).then(x => x.json());
+            if (!r.success) { alert(r.message || 'خطأ'); return; }
+            txnId = r.data.id;
+        }
+        
+        if (postNow) {
+            await fetch(`${API}/receipts/${txnId}/post`, { method: 'POST' });
+        }
+        
+        txnModal.hide();
+        load();
+    } catch(e) {
+        alert('خطأ: ' + e.message);
+    }
+}
+
+(async () => {
+    await loadLists();
+    await load();
+})();
+</script>
+
+</body>
+</html>

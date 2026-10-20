@@ -1,0 +1,700 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>اختبار محرك القيود</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet">
+<link href="style.css" rel="stylesheet">
+
+<style>
+.test-container {
+    max-width: 1100px;
+    margin: 0 auto;
+}
+.page-header {
+    background: linear-gradient(135deg, #1e3c72, #2a5298);
+    color: white;
+    padding: 20px 25px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 12px rgba(30,60,114,0.15);
+}
+.page-header h3 {
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.page-header .subtitle {
+    font-size: 0.85rem;
+    opacity: 0.85;
+    margin-top: 5px;
+}
+
+.form-card {
+    background: white;
+    border-radius: 12px;
+    padding: 20px 25px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    margin-bottom: 20px;
+    border: 1px solid #e2e8f0;
+}
+
+.form-label {
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: #334155;
+    margin-bottom: 6px;
+}
+
+.account-preview {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    border: 1px solid #e2e8f0;
+}
+
+.journal-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+}
+.journal-table thead th {
+    background: #1e3c72;
+    color: white;
+    padding: 12px 10px;
+    text-align: right;
+    font-size: 0.82rem;
+    font-weight: 700;
+}
+.journal-table thead th:first-child { border-top-right-radius: 8px; }
+.journal-table thead th:last-child { border-top-left-radius: 8px; }
+
+.journal-table tbody tr {
+    border-bottom: 1px solid #f1f5f9;
+    transition: background 0.15s;
+}
+.journal-table tbody tr:hover { background: #fef9c3; }
+
+.journal-table tbody td {
+    padding: 12px 10px;
+    font-size: 0.86rem;
+    vertical-align: middle;
+}
+
+.journal-table tbody tr.row-debit { background: #eff6ff; }
+.journal-table tbody tr.row-debit:hover { background: #dbeafe; }
+.journal-table tbody tr.row-credit { background: #fdf2f8; }
+.journal-table tbody tr.row-credit:hover { background: #fce7f3; }
+
+.journal-table tbody tr.row-total {
+    background: #f1f5f9;
+    font-weight: 800;
+    border-top: 2px solid #1e3c72;
+}
+
+.acc-badge {
+    display: inline-block;
+    padding: 3px 10px;
+    border-radius: 5px;
+    font-family: 'Consolas', monospace;
+    font-weight: 700;
+    font-size: 0.80rem;
+    background: #1e293b;
+    color: white;
+    margin-left: 8px;
+}
+
+.acc-name {
+    color: #475569;
+    font-size: 0.82rem;
+}
+
+.amount {
+    font-family: 'Consolas', monospace;
+    font-weight: 700;
+    font-size: 0.92rem;
+    text-align: left;
+}
+.amount.debit { color: #1e40af; }
+.amount.credit { color: #9d174d; }
+
+.balance-check {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border-radius: 25px;
+    font-weight: 700;
+    font-size: 0.85rem;
+    margin-top: 15px;
+}
+.balance-check.ok {
+    background: #d1fae5;
+    color: #065f46;
+    border: 2px solid #a7f3d0;
+}
+.balance-check.fail {
+    background: #fee2e2;
+    color: #991b1b;
+    border: 2px solid #fecaca;
+}
+
+.empty-preview {
+    text-align: center;
+    padding: 60px 20px;
+    color: #94a3b8;
+}
+.empty-preview i {
+    font-size: 4rem;
+    margin-bottom: 15px;
+    opacity: 0.5;
+}
+
+.info-badge {
+    display: inline-block;
+    padding: 6px 12px;
+    background: #eff6ff;
+    color: #1e40af;
+    border: 1px solid #bfdbfe;
+    border-radius: 20px;
+    font-size: 0.80rem;
+    font-weight: 600;
+    margin: 2px;
+}
+
+.movement-info {
+    background: #f8fafc;
+    border-radius: 8px;
+    padding: 12px 15px;
+    margin-bottom: 15px;
+    border: 1px solid #e2e8f0;
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+.select2-container { width: 100% !important; }
+
+/* ============================================
+   إلغاء أسهم input[type=number]
+   ============================================ */
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none !important;
+    margin: 0 !important;
+}
+input[type=number] {
+    -moz-appearance: textfield !important;
+    appearance: textfield !important;
+}
+input[type="number"] {
+    -moz-appearance: textfield !important;
+}
+
+</style>
+<script src="permissions.js"></script>
+
+<style id="compact-spacing-global">
+/* ============================================
+   توحيد المسافات المضغوطة — كل المشروع
+   ============================================ */
+
+/* الجداول */
+.table td,
+.table th {
+    padding: 3px 6px !important;
+    font-size: 0.75rem !important;
+    vertical-align: middle !important;
+    line-height: 1.2 !important;
+}
+
+.table tbody tr {
+    height: auto !important;
+}
+
+/* الـ inputs */
+.form-control,
+.form-select {
+    font-size: 0.75rem !important;
+    line-height: 1.2 !important;
+}
+
+.form-control-sm,
+.form-select-sm {
+    height: 26px !important;
+    padding: 2px 6px !important;
+    font-size: 0.72rem !important;
+    line-height: 1 !important;
+}
+
+/* الأزرار */
+.btn {
+    padding: 3px 8px !important;
+    font-size: 0.72rem !important;
+    line-height: 1.2 !important;
+}
+
+.btn-sm {
+    padding: 2px 6px !important;
+    font-size: 0.7rem !important;
+}
+
+/* البطاقات */
+.card {
+    margin-bottom: 6px !important;
+}
+
+.card-body,
+.card.p-2,
+.card.p-3,
+.card.p-4 {
+    padding: 6px 8px !important;
+}
+
+/* الـ Modal */
+.modal-header {
+    padding: 6px 12px !important;
+}
+
+.modal-title {
+    font-size: 0.9rem !important;
+}
+
+.modal-body {
+    padding: 8px 12px !important;
+}
+
+.modal-footer {
+    padding: 6px 12px !important;
+}
+
+.modal-footer .btn {
+    padding: 4px 10px !important;
+    font-size: 0.75rem !important;
+}
+
+/* المسافات */
+.mb-1, .mb-2, .mb-3, .mb-4 {
+    margin-bottom: 4px !important;
+}
+
+.mt-1, .mt-2, .mt-3, .mt-4 {
+    margin-top: 4px !important;
+}
+
+.ms-1, .ms-2, .ms-3 {
+    margin-right: 4px !important;
+}
+
+.me-1, .me-2, .me-3 {
+    margin-left: 4px !important;
+}
+
+.p-1, .p-2, .p-3, .p-4 {
+    padding: 4px !important;
+}
+
+.g-1, .g-2, .g-3 {
+    gap: 4px !important;
+}
+
+/* العناوين */
+h1, h2, h3, h4, h5, h6 {
+    line-height: 1.3 !important;
+}
+
+h1 { font-size: 1.2rem !important; margin-bottom: 6px !important; }
+h2 { font-size: 1.05rem !important; margin-bottom: 6px !important; }
+h3 { font-size: 0.95rem !important; margin-bottom: 4px !important; }
+h4 { font-size: 0.9rem !important; margin-bottom: 4px !important; }
+h5 { font-size: 0.85rem !important; margin-bottom: 4px !important; }
+h6 { font-size: 0.8rem !important; margin-bottom: 4px !important; }
+
+/* الـ alerts */
+.alert {
+    padding: 6px 10px !important;
+    margin-bottom: 6px !important;
+    font-size: 0.78rem !important;
+}
+
+/* الـ badges */
+.badge {
+    padding: 2px 6px !important;
+    font-size: 0.68rem !important;
+}
+
+/* الـ tabs */
+.nav-tabs .nav-link {
+    padding: 5px 12px !important;
+    font-size: 0.78rem !important;
+}
+
+/* الـ dropdown */
+.dropdown-menu {
+    font-size: 0.78rem !important;
+    padding: 4px !important;
+}
+
+.dropdown-item {
+    padding: 4px 8px !important;
+    font-size: 0.75rem !important;
+}
+
+/* الـ hr */
+hr {
+    margin: 6px 0 !important;
+}
+
+/* الـ Modal dialog */
+.modal-dialog {
+    margin: 6px auto !important;
+}
+
+/* ============================================
+   إخفاء أسهم input[type=number]
+   ============================================ */
+input[type=number]::-webkit-inner-spin-button,
+input[type=number]::-webkit-outer-spin-button {
+    -webkit-appearance: none !important;
+    margin: 0 !important;
+}
+input[type=number] {
+    -moz-appearance: textfield !important;
+}
+</style>
+
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 16 16%22><text y=%2214%22 font-size=%2214%22>📒</text></svg>">
+</head>
+<body>
+<div class="container-fluid p-3">
+
+<div class="test-container">
+
+<!-- Header -->
+<div class="page-header">
+    <h3>
+        <i class="bi bi-clipboard-check"></i>
+        اختبار محرك القيود التلقائي
+    </h3>
+    <div class="subtitle">
+        اختبر توليد القيود المحاسبية من المستودع + نوع الحركة + المبلغ
+    </div>
+</div>
+
+<!-- Form -->
+<div class="form-card">
+    <h5 class="mb-3" style="color:#1e3c72;">
+        <i class="bi bi-sliders"></i> مدخلات الحركة
+    </h5>
+    
+    <div class="row g-3">
+        <div class="col-md-6">
+            <label class="form-label">🏭 المستودع *</label>
+            <select class="form-select" id="f-warehouse_id">
+                <option value="">— اختر مستودع —</option>
+            </select>
+        </div>
+        
+        <div class="col-md-6">
+            <label class="form-label">🔄 نوع الحركة *</label>
+            <select class="form-select" id="f-movement_code">
+                <option value="">— اختر نوع —</option>
+            </select>
+        </div>
+        
+        <div class="col-md-4">
+            <label class="form-label">💰 المبلغ *</label>
+            <input type="number" class="form-control" id="f-amount" value="5000" min="0" step="0.01">
+        </div>
+        
+        <div class="col-md-4">
+            <label class="form-label">📄 المرجع</label>
+            <input type="text" class="form-control" id="f-reference" placeholder="PO-001">
+        </div>
+        
+        <div class="col-md-4">
+            <label class="form-label">📝 ملاحظات</label>
+            <input type="text" class="form-control" id="f-notes" placeholder="اختبار">
+        </div>
+        
+        <!-- حقول التحويل (تظهر فقط عند اختيار TRANS) -->
+        <div class="col-md-6 transfer-only" style="display:none;">
+            <label class="form-label">📤 من مستودع (المُسلِّم)</label>
+            <select class="form-select" id="f-warehouse_from_id">
+                <option value="">— اختر —</option>
+            </select>
+        </div>
+        
+        <div class="col-md-6 transfer-only" style="display:none;">
+            <label class="form-label">📥 إلى مستودع (المستلم)</label>
+            <select class="form-select" id="f-warehouse_to_id">
+                <option value="">— اختر —</option>
+            </select>
+        </div>
+    </div>
+    
+    <div class="mt-3 d-flex gap-2">
+        <button class="btn btn-primary" onclick="preview()">
+            <i class="bi bi-search"></i> معاينة القيد
+        </button>
+        <button class="btn btn-outline-secondary" onclick="resetForm()">
+            <i class="bi bi-x-circle"></i> مسح
+        </button>
+        <button class="btn btn-outline-info" onclick="loadRefs()">
+            <i class="bi bi-arrow-clockwise"></i> تحديث البيانات
+        </button>
+    </div>
+</div>
+
+<!-- Preview -->
+<div class="account-preview" id="preview-area">
+    <div class="empty-preview">
+        <i class="bi bi-journal-text"></i>
+        <h5>القيد هيظهر هنا</h5>
+        <p>اختر المستودع ونوع الحركة والمبلغ، ثم اضغط "معاينة القيد"</p>
+    </div>
+</div>
+
+</div>
+
+</div>
+
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+
+<script>
+const API = 'http://localhost:5000/api/v1';
+let allWarehouses = [];
+let allMovements = [];
+
+// ==================== Select2 ====================
+function initSearchable(selector, placeholder) {
+    if (typeof $ === 'undefined') return;
+    if ($(selector).data('select2')) $(selector).select2('destroy');
+    $(selector).select2({
+        theme: 'bootstrap-5',
+        placeholder: placeholder || 'اكتب للبحث...',
+        allowClear: true,
+        width: '100%',
+        language: {
+            noResults: () => "لا توجد نتائج",
+            searching: () => "جاري البحث..."
+        }
+    });
+}
+
+// ==================== Load Refs ====================
+async function loadRefs() {
+    try {
+        const [w, m] = await Promise.all([
+            fetch(`${API}/warehouses/`).then(r => r.json()),
+            fetch(`${API}/stock_movements/`).then(r => r.json())
+        ]);
+        
+        allWarehouses = w.data || [];
+        allMovements = m.data || [];
+        
+        // املأ قوائم المستودعات
+        const whOpts = '<option value="">— اختر مستودع —</option>' +
+            allWarehouses.map(w => 
+                `<option value="${w.id}">${w.code} — ${w.name_ar} (${w.account_code})</option>`
+            ).join('');
+        
+        document.getElementById('f-warehouse_id').innerHTML = whOpts;
+        document.getElementById('f-warehouse_from_id').innerHTML = 
+            '<option value="">— اختر —</option>' + 
+            allWarehouses.map(w => `<option value="${w.id}">${w.code} — ${w.name_ar}</option>`).join('');
+        document.getElementById('f-warehouse_to_id').innerHTML = 
+            '<option value="">— اختر —</option>' + 
+            allWarehouses.map(w => `<option value="${w.id}">${w.code} — ${w.name_ar}</option>`).join('');
+        
+        // املأ قوائم أنواع الحركات
+        const mvOpts = '<option value="">— اختر نوع —</option>' +
+            allMovements.filter(m => m.is_active).map(m => 
+                `<option value="${m.code}">${m.code} — ${m.name_ar}</option>`
+            ).join('');
+        
+        document.getElementById('f-movement_code').innerHTML = mvOpts;
+        
+        // فعّل Select2
+        initSearchable('#f-warehouse_id', 'ابحث عن مستودع...');
+        initSearchable('#f-movement_code', 'ابحث عن نوع...');
+        initSearchable('#f-warehouse_from_id', 'ابحث...');
+        initSearchable('#f-warehouse_to_id', 'ابحث...');
+        
+    } catch (e) {
+        console.error('خطأ في تحميل البيانات:', e);
+        alert('خطأ في تحميل البيانات: ' + e.message);
+    }
+}
+
+// ==================== Transfer Fields Toggle ====================
+document.getElementById('f-movement_code').addEventListener('change', function() {
+    const isTransfer = this.value === 'TRANS';
+    document.querySelectorAll('.transfer-only').forEach(el => {
+        el.style.display = isTransfer ? 'block' : 'none';
+    });
+});
+
+// ==================== Preview ====================
+async function preview() {
+    const warehouse_id = document.getElementById('f-warehouse_id').value;
+    const movement_code = document.getElementById('f-movement_code').value;
+    const amount = parseFloat(document.getElementById('f-amount').value) || 0;
+    const reference = document.getElementById('f-reference').value.trim();
+    const notes = document.getElementById('f-notes').value.trim();
+    
+    // Validation
+    if (!warehouse_id) { alert('اختر المستودع'); return; }
+    if (!movement_code) { alert('اختر نوع الحركة'); return; }
+    if (amount <= 0) { alert('المبلغ يجب أن يكون أكبر من صفر'); return; }
+    
+    const data = {
+        warehouse_id: parseInt(warehouse_id),
+        movement_code: movement_code,
+        amount: amount,
+        reference: reference || null,
+        notes: notes || null
+    };
+    
+    // لو تحويل
+    if (movement_code === 'TRANS') {
+        const fromId = document.getElementById('f-warehouse_from_id').value;
+        const toId = document.getElementById('f-warehouse_to_id').value;
+        if (!fromId || !toId) {
+            alert('للتحويل، اختر المستودعين');
+            return;
+        }
+        data.warehouse_from_id = parseInt(fromId);
+        data.warehouse_to_id = parseInt(toId);
+    }
+    
+    // Loading
+    const area = document.getElementById('preview-area');
+    area.innerHTML = '<div class="text-center p-4"><div class="spinner-border text-primary"></div><p class="mt-2 text-muted">جاري توليد القيد...</p></div>';
+    
+    try {
+        const r = await fetch(`${API}/stock_movements/preview-entry`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(data)
+        }).then(x => x.json());
+        
+        if (!r.success) {
+            area.innerHTML = `
+                <div class="alert alert-danger">
+                    <i class="bi bi-x-circle"></i> <strong>خطأ:</strong> ${r.message || 'خطأ غير معروف'}
+                </div>
+            `;
+            return;
+        }
+        
+        renderPreview(r);
+        
+    } catch (e) {
+        area.innerHTML = `
+            <div class="alert alert-danger">
+                <i class="bi bi-x-circle"></i> <strong>خطأ في الاتصال:</strong> ${e.message}
+            </div>
+        `;
+    }
+}
+
+// ==================== Render Preview ====================
+function renderPreview(r) {
+    const area = document.getElementById('preview-area');
+    
+    let html = '<h5 class="mb-3" style="color:#1e3c72;"><i class="bi bi-journal-check"></i> القيد المحاسبي</h5>';
+    
+    // Info badges
+    html += '<div class="movement-info">';
+    html += `<span class="info-badge"><i class="bi bi-arrow-repeat"></i> ${r.movement.name_ar}</span>`;
+    html += `<span class="info-badge"><i class="bi bi-building"></i> ${r.warehouse.name_ar}</span>`;
+    if (r.reference) html += `<span class="info-badge"><i class="bi bi-file-text"></i> ${r.reference}</span>`;
+    html += '</div>';
+    
+    // Table
+    html += '<table class="journal-table">';
+    html += '<thead><tr>';
+    html += '<th style="width:45%;">الحساب</th>';
+    html += '<th style="width:20%; text-align:left;">مدين</th>';
+    html += '<th style="width:20%; text-align:left;">دائن</th>';
+    html += '<th style="width:15%;">البيان</th>';
+    html += '</tr></thead><tbody>';
+    
+    r.lines.forEach(line => {
+        const isDebit = line.debit > 0;
+        const rowClass = isDebit ? 'row-debit' : (line.credit > 0 ? 'row-credit' : '');
+        
+        html += `<tr class="${rowClass}">`;
+        html += `<td>
+            <span class="acc-badge">${line.account}</span>
+            <span class="acc-name">${line.account_name}</span>
+        </td>`;
+        html += `<td class="amount debit">${line.debit > 0 ? line.debit.toLocaleString('en-US', {minimumFractionDigits: 2}) : '—'}</td>`;
+        html += `<td class="amount credit">${line.credit > 0 ? line.credit.toLocaleString('en-US', {minimumFractionDigits: 2}) : '—'}</td>`;
+        html += `<td><small class="text-muted">${line.description || '-'}</small></td>`;
+        html += '</tr>';
+    });
+    
+    // Total row
+    html += `<tr class="row-total">`;
+    html += `<td><i class="bi bi-calculator"></i> الإجمالي</td>`;
+    html += `<td class="amount debit">${r.total_debit.toLocaleString('en-US', {minimumFractionDigits: 2})}</td>`;
+    html += `<td class="amount credit">${r.total_credit.toLocaleString('en-US', {minimumFractionDigits: 2})}</td>`;
+    html += `<td></td>`;
+    html += `</tr>`;
+    
+    html += '</tbody></table>';
+    
+    // Balance check
+    const balanced = Math.abs(r.total_debit - r.total_credit) < 0.01;
+    if (balanced) {
+        html += `<div class="balance-check ok"><i class="bi bi-check-circle-fill"></i> القيد متوازن (مدين = دائن)</div>`;
+    } else {
+        html += `<div class="balance-check fail"><i class="bi bi-exclamation-triangle-fill"></i> القيد غير متوازن! فرق: ${(r.total_debit - r.total_credit).toFixed(2)}</div>`;
+    }
+    
+    // Debug info
+    html += '<details class="mt-3"><summary class="text-muted" style="cursor:pointer;font-size:0.8rem;">🔍 تفاصيل JSON</summary>';
+    html += '<pre class="mt-2 p-3" style="background:#f8fafc;border-radius:8px;font-size:0.75rem;max-height:300px;overflow:auto;">';
+    html += JSON.stringify(r, null, 2);
+    html += '</pre></details>';
+    
+    area.innerHTML = html;
+}
+
+// ==================== Reset ====================
+function resetForm() {
+    $('#f-warehouse_id').val('').trigger('change');
+    $('#f-movement_code').val('').trigger('change');
+    document.getElementById('f-amount').value = '5000';
+    document.getElementById('f-reference').value = '';
+    document.getElementById('f-notes').value = '';
+    $('#f-warehouse_from_id').val('').trigger('change');
+    $('#f-warehouse_to_id').val('').trigger('change');
+    document.querySelectorAll('.transfer-only').forEach(el => el.style.display = 'none');
+    
+    document.getElementById('preview-area').innerHTML = `
+        <div class="empty-preview">
+            <i class="bi bi-journal-text"></i>
+            <h5>القيد هيظهر هنا</h5>
+            <p>اختر المستودع ونوع الحركة والمبلغ، ثم اضغط "معاينة القيد"</p>
+        </div>
+    `;
+}
+
+// ==================== Init ====================
+(async () => {
+    await loadRefs();
+})();
+</script>
+
+</body>
+</html>
