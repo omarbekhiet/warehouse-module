@@ -1,6 +1,6 @@
-﻿from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify
 from app.database import db
-from app.utils import json_safe
+from app.utils import json_safe, enrich_with_user
 
 uom_bp = Blueprint('uom', __name__)
 
@@ -8,6 +8,7 @@ uom_bp = Blueprint('uom', __name__)
 @uom_bp.route('/', methods=['GET'])
 def list_uom():
     rows = db.query("SELECT * FROM units_of_measure ORDER BY id")
+    rows = enrich_with_user(rows)
     return jsonify({'success': True, 'data': json_safe(rows)})
 
 

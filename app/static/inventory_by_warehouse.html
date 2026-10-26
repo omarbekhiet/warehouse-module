@@ -1,0 +1,133 @@
+﻿<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>المخزون حسب المستودع</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+body { font-family: 'Cairo', 'Segoe UI', Tahoma, sans-serif; background: #f0f2f5; padding: 20px; }
+.container-box { max-width: 1400px; margin: 0 auto; }
+h2 { color: #1e3c72; font-weight: 700; }
+.card-box { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 2px 12px rgba(0,0,0,0.06); margin-bottom: 20px; }
+.wh-header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 15px 20px; border-radius: 10px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; }
+.wh-header h5 { margin: 0; }
+.wh-header .total { font-size: 1.3rem; font-weight: 700; }
+table { font-size: 0.85rem; }
+</style>
+<script src="permissions.js"></script>
+</head>
+<body>
+
+<div class="container-box">
+
+    <div class="d-flex justify-content-between mb-4">
+        <h2><i class="bi bi-building"></i> المخزون حسب المستودع</h2>
+        <div>
+            <button class="btn btn-sm btn-outline-success" onclick="exportToExcel('inventory_by_warehouse')" title="تصدير Excel">
+                <i class="bi bi-file-earmark-excel"></i> Excel
+            </button>
+            <a href="index.html" class="btn btn-outline-secondary"><i class="bi bi-house"></i> الرئيسية</a>
+            <button class="btn btn-primary" onclick="load()"><i class="bi bi-arrow-clockwise"></i> تحديث</button>
+        </div>
+    </div>
+
+    <div class="alert alert-info">
+        <i class="bi bi-info-circle"></i> التقرير يعرض تفصيل المخزون في كل مستودع حسب نوع التشغيل
+    </div>
+
+    <div id="content">
+        <div class="text-center text-muted py-5">جاري التحميل...</div>
+    </div>
+
+</div>
+
+<script>
+const API = '/api/v1';
+
+const opLabels = {
+    'OPERATING': {label: 'مخزون تشغيلي', color: '#43e97b', icon: 'box-seam'},
+    'NON_OPERATING': {label: 'مخزون غير تشغيلي', color: '#f5576c', icon: 'wrench'},
+    'CAPITAL': {label: 'قطع غيار رأسمالية', color: '#4facfe', icon: 'gear'}
+};
+
+async function load() {
+    try {
+        const r = await fetch(`${API}/reports/inventory-by-warehouse`).then(x => x.json());
+        const warehouses = r.data || [];
+        
+        if (!warehouses.length) {
+            document.getElementById('content').innerHTML = '<div class="card-box text-center text-muted py-5">لا توجد بيانات</div>';
+            return;
+        }
+        
+        let html = '';
+        warehouses.forEach(wh => {
+            html += `
+                <div class="card-box">
+                    <div class="wh-header">
+                        <h5><i class="bi bi-building"></i> ${wh.warehouse}</h5>
+                        <div class="total">${wh.total_value.toLocaleString('ar-EG', {maximumFractionDigits: 2})} ج.م</div>
+                    </div>
+                    <table class="table table-hover">
+                        <thead class="table-light">
+                            <tr>
+                                <th>نوع التشغيل</th>
+                                <th class="text-end">عدد الأصناف</th>
+                                <th class="text-end">الكمية</th>
+                                <th class="text-end">القيمة</th>
+                                <th class="text-end">النسبة</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+            `;
+            
+            wh.items.forEach(item => {
+                const info = opLabels[item.operating_type] || {label: item.operating_type, color: '#667eea', icon: 'box'};
+                const percent = wh.total_value > 0 ? (item.total_value / wh.total_value * 100) : 0;
+                
+                html += `
+                    <tr>
+                        <td>
+                            <i class="bi bi-${info.icon}" style="color:${info.color};"></i>
+                            <strong style="color:${info.color};">${info.label}</strong>
+                        </td>
+                        <td class="text-end">${item.item_count}</td>
+                        <td class="text-end">${item.total_qty.toLocaleString('ar-EG')}</td>
+                        <td class="text-end"><strong>${item.total_value.toLocaleString('ar-EG', {maximumFractionDigits: 2})}</strong></td>
+                        <td class="text-end">${percent.toFixed(1)}%</td>
+                    </tr>
+                `;
+            });
+            
+            html += `
+                        </tbody>
+                    </table>
+                </div>
+            `;
+        });
+        
+        document.getElementById('content').innerHTML = html;
+    } catch(e) {
+        console.error(e);
+        document.getElementById('content').innerHTML = '<div class="card-box text-center text-danger py-5">خطأ في التحميل</div>';
+    }
+}
+
+load();
+</script>
+
+<script>
+// دالة تصدير Excel
+function exportToExcel(templateKey) {
+    if (!templateKey) {
+        alert('مفيش قالب تصدير');
+        return;
+    }
+    window.location.href = '/api/v1/export/excel/export/' + templateKey;
+}
+</script>
+
+</body>
+</html>

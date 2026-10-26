@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>ربط الحركات بالقيود</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+<link href="style.css" rel="stylesheet">
+<style>
+body {
+    background: var(--bg);
+    padding: 12px 16px;
+    font-size: 13.5px;
+}
+
+/* Stats Row */
+.link-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 10px;
+    margin-bottom: 14px;
+}
+.stat-box {
+    background: white;
+    border-radius: 10px;
+    padding: 12px 14px;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.05);
+    border-right: 4px solid #6366f1;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: all 0.2s;
+}
+.stat-box:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+.stat-box .icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    color: white;
+    flex-shrink: 0;
+}
+.stat-box .info { flex: 1; min-width: 0; }
+.stat-box .label {
+    font-size: 0.72rem;
+    color: #64748b;
+    font-weight: 600;
+    margin-bottom: 2px;
+}
+.stat-box .value {
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #1e3c72;
+    line-height: 1.2;
+}
+.stat-box .sub {
+    font-size: 0.7rem;
+    color: #94a3b8;
+}
+
+/* Search Bar */
+.search-bar {
+    background: white;
+    border-radius: 10px;
+    padding: 12px 16px;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.05);
+    margin-bottom: 14px;
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex-wrap: wrap;
+}
+.search-bar input {
+    flex: 1;
+    min-width: 250px;
+    font-size: 0.88rem;
+    padding: 8px 12px;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 8px;
+}
+.search-bar input:focus {
+    border-color: #6366f1;
+    box-shadow: 0 0 0 3px rgba(99,102,241,0.1);
+    outline: none;
+}
+
+/* Filters */
+.filters-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 14px;
+}
+.filter-chip {
+    background: white;
+    padding: 6px 14px;
+    border-radius: 20px;
+    border: 1.5px solid #e2e8f0;
+    cursor: pointer;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: #64748b;
+    transition: all 0.15s;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+}
+.filter-chip:hover {
+    border-color: #6366f1;
+    color: #6366f1;
+}
+.filter-chip.active {
+    background: #6366f1;
+    color: white;
+    border-color: #6366f1;
+}
+
+/* Table */
+.movements-table {
+    background: white;
+    border-radius: 10px;
+    padding: 0;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.05);
+    overflow: hidden;
+}
+.movements-table table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0;
+}
+.movements-table thead th {
+    background: #f8fafc;
+    color: #475569;
+    font-weight: 700;
+    padding: 11px 12px;
+    text-align: right;
+    font-size: 0.78rem;
+    border-bottom: 2px solid #e2e8f0;
+    white-space: nowrap;
+}
+.movements-table tbody td {
+    padding: 10px 12px;
+    font-size: 0.84rem;
+    border-bottom: 1px solid #f1f5f9;
+    vertical-align: middle;
+}
+.movements-table tbody tr {
+    transition: background 0.15s;
+    cursor: pointer;
+}
+.movements-table tbody tr:hover {
+    background: #f8fafc;
+}
+
+/* Badges */
+.badge-source {
+    padding: 3px 9px;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    white-space: nowrap;
+}
+.source-SUPPLIER_PAYMENT { background: #fee2e2; color: #991b1b; }
+.source-CUSTOMER_RECEIPT { background: #d1fae5; color: #065f46; }
+.source-CASH_BOX_TXN { background: #dbeafe; color: #1e40af; }
+.source-PETTY_CASH_EXPENSE { background: #fef3c7; color: #92400e; }
+.source-PURCHASE_INVOICE { background: #e0e7ff; color: #3730a3; }
+.source-SALES_INVOICE { background: #fce7f3; color: #9d174d; }
+.source-PURCHASE_RETURN { background: #ffe4e6; color: #9f1239; }
+.source-SALES_RETURN { background: #fef3c7; color: #92400e; }
+
+.badge-linked {
+    background: #d1fae5;
+    color: #065f46;
+    padding: 3px 8px;
+    border-radius: 10px;
+    font-size: 0.68rem;
+    font-weight: 700;
+}
+.badge-unlinked {
+    background: #fee2e2;
+    color: #991b1b;
+    padding: 3px 8px;
+    border-radius: 10px;
+    font-size: 0.68rem;
+    font-weight: 700;
+}
+
+/* Journal number cell */
+.journal-cell {
+    font-family: 'Consolas', monospace;
+    font-size: 0.78rem;
+}
+.journal-cell .je-no {
+    background: #ede9fe;
+    color: #5b21b6;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-weight: 700;
+}
+.journal-cell .je-none {
+    color: #94a3b8;
+    font-style: italic;
+}
+
+/* Amount */
+.amount {
+    font-weight: 700;
+    color: #1e3c72;
+    font-family: 'Consolas', monospace;
+}
+
+/* Modal */
+.journal-modal .modal-header {
+    background: linear-gradient(135deg, #6366f1, #8b5cf6);
+    color: white;
+}
+.journal-modal .info-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 10px;
+    margin-bottom: 14px;
+}
+.journal-modal .info-item {
+    background: #f8fafc;
+    padding: 10px 12px;
+    border-radius: 8px;
+    border-right: 3px solid #6366f1;
+}
+.journal-modal .info-label {
+    font-size: 0.72rem;
+    color: #64748b;
+    font-weight: 600;
+    margin-bottom: 3px;
+}
+.journal-modal .info-value {
+    font-size: 0.92rem;
+    font-weight: 700;
+    color: #1e3c72;
+}
+
+.journal-modal .lines-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 10px;
+}
+.journal-modal .lines-table th {
+    background: #f1f5f9;
+    padding: 8px 10px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: #475569;
+    text-align: right;
+    border-bottom: 2px solid #cbd5e1;
+}
+.journal-modal .lines-table td {
+    padding: 8px 10px;
+    font-size: 0.82rem;
+    border-bottom: 1px solid #f1f5f9;
+}
+.journal-modal .lines-table tr:last-child td {
+    border-bottom: none;
+    background: #f0f9ff;
+    font-weight: 700;
+}
+
+/* Empty State */
+.empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: #94a3b8;
+}
+.empty-state i {
+    font-size: 3rem;
+    opacity: 0.3;
+    display: block;
+    margin-bottom: 10px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    body { padding: 8px; }
+    .movements-table thead th { padding: 8px; font-size: 0.72rem; }
+    .movements-table tbody td { padding: 8px; font-size: 0.78rem; }
+    .stat-box .value { font-size: 1rem; }
+}
+</style>
+<script src="permissions.js"></script>
+</head>
+<body>
+
+<div class="container-box">
+
+    <!-- Header -->
+    <div class="page-head">
+        <h2><i class="bi bi-link-45deg"></i> ربط الحركات بالقيود</h2>
+        <div class="d-flex gap-2">
+            <a href="cash_box_reports.html" class="btn btn-sm btn-outline-info">
+                <i class="bi bi-bar-chart-line"></i> التقارير
+            </a>
+            <a href="journal.html" class="btn btn-sm btn-outline-primary">
+                <i class="bi bi-journal-text"></i> القيود
+            </a>
+            <button class="btn btn-sm btn-outline-success" onclick="exportToExcel('movements_journal')" title="تصدير Excel">
+                <i class="bi bi-file-earmark-excel"></i> Excel
+            </button>
+            <a href="index.html" class="btn btn-sm btn-outline-secondary">
+                <i class="bi bi-house-fill"></i> الرئيسية
+            </a>
+        </div>
+    </div>
+
+    <!-- Stats -->
+    <div class="link-stats" id="stats-container">
+        <div class="stat-box">
+            <div class="icon" style="background: linear-gradient(135deg, #6366f1, #8b5cf6);">
+                <i class="bi bi-hourglass-split"></i>
+            </div>
+            <div class="info">
+                <div class="label">جاري التحميل...</div>
+                <div class="value">-</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Search -->
+    <div class="search-bar">
+        <i class="bi bi-search" style="color: #94a3b8; font-size: 1.1rem;"></i>
+        <input type="text" id="search-input" 
+               placeholder="ابحث برقم الحركة أو رقم القيد... (مثال: PAY-TEST-001 أو JE-TEST-001)"
+               onkeypress="if(event.key==='Enter') doSearch()">
+        <button class="btn btn-primary btn-sm" onclick="doSearch()">
+            <i class="bi bi-search"></i> بحث
+        </button>
+        <button class="btn btn-outline-secondary btn-sm" onclick="clearSearch()">
+            <i class="bi bi-x-circle"></i> مسح
+        </button>
+    </div>
+
+    <!-- Filters -->
+    <div class="filters-row">
+        <button class="filter-chip active" data-filter="" onclick="filterByType(this)">
+            <i class="bi bi-list-ul"></i> الكل
+        </button>
+        <button class="filter-chip" data-filter="SUPPLIER_PAYMENT" onclick="filterByType(this)">
+            <i class="bi bi-cash-coin"></i> دفعات موردين
+        </button>
+        <button class="filter-chip" data-filter="CUSTOMER_RECEIPT" onclick="filterByType(this)">
+            <i class="bi bi-cash-stack"></i> تحصيلات عملاء
+        </button>
+        <button class="filter-chip" data-filter="CASH_BOX_TXN" onclick="filterByType(this)">
+            <i class="bi bi-arrow-left-right"></i> حركات خزائن
+        </button>
+        <button class="filter-chip" data-filter="PETTY_CASH_EXPENSE" onclick="filterByType(this)">
+            <i class="bi bi-receipt-cutoff"></i> مصروفات
+        </button>
+    </div>
+
+    <!-- Table -->
+    <div class="movements-table">
+        <table>
+            <thead>
+                <tr>
+                    <th style="width: 100px;">التاريخ</th>
+                    <th style="width: 130px;">النوع</th>
+                    <th style="width: 160px;">رقم الحركة</th>
+                    <th style="width: 110px;" class="text-end">المبلغ</th>
+                    <th>البيان</th>
+                    <th style="width: 150px;">القيد</th>
+                    <th style="width: 100px;" class="text-center">إجراءات</th>
+                </tr>
+            </thead>
+            <tbody id="tbl-body">
+                <tr><td colspan="7" class="text-center text-muted p-4">جاري التحميل...</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+<!-- Journal Modal -->
+<div class="modal fade journal-modal" id="journalModal" tabindex="-1">
+<div class="modal-dialog modal-lg">
+<div class="modal-content">
+<div class="modal-header">
+    <h5 class="modal-title"><i class="bi bi-journal-text"></i> تفاصيل القيد</h5>
+    <button class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+</div>
+<div class="modal-body" id="journal-body">
+    <div class="text-center text-muted p-4">جاري التحميل...</div>
+</div>
+<div class="modal-footer">
+    <button class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button>
+</div>
+</div>
+</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+const API = '/api/v1';
+const journalModal = new bootstrap.Modal(document.getElementById('journalModal'));
+
+let allMovements = [];
+let currentFilter = '';
+
+// ============================================
+// Load Stats
+// ============================================
+async function loadStats() {
+    try {
+        const r = await fetch(`${API}/cash-boxes/link/stats`).then(x => x.json());
+        if (!r.success) return;
+        
+        const d = r.data;
+        const container = document.getElementById('stats-container');
+        
+        const stats = [
+            { key: 'supplier_payments', label: 'دفعات موردين', icon: 'cash-coin', color: '#ef4444', bg: 'linear-gradient(135deg, #ef4444, #f87171)' },
+            { key: 'customer_receipts', label: 'تحصيلات عملاء', icon: 'cash-stack', color: '#10b981', bg: 'linear-gradient(135deg, #10b981, #34d399)' },
+            { key: 'cash_box_transactions', label: 'حركات خزائن', icon: 'arrow-left-right', color: '#3b82f6', bg: 'linear-gradient(135deg, #3b82f6, #60a5fa)' },
+            { key: 'petty_cash_expenses', label: 'مصروفات', icon: 'receipt-cutoff', color: '#f59e0b', bg: 'linear-gradient(135deg, #f59e0b, #fbbf24)' },
+            { key: 'purchase_invoices', label: 'فواتير شراء', icon: 'receipt', color: '#6366f1', bg: 'linear-gradient(135deg, #6366f1, #a78bfa)' },
+            { key: 'sales_invoices', label: 'فواتير بيع', icon: 'cart-check', color: '#ec4899', bg: 'linear-gradient(135deg, #ec4899, #f472b6)' },
+            { key: 'journal_entries', label: 'القيود', icon: 'journal-text', color: '#8b5cf6', bg: 'linear-gradient(135deg, #8b5cf6, #c4b5fd)' },
+        ];
+        
+        container.innerHTML = stats.map(s => {
+            const st = d[s.key] || { total: 0, linked: 0, unlinked: 0 };
+            let value, sub;
+            
+            if (s.key === 'journal_entries') {
+                value = st.total;
+                sub = `${st.with_reference} برقم مرجعي`;
+            } else {
+                value = st.total;
+                const pct = st.total > 0 ? Math.round((st.linked / st.total) * 100) : 0;
+                sub = `${st.linked} مربوط (${pct}%)`;
+            }
+            
+            return `
+                <div class="stat-box" style="border-right-color: ${s.color};">
+                    <div class="icon" style="background: ${s.bg};">
+                        <i class="bi bi-${s.icon}"></i>
+                    </div>
+                    <div class="info">
+                        <div class="label">${s.label}</div>
+                        <div class="value">${value}</div>
+                        <div class="sub">${sub}</div>
+                    </div>
+                </div>
+            `;
+        }).join('');
+    } catch (e) {
+        console.error('Stats error:', e);
+    }
+}
+
+// ============================================
+// Load Movements
+// ============================================
+async function loadMovements(sourceType = '') {
+    try {
+        let url = `${API}/cash-boxes/link/movements-with-journals`;
+        if (sourceType) url += `?source_type=${sourceType}`;
+        
+        const r = await fetch(url).then(x => x.json());
+        allMovements = r.data || [];
+        renderTable(allMovements);
+    } catch (e) {
+        console.error('Movements error:', e);
+    }
+}
+
+function renderTable(rows) {
+    const tbody = document.getElementById('tbl-body');
+    
+    if (!rows.length) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="7">
+                    <div class="empty-state">
+                        <i class="bi bi-inbox"></i>
+                        لا توجد حركات
+                    </div>
+                </td>
+            </tr>
+        `;
+        return;
+    }
+    
+    const typeLabels = {
+        'SUPPLIER_PAYMENT': 'دفعة مورد',
+        'CUSTOMER_RECEIPT': 'تحصيل عميل',
+        'CASH_BOX_TXN': 'حركة خزينة',
+        'PETTY_CASH_EXPENSE': 'مصروف',
+        'PURCHASE_INVOICE': 'فاتورة شراء',
+        'SALES_INVOICE': 'فاتورة بيع',
+        'PURCHASE_RETURN': 'مرتجع شراء',
+        'SALES_RETURN': 'مرتجع بيع',
+    };
+    
+    tbody.innerHTML = rows.map((r, idx) => {
+        const typeLabel = typeLabels[r.source_type] || r.source_type;
+        const isLinked = !!r.journal_entry_id;
+        const journalCell = isLinked
+            ? `<span class="je-no"><i class="bi bi-check-circle-fill"></i> ${r.journal_no || 'JE-' + r.journal_entry_id}</span>`
+            : `<span class="je-none"><i class="bi bi-x-circle"></i> غير مرتبط</span>`;
+        
+        return `
+            <tr onclick="openJournal(${r.journal_entry_id || 0})">
+                <td>${r.date || '-'}</td>
+                <td><span class="badge-source source-${r.source_type}">${typeLabel}</span></td>
+                <td><code>${r.ref_no || '-'}</code></td>
+                <td class="text-end amount">${parseFloat(r.amount || 0).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                <td>${r.description || '-'}</td>
+                <td class="journal-cell">${journalCell}</td>
+                <td class="text-center">
+                    <button class="btn btn-sm btn-outline-info" onclick="event.stopPropagation(); openJournal(${r.journal_entry_id || 0})" ${!isLinked ? 'disabled' : ''}>
+                        <i class="bi bi-eye"></i>
+                    </button>
+                </td>
+            </tr>
+        `;
+    }).join('');
+}
+
+// ============================================
+// Journal Modal
+// ============================================
+async function openJournal(jeId) {
+    if (!jeId) {
+        alert('لا يوجد قيد مرتبط بهذه الحركة');
+        return;
+    }
+    
+    const body = document.getElementById('journal-body');
+    body.innerHTML = '<div class="text-center text-muted p-4">جاري التحميل...</div>';
+    journalModal.show();
+    
+    try {
+        const r = await fetch(`${API}/cash-boxes/link/search-by-journal/${jeId}`).then(x => x.json());
+        if (!r.success) {
+            body.innerHTML = '<div class="alert alert-danger">خطأ في جلب القيد</div>';
+            return;
+        }
+        
+        const je = r.data.journal;
+        const src = r.data.source;
+        
+        let html = `
+            <div class="info-grid">
+                <div class="info-item">
+                    <div class="info-label">رقم القيد</div>
+                    <div class="info-value">${je.entry_no}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">التاريخ</div>
+                    <div class="info-value">${je.entry_date}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">المرجع</div>
+                    <div class="info-value">${je.reference_no || '-'}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">النوع</div>
+                    <div class="info-value">${je.reference_type || '-'}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">إجمالي مدين</div>
+                    <div class="info-value" style="color: #dc2626;">${parseFloat(je.total_debit || 0).toFixed(2)}</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">إجمالي دائن</div>
+                    <div class="info-value" style="color: #16a34a;">${parseFloat(je.total_credit || 0).toFixed(2)}</div>
+                </div>
+                <div class="info-item" style="grid-column: 1 / -1;">
+                    <div class="info-label">البيان</div>
+                    <div class="info-value">${je.description || '-'}</div>
+                </div>
+            </div>
+        `;
+        
+        // السطور
+        if (je.lines && je.lines.length) {
+            html += `
+                <h6 style="margin-top: 15px; color: #1e3c72;"><i class="bi bi-list-ul"></i> سطور القيد</h6>
+                <table class="lines-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 40px;">#</th>
+                            <th style="width: 90px;">الحساب</th>
+                            <th>البيان</th>
+                            <th style="width: 110px;" class="text-end">مدين</th>
+                            <th style="width: 110px;" class="text-end">دائن</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${je.lines.map(l => `
+                            <tr>
+                                <td>${l.line_no}</td>
+                                <td><code>${l.account_code}</code></td>
+                                <td>${l.description || '-'}</td>
+                                <td class="text-end" style="color: #dc2626;">${parseFloat(l.debit_amount || 0) > 0 ? parseFloat(l.debit_amount).toFixed(2) : '—'}</td>
+                                <td class="text-end" style="color: #16a34a;">${parseFloat(l.credit_amount || 0) > 0 ? parseFloat(l.credit_amount).toFixed(2) : '—'}</td>
+                            </tr>
+                        `).join('')}
+                        <tr style="background: #f0f9ff; font-weight: 700;">
+                            <td colspan="3" class="text-end">الإجمالي:</td>
+                            <td class="text-end" style="color: #dc2626;">${parseFloat(je.total_debit || 0).toFixed(2)}</td>
+                            <td class="text-end" style="color: #16a34a;">${parseFloat(je.total_credit || 0).toFixed(2)}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            `;
+        }
+        
+        // المصدر
+        if (src) {
+            html += `
+                <h6 style="margin-top: 15px; color: #1e3c72;"><i class="bi bi-link-45deg"></i> الحركة المصدر</h6>
+                <div class="info-grid">
+                    <div class="info-item">
+                        <div class="info-label">النوع</div>
+                        <div class="info-value">${src.source_type || '-'}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">الرقم</div>
+                        <div class="info-value">${src.ref_no || src.payment_no || src.receipt_no || src.expense_no || '-'}</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-label">المبلغ</div>
+                        <div class="info-value">${parseFloat(src.amount || 0).toFixed(2)}</div>
+                    </div>
+                </div>
+            `;
+        }
+        
+        body.innerHTML = html;
+    } catch (e) {
+        body.innerHTML = '<div class="alert alert-danger">خطأ في الاتصال</div>';
+        console.error(e);
+    }
+}
+
+// ============================================
+// Search
+// ============================================
+async function doSearch() {
+    const q = document.getElementById('search-input').value.trim();
+    if (!q) {
+        loadMovements(currentFilter);
+        return;
+    }
+    
+    try {
+        // جرب البحث برقم الحركة
+        const r = await fetch(`${API}/cash-boxes/link/search-by-reference?ref_no=${encodeURIComponent(q)}`).then(x => x.json());
+        
+        if (r.success && r.data && r.data.length) {
+            renderTable(r.data.map(x => ({
+                source_type: x.source_type,
+                ref_no: x.ref_no,
+                date: x.date,
+                amount: x.amount,
+                description: x.description,
+                journal_entry_id: x.journal_entry_id,
+                journal_no: x.journal ? x.journal.entry_no : null
+            })));
+        } else {
+            // جرب البحث برقم القيد
+            const jeNo = q.replace(/^JE-?/i, '');
+            if (/^\d+$/.test(jeNo)) {
+                openJournal(parseInt(jeNo));
+            } else {
+                document.getElementById('tbl-body').innerHTML = `
+                    <tr><td colspan="7"><div class="empty-state">
+                        <i class="bi bi-search"></i>
+                        لا نتائج للبحث: <strong>${q}</strong>
+                    </div></td></tr>
+                `;
+            }
+        }
+    } catch (e) {
+        console.error(e);
+    }
+}
+
+function clearSearch() {
+    document.getElementById('search-input').value = '';
+    loadMovements(currentFilter);
+}
+
+// ============================================
+// Filter by Type
+// ============================================
+function filterByType(el) {
+    document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+    el.classList.add('active');
+    currentFilter = el.getAttribute('data-filter');
+    loadMovements(currentFilter);
+}
+
+// ============================================
+// Init
+// ============================================
+(async () => {
+    await loadStats();
+    await loadMovements();
+})();
+</script>
+
+<script>
+// دالة تصدير Excel
+function exportToExcel(templateKey) {
+    if (!templateKey) {
+        alert('مفيش قالب تصدير');
+        return;
+    }
+    window.location.href = '/api/v1/export/excel/export/' + templateKey;
+}
+</script>
+
+</body>
+</html>

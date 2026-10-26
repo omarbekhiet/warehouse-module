@@ -1,0 +1,314 @@
+﻿<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>سياسات المخازن</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+* { font-family: Cairo, sans-serif; box-sizing: border-box; }
+body { background: #f5f6fa; padding: 12px; font-size: 13px; color: #1e293b; line-height: 1.5; }
+.container-box { max-width: 1300px; margin: 0 auto; }
+.page-head { background: white; border-radius: 10px; padding: 14px 18px; margin-bottom: 14px; box-shadow: 0 1px 6px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+.page-head h2 { margin: 0; font-size: 1.15rem; font-weight: 700; color: #1e3c72; display: flex; align-items: center; gap: 8px; }
+.page-head h2 i { color: #f59e0b; }
+.page-head .btn { font-size: 0.82rem; padding: 6px 14px; border-radius: 7px; }
+.tab-content { background: white; border-radius: 10px; padding: 20px; box-shadow: 0 1px 6px rgba(0,0,0,0.05); margin-bottom: 14px; }
+.form-label { font-size: 0.8rem; font-weight: 600; color: #475569; margin-bottom: 4px; }
+.form-control, .form-select { font-size: 0.85rem; padding: 7px 12px; border-radius: 6px; border-color: #e2e8f0; }
+.form-section-title { font-weight: 700; font-size: 0.9rem; color: #1e3c72; padding-bottom: 8px; margin-bottom: 12px; border-bottom: 1.5px solid #f1f5f9; display: flex; align-items: center; gap: 6px; }
+.form-section-title i { color: #f59e0b; }
+.form-switch .form-check-input { width: 2.5em; height: 1.3em; cursor: pointer; }
+.form-check-label { font-size: 0.85rem; cursor: pointer; }
+.form-check-input:checked { background-color: #f59e0b; border-color: #f59e0b; }
+.save-bar { background: white; border-radius: 10px; padding: 12px 18px; box-shadow: 0 -2px 10px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; position: sticky; bottom: 12px; z-index: 100; margin-top: 14px; }
+.save-bar .info { font-size: 0.82rem; color: #64748b; }
+.save-bar .info.dirty { color: #dc2626; font-weight: 600; }
+.toast-msg { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #16a34a; color: white; padding: 12px 24px; border-radius: 8px; font-weight: 600; box-shadow: 0 8px 24px rgba(0,0,0,0.15); z-index: 9999; display: none; align-items: center; gap: 8px; }
+.toast-msg.show { display: flex; }
+.toast-msg.error { background: #dc2626; }
+.setting-row { padding: 12px 0; border-bottom: 1px solid #f1f5f9; }
+.setting-row:last-child { border-bottom: none; }
+.setting-label { font-weight: 600; font-size: 0.88rem; color: #1e293b; margin-bottom: 2px; }
+.setting-desc { font-size: 0.75rem; color: #64748b; }
+</style>
+<script src="permissions.js"></script>
+</head>
+<body>
+<div class="container-box">
+<div class="page-head">
+<h2><i class="bi bi-box-seam"></i> سياسات المخازن</h2>
+<div class="d-flex gap-2">
+<a href="settings.html" class="btn btn-outline-info"><i class="bi bi-arrow-right"></i> الإعدادات</a>
+<a href="index.html" class="btn btn-outline-secondary"><i class="bi bi-house-fill"></i> الرئيسية</a>
+</div>
+</div>
+
+<div class="tab-content">
+<div class="form-section-title"><i class="bi bi-toggles"></i> خيارات التشغيل الأساسية</div>
+
+<div class="setting-row">
+<div class="row align-items-center">
+<div class="col-md-8">
+<div class="setting-label">السماح بالكمية السالبة</div>
+<div class="setting-desc">تفعيل هذا يسمح ببيع أو صرف أصناف برصيد سالب (غير موصى به)</div>
+</div>
+<div class="col-md-4 text-end">
+<div class="form-check form-switch d-inline-block">
+<input class="form-check-input" type="checkbox" id="f-allow_negative_stock" onchange="markDirty()">
+</div>
+</div>
+</div>
+</div>
+
+<div class="setting-row">
+<div class="row align-items-center">
+<div class="col-md-8">
+<div class="setting-label">متعدد المستودعات</div>
+<div class="setting-desc">تفعيل إدارة أكثر من مستودع في النظام</div>
+</div>
+<div class="col-md-4 text-end">
+<div class="form-check form-switch d-inline-block">
+<input class="form-check-input" type="checkbox" id="f-multi_warehouse" onchange="markDirty()">
+</div>
+</div>
+</div>
+</div>
+
+<div class="setting-row">
+<div class="row align-items-center">
+<div class="col-md-8">
+<div class="setting-label">متعدد الفروع</div>
+<div class="setting-desc">تفعيل إدارة الفروع (شركات متعددة)</div>
+</div>
+<div class="col-md-4 text-end">
+<div class="form-check form-switch d-inline-block">
+<input class="form-check-input" type="checkbox" id="f-multi_branch" onchange="markDirty()">
+</div>
+</div>
+</div>
+</div>
+
+<div class="form-section-title mt-4"><i class="bi bi-upc-scan"></i> الباركود والدفعات</div>
+
+<div class="setting-row">
+<div class="row align-items-center">
+<div class="col-md-8">
+<div class="setting-label">تفعيل الباركود</div>
+<div class="setting-desc">تمكين استخدام الباركود في الأصناف والحركات</div>
+</div>
+<div class="col-md-4 text-end">
+<div class="form-check form-switch d-inline-block">
+<input class="form-check-input" type="checkbox" id="f-barcode_enabled" onchange="markDirty()">
+</div>
+</div>
+</div>
+</div>
+
+<div class="setting-row">
+<div class="row align-items-center">
+<div class="col-md-8">
+<div class="setting-label">تتبع الدفعات (Batches)</div>
+<div class="setting-desc">تتبع الأصناف على مستوى الدفعة / الباركود الفرعي</div>
+</div>
+<div class="col-md-4 text-end">
+<div class="form-check form-switch d-inline-block">
+<input class="form-check-input" type="checkbox" id="f-batch_tracking" onchange="markDirty()">
+</div>
+</div>
+</div>
+</div>
+
+<div class="setting-row">
+<div class="row align-items-center">
+<div class="col-md-8">
+<div class="setting-label">تتبع تواريخ الصلاحية</div>
+<div class="setting-desc">تسجيل تاريخ الصلاحية للأصناف (يفعّل تلقائيًا مع تتبع الدفعات)</div>
+</div>
+<div class="col-md-4 text-end">
+<div class="form-check form-switch d-inline-block">
+<input class="form-check-input" type="checkbox" id="f-expiry_tracking" onchange="markDirty()">
+</div>
+</div>
+</div>
+</div>
+
+<div class="form-section-title mt-4"><i class="bi bi-gear"></i> سياسات التشغيل</div>
+
+<div class="setting-row">
+<div class="row align-items-center">
+<div class="col-md-8">
+<div class="setting-label">التحويل التلقائي بين المستودعات</div>
+<div class="setting-desc">إنشاء تحويل تلقائي عند البيع إذا كان الصنف في مستودع آخر</div>
+</div>
+<div class="col-md-4 text-end">
+<div class="form-check form-switch d-inline-block">
+<input class="form-check-input" type="checkbox" id="f-auto_transfer" onchange="markDirty()">
+</div>
+</div>
+</div>
+</div>
+
+<div class="setting-row">
+<div class="row align-items-center">
+<div class="col-md-8">
+<div class="setting-label">تنبيهات انخفاض المخزون</div>
+<div class="setting-desc">إظهار تنبيهات عند وصول الصنف للحد الأدنى</div>
+</div>
+<div class="col-md-4 text-end">
+<div class="form-check form-switch d-inline-block">
+<input class="form-check-input" type="checkbox" id="f-low_stock_alerts" onchange="markDirty()">
+</div>
+</div>
+</div>
+</div>
+
+<div class="setting-row">
+<div class="row align-items-center">
+<div class="col-md-8">
+<div class="setting-label">السماح بالتسويات المباشرة</div>
+<div class="setting-desc">السماح بتسجيل عجز / زيادة مباشرة بدون عملية جرد</div>
+</div>
+<div class="col-md-4 text-end">
+<div class="form-check form-switch d-inline-block">
+<input class="form-check-input" type="checkbox" id="f-allow_direct_adjustments" onchange="markDirty()">
+</div>
+</div>
+</div>
+</div>
+
+<div class="setting-row">
+<div class="row align-items-center">
+<div class="col-md-8">
+<div class="setting-label">إلزامية سبب التسوية</div>
+<div class="setting-desc">يجب تحديد سبب عند تسجيل أي تسوية مخزنية</div>
+</div>
+<div class="col-md-4 text-end">
+<div class="form-check form-switch d-inline-block">
+<input class="form-check-input" type="checkbox" id="f-require_adjustment_reason" onchange="markDirty()">
+</div>
+</div>
+</div>
+</div>
+
+<div class="form-section-title mt-4"><i class="bi bi-sliders"></i> القيم الافتراضية</div>
+
+<div class="row g-3">
+<div class="col-md-4">
+<label class="form-label">الحد الأدنى الافتراضي للطلب</label>
+<input type="number" class="form-control" id="f-default_reorder_level" min="0" oninput="markDirty()">
+<small class="text-muted">يطبّق على الأصناف الجديدة</small>
+</div>
+<div class="col-md-4">
+<label class="form-label">طريقة التكلفة الافتراضية</label>
+<select class="form-select" id="f-default_cost_method" onchange="markDirty()">
+<option value="WEIGHTED_AVERAGE">المتوسط المرجح</option>
+<option value="FIFO">الوارد أولاً (FIFO)</option>
+<option value="LIFO">الوارد أخيراً (LIFO)</option>
+<option value="STANDARD">التكلفة المعيارية</option>
+</select>
+</div>
+<div class="col-md-4">
+<label class="form-label">المستودع الافتراضي</label>
+<select class="form-select" id="f-default_warehouse_id" onchange="markDirty()">
+<option value="">— بدون افتراضي —</option>
+</select>
+<small class="text-muted">يُستخدم في العمليات الجديدة</small>
+</div>
+</div>
+
+</div>
+
+<div class="save-bar">
+<div class="info" id="save-info"><i class="bi bi-info-circle"></i> لا توجد تغييرات غير محفوظة</div>
+<button class="btn btn-primary" onclick="save()" id="btn-save"><i class="bi bi-check-circle-fill"></i> حفظ التغييرات</button>
+</div>
+</div>
+
+<div class="toast-msg" id="toast"><i class="bi bi-check-circle-fill"></i> <span id="toast-text">تم الحفظ</span></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+const API = "http://localhost:5000/api/v1";
+let isDirty = false;
+
+async function loadWarehouses() {
+    try {
+        const r = await fetch(API + "/warehouses/").then(x => x.json());
+        const list = r.data || [];
+        const sel = document.getElementById("f-default_warehouse_id");
+        list.forEach(w => {
+            const opt = document.createElement("option");
+            opt.value = w.id;
+            opt.textContent = w.code + " - " + w.name_ar;
+            sel.appendChild(opt);
+        });
+    } catch (e) { console.error(e); }
+}
+
+async function load() {
+    try {
+        const r = await fetch(API + "/settings/inventory").then(x => x.json());
+        if (!r.success) return;
+        for (const [k, v] of Object.entries(r.data)) {
+            const el = document.getElementById("f-" + k);
+            if (!el) continue;
+            if (el.type === "checkbox") el.checked = !!v;
+            else el.value = v ?? "";
+        }
+        isDirty = false;
+        updateSaveBar();
+    } catch (e) { console.error(e); }
+}
+
+function markDirty() { isDirty = true; updateSaveBar(); }
+
+function updateSaveBar() {
+    const info = document.getElementById("save-info");
+    if (isDirty) {
+        info.innerHTML = "<i class=\"bi bi-exclamation-circle\"></i> هناك تغييرات غير محفوظة";
+        info.className = "info dirty";
+    } else {
+        info.innerHTML = "<i class=\"bi bi-info-circle\"></i> لا توجد تغييرات غير محفوظة";
+        info.className = "info";
+    }
+}
+
+async function save() {
+    const btn = document.getElementById("btn-save");
+    btn.disabled = true;
+    btn.innerHTML = "جاري الحفظ...";
+    const data = {};
+    document.querySelectorAll("[id^=\"f-\"]").forEach(el => {
+        const k = el.id.replace("f-", "");
+        data[k] = el.type === "checkbox" ? el.checked : el.value;
+    });
+    try {
+        const r = await fetch(API + "/settings/inventory", {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data)
+        }).then(x => x.json());
+        if (r.success) {
+            showToast("تم حفظ سياسات المخازن");
+            isDirty = false;
+            updateSaveBar();
+        } else showToast(r.message || "خطأ", true);
+    } catch (e) { showToast("خطأ في الاتصال", true); }
+    finally { btn.disabled = false; btn.innerHTML = "حفظ التغييرات"; }
+}
+
+function showToast(msg, err = false) {
+    const t = document.getElementById("toast");
+    document.getElementById("toast-text").textContent = msg;
+    t.className = "toast-msg show" + (err ? " error" : "");
+    setTimeout(() => t.className = "toast-msg", 3000);
+}
+
+window.addEventListener("beforeunload", e => { if (isDirty) { e.preventDefault(); e.returnValue = ""; } });
+
+(async () => { await loadWarehouses(); await load(); })();
+</script>
+</body>
+</html>

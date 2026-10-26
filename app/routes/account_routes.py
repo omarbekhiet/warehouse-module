@@ -1,6 +1,6 @@
-﻿from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify
 from app.database import db
-from app.utils import json_safe
+from app.utils import json_safe, enrich_with_user
 
 account_bp = Blueprint('accounts', __name__)
 
@@ -22,12 +22,14 @@ def list_accounts():
         cond.append('is_active = ?'); vals.append(int(request.args.get('is_active')))
     where = ' AND '.join(cond)
     rows = db.query(f"SELECT * FROM accounts WHERE {where} ORDER BY code", vals)
+    rows = enrich_with_user(rows)
     return jsonify({'success': True, 'data': json_safe(rows)})
 
 
 @account_bp.route('/leaf', methods=['GET'])
 def list_leaf():
     rows = db.query("SELECT * FROM accounts WHERE is_leaf=1 AND is_active=1 ORDER BY code")
+    rows = enrich_with_user(rows)
     return jsonify({'success': True, 'data': json_safe(rows)})
 
 
@@ -124,4 +126,5 @@ def delete_account(aid):
 @account_bp.route('/types', methods=['GET'])
 def list_types():
     rows = db.query("SELECT * FROM account_types ORDER BY code")
+    rows = enrich_with_user(rows)
     return jsonify({'success': True, 'data': json_safe(rows)})

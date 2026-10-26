@@ -1,6 +1,6 @@
-﻿from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify
 from app.database import db
-from app.utils import json_safe
+from app.utils import json_safe, enrich_with_user
 
 warehouse_bp = Blueprint('warehouses', __name__)
 
@@ -8,6 +8,7 @@ warehouse_bp = Blueprint('warehouses', __name__)
 @warehouse_bp.route('/', methods=['GET'])
 def list_warehouses():
     rows = db.query("SELECT * FROM warehouses ORDER BY code")
+    rows = enrich_with_user(rows)
     return jsonify({'success': True, 'data': json_safe(rows)})
 
 

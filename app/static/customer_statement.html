@@ -1,0 +1,643 @@
+﻿<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>كشف حساب عميل</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+* { font-family: 'Cairo','Segoe UI',Tahoma,sans-serif; box-sizing: border-box; }
+body { background: #f5f6fa; padding: 12px; font-size: 12.5px; color: #1e293b; line-height: 1.4; }
+.container-box { max-width: 1300px; margin: 0 auto; }
+
+/* ============ Page Header ============ */
+.page-head {
+    background: white;
+    border-radius: 8px;
+    padding: 10px 15px;
+    margin-bottom: 10px;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.04);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+.page-head h2 {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #1e3c72;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.page-head h2 i { color: #4facfe; }
+.page-head .btn { font-size: 0.78rem; padding: 5px 12px; }
+
+/* ============ Filters ============ */
+.filters-box {
+    background: white;
+    border-radius: 8px;
+    padding: 10px 15px;
+    margin-bottom: 10px;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.04);
+}
+.filters-box .form-label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: #64748b;
+    margin-bottom: 3px;
+}
+.filters-box .form-control,
+.filters-box .form-select {
+    font-size: 0.82rem;
+    padding: 5px 10px;
+    border-radius: 6px;
+}
+
+/* ============ Cards ============ */
+.card-box {
+    background: white;
+    border-radius: 8px;
+    padding: 12px 15px;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.04);
+    margin-bottom: 10px;
+}
+
+/* ============ Customer Header - Single Line ============ */
+.customer-head {
+    display: flex;
+    align-items: center;
+    flex-wrap: nowrap;
+    gap: 10px;
+    padding: 4px 0;
+    overflow-x: auto;
+}
+.customer-head > * { flex-shrink: 0; }
+.customer-head::-webkit-scrollbar { height: 4px; }
+.customer-head::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+
+.customer-avatar {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #4facfe, #00f2fe);
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+}
+.customer-name-block {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding-left: 15px;
+    border-left: 2px solid #e2e8f0;
+}
+.customer-name {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #1e3c72;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    white-space: nowrap;
+}
+.customer-name i { color: #4facfe; font-size: 0.9rem; }
+
+.info-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 10px;
+    background: #f8fafc;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    color: #475569;
+    white-space: nowrap;
+    border: 1px solid #e2e8f0;
+}
+.info-chip i { color: #94a3b8; font-size: 0.72rem; }
+.info-chip strong { color: #1e3c72; }
+
+/* Spacer يدفع العناصر الأخيرة لليسار */
+.customer-head .spacer { flex: 1 1 auto; min-width: 0; flex-shrink: 1 !important; }
+
+/* ============ KPI Inline Row ============ */
+.kpi-inline {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    margin-bottom: 10px;
+}
+.kpi-item {
+    flex: 1;
+    min-width: 200px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 15px;
+    border-radius: 10px;
+    color: white;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+.kpi-item .kpi-icon {
+    width: 42px;
+    height: 42px;
+    border-radius: 10px;
+    background: rgba(255,255,255,0.25);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.2rem;
+    flex-shrink: 0;
+}
+.kpi-item .kpi-body {
+    flex: 1;
+    min-width: 0;
+}
+.kpi-item .kpi-label {
+    font-size: 0.72rem;
+    opacity: 0.9;
+    margin-bottom: 1px;
+    font-weight: 500;
+}
+.kpi-item .kpi-value {
+    font-size: 1.15rem;
+    font-weight: 700;
+    line-height: 1.15;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+.kpi-item .kpi-sub {
+    font-size: 0.68rem;
+    opacity: 0.85;
+}
+.kpi-item .icon-bg {
+    position: absolute;
+    left: -12px;
+    bottom: -20px;
+    font-size: 4rem;
+    opacity: 0.12;
+}
+
+/* ============ Tables ============ */
+.table-card {
+    background: white;
+    border-radius: 8px;
+    padding: 12px 15px;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.04);
+    margin-bottom: 10px;
+}
+.table-card h6 {
+    margin: 0 0 8px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: #1e3c72;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding-bottom: 6px;
+    border-bottom: 1.5px solid #f1f5f9;
+}
+.table-card h6 i { color: #4facfe; }
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.78rem;
+    margin: 0;
+}
+table thead th {
+    background: #f8fafc;
+    color: #475569;
+    font-weight: 600;
+    padding: 6px 8px;
+    text-align: right;
+    font-size: 0.72rem;
+    border-bottom: 1.5px solid #e2e8f0;
+    white-space: nowrap;
+}
+table tbody td {
+    padding: 6px 8px;
+    border-bottom: 1px solid #f1f5f9;
+    vertical-align: middle;
+}
+table tbody tr:last-child td { border-bottom: none; }
+table tbody tr:hover { background: #fafbfc; }
+table code {
+    background: #f1f5f9;
+    padding: 1px 5px;
+    border-radius: 3px;
+    font-size: 0.72rem;
+    color: #475569;
+}
+
+/* Txn rows */
+.txn-row { border-right: 3px solid transparent; }
+.txn-INVOICE { border-right-color: #4facfe; }
+.txn-RECEIPT { border-right-color: #43e97b; }
+
+.badge-type {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    padding: 2px 7px;
+    border-radius: 4px;
+    font-size: 0.68rem;
+    font-weight: 600;
+}
+.badge-INVOICE { background: #e0f2fe; color: #0369a1; }
+.badge-RECEIPT { background: #dcfce7; color: #15803d; }
+
+.total-row {
+    background: #f0f9ff !important;
+    font-weight: 700;
+    border-top: 2px solid #4facfe;
+}
+.total-row td { padding: 8px !important; }
+
+.amount-debit { color: #dc2626; font-weight: 600; }
+.amount-credit { color: #16a34a; font-weight: 600; }
+.amount-balance { color: #1e3c72; font-weight: 700; }
+
+.empty-state {
+    text-align: center;
+    padding: 30px;
+    color: #94a3b8;
+}
+.empty-state i { font-size: 2.5rem; opacity: 0.3; display: block; margin-bottom: 8px; }
+
+/* Print */
+@media print {
+    .no-print { display: none !important; }
+    body { background: white; padding: 0; font-size: 10.5px; }
+    .card-box, .table-card { box-shadow: none; border: 1px solid #e2e8f0; }
+    .kpi-item { border: 1px solid #cbd5e1; }
+    table { font-size: 9.5px; }
+    .kpi-item, .customer-head { page-break-inside: avoid; }
+    .customer-head { flex-wrap: wrap; overflow-x: visible; }
+}
+
+@media (max-width: 768px) {
+    .kpi-item { min-width: 100%; }
+    .customer-head { flex-wrap: wrap; overflow-x: visible; }
+    .customer-name-block { border-left: none; padding-left: 0; }
+}
+</style>
+<script src="permissions.js"></script>
+</head>
+<body>
+
+<div class="container-box">
+
+    <!-- Header -->
+    <div class="page-head no-print">
+        <h2><i class="bi bi-file-earmark-text-fill"></i> كشف حساب عميل</h2>
+        <div class="d-flex gap-2">
+            <button class="btn btn-outline-primary" onclick="window.print()">
+                <i class="bi bi-printer-fill"></i> طباعة
+            </button>
+            <button class="btn btn-success" onclick="printStatement()"><i class="bi bi-file-earmark-pdf"></i> طباعة A4</button>
+            <a href="customer_balances.html" class="btn btn-outline-info">
+                <i class="bi bi-arrow-right"></i> الأرصدة
+            </a>
+            <button class="btn btn-sm btn-outline-success" onclick="exportToExcel('customer_statement')" title="تصدير Excel">
+                <i class="bi bi-file-earmark-excel"></i> Excel
+            </button>
+            <a href="index.html" class="btn btn-outline-secondary">
+                <i class="bi bi-house-fill"></i> الرئيسية
+            </a>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="filters-box no-print">
+        <div class="row g-2 align-items-end">
+            <div class="col-md-4">
+                <label class="form-label">العميل</label>
+                <select class="form-select" id="f-customer" onchange="loadStatement()">
+                    <option value="">— اختر عميل —</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">من تاريخ</label>
+                <input type="date" class="form-control" id="f-from" onchange="loadStatement()">
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">إلى تاريخ</label>
+                <input type="date" class="form-control" id="f-to" onchange="loadStatement()">
+            </div>
+            <div class="col-md-2">
+                <button class="btn btn-primary w-100" onclick="loadStatement()" style="font-size:0.82rem;">
+                    <i class="bi bi-search"></i> بحث
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="content">
+        <div class="card-box">
+            <div class="empty-state">
+                <i class="bi bi-person-lines-fill"></i>
+                اختر عميلاً لعرض كشف حسابه
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+const API = '/api/v1';
+let customersList = [];
+
+async function loadCustomers() {
+    const r = await fetch(`${API}/customers/`).then(x => x.json());
+    customersList = r.data || [];
+    
+    document.getElementById('f-customer').innerHTML = 
+        '<option value="">— اختر عميل —</option>' +
+        customersList.map(c => `<option value="${c.id}">${c.code} - ${c.name_ar}</option>`).join('');
+    
+    const params = new URLSearchParams(window.location.search);
+    const id = params.get('id');
+    if (id) {
+        document.getElementById('f-customer').value = id;
+        loadStatement();
+    }
+}
+
+async function loadStatement() {
+    const customerId = document.getElementById('f-customer').value;
+    if (!customerId) {
+        document.getElementById('content').innerHTML = `
+            <div class="card-box">
+                <div class="empty-state">
+                    <i class="bi bi-person-lines-fill"></i>
+                    اختر عميلاً لعرض كشف حسابه
+                </div>
+            </div>`;
+        return;
+    }
+    
+    const from = document.getElementById('f-from').value;
+    const to = document.getElementById('f-to').value;
+    let url = `${API}/customers/statement/${customerId}?`;
+    if (from) url += `date_from=${from}&`;
+    if (to) url += `date_to=${to}`;
+    
+    try {
+        const r = await fetch(url).then(x => x.json());
+        if (!r.success) { alert('خطأ'); return; }
+        renderStatement(r.data);
+    } catch(e) { console.error(e); }
+}
+
+function renderStatement(data) {
+    const c = data.customer;
+    const t = data.totals;
+    const invoices = data.invoices || [];
+    const receipts = data.receipts || [];
+    const openInv = data.open_invoices || [];
+    
+    const fromVal = document.getElementById('f-from').value || 'من البداية';
+    const toVal = document.getElementById('f-to').value || 'حتى اليوم';
+    const today = new Date().toLocaleDateString('ar-EG');
+    
+    // Merge transactions
+    const transactions = [
+        ...invoices.map(i => ({
+            type: 'INVOICE', date: i.invoice_date, ref: i.invoice_no,
+            desc: 'فاتورة بيع', debit: parseFloat(i.total_amount), credit: 0
+        })),
+        ...receipts.map(r => ({
+            type: 'RECEIPT', date: r.receipt_date, ref: r.receipt_no,
+            desc: 'تحصيل', debit: 0, credit: parseFloat(r.amount)
+        }))
+    ].sort((a, b) => new Date(a.date) - new Date(b.date));
+    
+    let running = 0;
+    transactions.forEach(tx => {
+        running += tx.debit - tx.credit;
+        tx.balance = running;
+    });
+    
+    // Format numbers
+    const fmt = (n) => parseFloat(n).toLocaleString('ar-EG', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+    
+    let html = `
+        <!-- Customer Info - Single Line -->
+        <div class="card-box">
+            <div class="customer-head">
+                <div class="customer-avatar">
+                    <i class="bi bi-person-fill"></i>
+                </div>
+                <div class="customer-name-block">
+                    <div class="customer-name">
+                        <i class="bi bi-person-badge-fill"></i>
+                        ${c.name_ar}
+                    </div>
+                </div>
+                <span class="info-chip">
+                    <i class="bi bi-upc-scan"></i>
+                    <strong>${c.code}</strong>
+                </span>
+                ${c.phone ? `
+                    <span class="info-chip">
+                        <i class="bi bi-telephone-fill"></i>
+                        ${c.phone}
+                    </span>
+                ` : ''}
+                ${c.email ? `
+                    <span class="info-chip">
+                        <i class="bi bi-envelope-fill"></i>
+                        ${c.email}
+                    </span>
+                ` : ''}
+                ${c.tax_number ? `
+                    <span class="info-chip">
+                        <i class="bi bi-file-earmark-text-fill"></i>
+                        ${c.tax_number}
+                    </span>
+                ` : ''}
+                <span class="spacer"></span>
+                <span class="info-chip">
+                    <i class="bi bi-calendar3"></i>
+                    ${fromVal} — ${toVal}
+                </span>
+                <span class="info-chip">
+                    <i class="bi bi-clock-history"></i>
+                    ${today}
+                </span>
+            </div>
+        </div>
+        
+        <!-- KPI Inline -->
+        <div class="kpi-inline">
+            <div class="kpi-item" style="background: linear-gradient(135deg, #4facfe, #00f2fe);">
+                <i class="bi bi-receipt icon-bg"></i>
+                <div class="kpi-icon"><i class="bi bi-receipt"></i></div>
+                <div class="kpi-body">
+                    <div class="kpi-label">إجمالي الفواتير</div>
+                    <div class="kpi-value">${fmt(t.total_invoiced)}</div>
+                    <div class="kpi-sub">${invoices.length} فاتورة</div>
+                </div>
+            </div>
+            <div class="kpi-item" style="background: linear-gradient(135deg, #43e97b, #38f9d7);">
+                <i class="bi bi-cash-stack icon-bg"></i>
+                <div class="kpi-icon"><i class="bi bi-cash-stack"></i></div>
+                <div class="kpi-body">
+                    <div class="kpi-label">إجمالي التحصيلات</div>
+                    <div class="kpi-value">${fmt(t.total_paid)}</div>
+                    <div class="kpi-sub">${receipts.length} إيصال</div>
+                </div>
+            </div>
+            <div class="kpi-item" style="background: linear-gradient(135deg, #fa709a, #fee140);">
+                <i class="bi bi-wallet2 icon-bg"></i>
+                <div class="kpi-icon"><i class="bi bi-wallet2"></i></div>
+                <div class="kpi-body">
+                    <div class="kpi-label">الرصيد الحالي</div>
+                    <div class="kpi-value">${fmt(t.balance)}</div>
+                    <div class="kpi-sub">${t.balance > 0 ? 'مديونية' : 'مسدد'}</div>
+                </div>
+            </div>
+            <div class="kpi-item" style="background: linear-gradient(135deg, #a18cd1, #fbc2eb);">
+                <i class="bi bi-exclamation-circle icon-bg"></i>
+                <div class="kpi-icon"><i class="bi bi-exclamation-circle"></i></div>
+                <div class="kpi-body">
+                    <div class="kpi-label">فواتير مفتوحة</div>
+                    <div class="kpi-value">${openInv.length}</div>
+                    <div class="kpi-sub">تحتاج تحصيل</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Transactions -->
+        <div class="table-card">
+            <h6>
+                <i class="bi bi-list-ul"></i>
+                حركات الحساب
+                <span class="badge bg-secondary" style="font-size:0.65rem;">${transactions.length}</span>
+            </h6>
+            <table>
+                <thead>
+                    <tr>
+                        <th style="width:90px;">التاريخ</th>
+                        <th style="width:130px;">المرجع</th>
+                        <th>البيان</th>
+                        <th style="width:100px;" class="text-end">مدين</th>
+                        <th style="width:100px;" class="text-end">دائن</th>
+                        <th style="width:110px;" class="text-end">الرصيد</th>
+                    </tr>
+                </thead>
+                <tbody>
+    `;
+    
+    if (transactions.length) {
+        transactions.forEach(tx => {
+            const badge = tx.type === 'INVOICE' 
+                ? '<span class="badge-type badge-INVOICE"><i class="bi bi-receipt"></i> فاتورة</span>' 
+                : '<span class="badge-type badge-RECEIPT"><i class="bi bi-cash-stack"></i> تحصيل</span>';
+            html += `
+                <tr class="txn-row txn-${tx.type}">
+                    <td>${tx.date}</td>
+                    <td><code>${tx.ref}</code></td>
+                    <td>${badge} <span style="color:#64748b;">${tx.desc}</span></td>
+                    <td class="text-end amount-debit">${tx.debit > 0 ? fmt(tx.debit) : '—'}</td>
+                    <td class="text-end amount-credit">${tx.credit > 0 ? fmt(tx.credit) : '—'}</td>
+                    <td class="text-end amount-balance">${fmt(tx.balance)}</td>
+                </tr>
+            `;
+        });
+        
+        html += `
+            <tr class="total-row">
+                <td colspan="3" class="text-end"><i class="bi bi-calculator-fill"></i> الإجمالي:</td>
+                <td class="text-end amount-debit">${fmt(t.total_invoiced)}</td>
+                <td class="text-end amount-credit">${fmt(t.total_paid)}</td>
+                <td class="text-end amount-balance">${fmt(t.balance)}</td>
+            </tr>
+        `;
+    } else {
+        html += `<tr><td colspan="6" class="text-center text-muted py-4">لا توجد حركات في هذه الفترة</td></tr>`;
+    }
+    
+    html += `</tbody></table></div>`;
+    
+    // Open Invoices
+    if (openInv.length) {
+        html += `
+            <div class="table-card">
+                <h6>
+                    <i class="bi bi-exclamation-triangle-fill text-warning"></i>
+                    الفواتير المفتوحة (غير محصلة)
+                    <span class="badge bg-warning text-dark" style="font-size:0.65rem;">${openInv.length}</span>
+                </h6>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>الفاتورة</th>
+                            <th>التاريخ</th>
+                            <th class="text-end">الإجمالي</th>
+                            <th class="text-end">محصّل</th>
+                            <th class="text-end">المتبقي</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+        `;
+        openInv.forEach(inv => {
+            html += `
+                <tr>
+                    <td><code>${inv.invoice_no}</code></td>
+                    <td>${inv.invoice_date}</td>
+                    <td class="text-end">${fmt(inv.total_amount)}</td>
+                    <td class="text-end amount-credit">${fmt(inv.paid_amount)}</td>
+                    <td class="text-end amount-debit"><strong>${fmt(inv.remaining)}</strong></td>
+                </tr>
+            `;
+        });
+        html += `</tbody></table></div>`;
+    }
+    
+    document.getElementById('content').innerHTML = html;
+}
+
+(async () => { await loadCustomers(); })();
+
+
+// فتح شاشة طباعة كشف الحساب
+function printStatement() {
+    const customerId = document.getElementById('f-customer').value;
+    if (!customerId) { alert('اختر عميلاً أولاً'); return; }
+
+    const from = document.getElementById('f-from').value;
+    const to = document.getElementById('f-to').value;
+
+    let url = 'print_statement.html?type=customer&id=' + customerId;
+    if (from) url += '&date_from=' + from;
+    if (to) url += '&date_to=' + to;
+
+    window.open(url, '_blank');
+}</script>
+
+<script>
+// دالة تصدير Excel
+function exportToExcel(templateKey) {
+    if (!templateKey) {
+        alert('مفيش قالب تصدير');
+        return;
+    }
+    window.location.href = '/api/v1/export/excel/export/' + templateKey;
+}
+</script>
+
+</body>
+</html>

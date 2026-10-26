@@ -1,0 +1,432 @@
+﻿<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>مقارنة أسعار الموردين</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+* { font-family: 'Cairo','Segoe UI',Tahoma,sans-serif; box-sizing: border-box; }
+body { background: #f5f6fa; padding: 12px; font-size: 13px; color: #1e293b; line-height: 1.5; }
+.container-box { max-width: 1400px; margin: 0 auto; }
+
+.page-head {
+    background: white; border-radius: 10px; padding: 14px 18px;
+    margin-bottom: 14px; box-shadow: 0 1px 6px rgba(0,0,0,0.05);
+    display: flex; justify-content: space-between; align-items: center;
+    flex-wrap: wrap; gap: 10px;
+}
+.page-head h2 {
+    margin: 0; font-size: 1.15rem; font-weight: 700; color: #1e3c72;
+    display: flex; align-items: center; gap: 8px;
+}
+.page-head h2 i { color: #4facfe; }
+.page-head .btn { font-size: 0.82rem; padding: 6px 14px; border-radius: 7px; }
+
+.filters-box {
+    background: white; border-radius: 10px; padding: 14px 18px;
+    margin-bottom: 14px; box-shadow: 0 1px 6px rgba(0,0,0,0.05);
+}
+.filters-box .form-label { font-size: 0.75rem; font-weight: 600; color: #64748b; margin-bottom: 4px; }
+.filters-box .form-control, .filters-box .form-select { font-size: 0.85rem; padding: 6px 10px; border-radius: 6px; }
+
+.kpi-inline { display: flex; flex-wrap: nowrap; gap: 12px; margin-bottom: 14px; overflow-x: auto; }
+.kpi-item {
+    flex: 1 1 0; min-width: 220px; display: flex; align-items: center; gap: 14px;
+    padding: 16px 18px; border-radius: 12px; color: white;
+    position: relative; overflow: hidden; box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+    min-height: 90px;
+}
+.kpi-item .kpi-icon {
+    width: 50px; height: 50px; border-radius: 12px;
+    background: rgba(255,255,255,0.25);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.5rem; flex-shrink: 0;
+}
+.kpi-item .kpi-body { flex: 1; min-width: 0; }
+.kpi-item .kpi-label { font-size: 0.78rem; opacity: 0.92; margin-bottom: 2px; font-weight: 500; }
+.kpi-item .kpi-value { font-size: 1.5rem; font-weight: 700; line-height: 1.1; }
+.kpi-item .kpi-sub { font-size: 0.7rem; opacity: 0.85; margin-top: 2px; }
+.kpi-item .icon-bg { position: absolute; left: -15px; bottom: -25px; font-size: 5rem; opacity: 0.13; }
+
+.table-card {
+    background: white; border-radius: 10px; padding: 16px 18px;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.05); margin-bottom: 14px;
+}
+.table-card h6 {
+    margin: 0 0 12px; font-size: 0.95rem; font-weight: 700; color: #1e3c72;
+    display: flex; align-items: center; gap: 8px;
+    padding-bottom: 10px; border-bottom: 1.5px solid #f1f5f9;
+}
+.table-card h6 i { color: #4facfe; }
+.table-card h6 .badge {
+    background: #e0f2fe; color: #0369a1;
+    font-size: 0.72rem; padding: 3px 9px; border-radius: 20px; font-weight: 700;
+}
+
+table { width: 100%; border-collapse: collapse; font-size: 0.82rem; margin: 0; }
+table thead th {
+    background: #f8fafc; color: #475569; font-weight: 600;
+    padding: 9px 10px; text-align: right; font-size: 0.76rem;
+    border-bottom: 1.5px solid #e2e8f0; white-space: nowrap;
+}
+table tbody td {
+    padding: 9px 10px; border-bottom: 1px solid #f1f5f9; vertical-align: middle;
+}
+table tbody tr:last-child td { border-bottom: none; }
+table tbody tr:hover { background: #fafbfc; }
+table code {
+    background: #f1f5f9; padding: 2px 6px; border-radius: 4px;
+    font-size: 0.76rem; color: #475569;
+}
+
+.price-min { color: #16a34a; font-weight: 700; }
+.price-max { color: #dc2626; font-weight: 600; }
+.price-avg { color: #475569; }
+.badge-best {
+    background: #dcfce7; color: #15803d;
+    padding: 2px 8px; border-radius: 4px;
+    font-size: 0.7rem; font-weight: 700;
+}
+.badge-worst {
+    background: #fee2e2; color: #991b1b;
+    padding: 2px 8px; border-radius: 4px;
+    font-size: 0.7rem; font-weight: 700;
+}
+.savings-badge {
+    background: #fef3c7; color: #92400e;
+    padding: 2px 8px; border-radius: 4px;
+    font-size: 0.7rem; font-weight: 700;
+}
+
+.item-header {
+    background: #eff6ff;
+    padding: 10px 14px;
+    border-radius: 8px;
+    margin: 12px 0 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    border-right: 4px solid #4facfe;
+}
+.item-header .item-name {
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: #1e3c72;
+}
+.item-header .item-stats {
+    display: flex;
+    gap: 12px;
+    font-size: 0.75rem;
+    color: #64748b;
+}
+.item-header .item-stats .stat-value {
+    font-weight: 700;
+    color: #1e3c72;
+}
+
+.table-empty { text-align: center; padding: 40px 20px; color: #94a3b8; }
+.table-empty i { font-size: 3rem; opacity: 0.35; display: block; margin-bottom: 10px; }
+
+@media print {
+    .no-print { display: none !important; }
+    body { background: white; padding: 0; }
+    .kpi-item { border: 1px solid #cbd5e1; }
+}
+@media (max-width: 900px) { .kpi-inline { overflow-x: auto; } .kpi-item { min-width: 220px; } }
+</style>
+<script src="permissions.js"></script>
+</head>
+<body>
+
+<div class="container-box">
+
+    <!-- Page Header -->
+    <div class="page-head no-print">
+        <h2><i class="bi bi-bar-chart-line-fill"></i> مقارنة أسعار الموردين</h2>
+        <div class="d-flex gap-2">
+            <a href="reports.html" class="btn btn-outline-info">
+                <i class="bi bi-arrow-right"></i> التقارير
+            </a>
+            <button class="btn btn-sm btn-outline-success" onclick="exportToExcel('price_comparison')" title="تصدير Excel">
+                <i class="bi bi-file-earmark-excel"></i> Excel
+            </button>
+            <a href="index.html" class="btn btn-outline-secondary">
+                <i class="bi bi-house-fill"></i> الرئيسية
+            </a>
+            <button class="btn btn-outline-primary" onclick="window.print()">
+                <i class="bi bi-printer-fill"></i> طباعة
+            </button>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="filters-box no-print">
+        <div class="row g-2 align-items-end">
+            <div class="col-md-3">
+                <label class="form-label">الصنف</label>
+                <select class="form-select" id="flt-item" onchange="load()">
+                    <option value="">— كل الأصناف —</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">المورد</label>
+                <select class="form-select" id="flt-supplier" onchange="load()">
+                    <option value="">— كل الموردين —</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">من تاريخ</label>
+                <input type="date" class="form-control" id="flt-from" onchange="load()">
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">إلى تاريخ</label>
+                <input type="date" class="form-control" id="flt-to" onchange="load()">
+            </div>
+            <div class="col-md-2">
+                <button class="btn btn-primary w-100" onclick="load()">
+                    <i class="bi bi-search"></i> بحث
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- KPIs -->
+    <div class="kpi-inline">
+        <div class="kpi-item" style="background: linear-gradient(135deg, #4facfe, #00f2fe);">
+            <i class="bi bi-box-seam icon-bg"></i>
+            <div class="kpi-icon"><i class="bi bi-box-seam-fill"></i></div>
+            <div class="kpi-body">
+                <div class="kpi-label">عدد الأصناف</div>
+                <div class="kpi-value" id="s-items">—</div>
+                <div class="kpi-sub">أصناف تم شراؤها</div>
+            </div>
+        </div>
+        <div class="kpi-item" style="background: linear-gradient(135deg, #43e97b, #38f9d7);">
+            <i class="bi bi-piggy-bank icon-bg"></i>
+            <div class="kpi-icon"><i class="bi bi-piggy-bank-fill"></i></div>
+            <div class="kpi-body">
+                <div class="kpi-label">إجمالي التوفير المحتمل</div>
+                <div class="kpi-value" id="s-savings">—</div>
+                <div class="kpi-sub">إذا اشتريت من الأرخص</div>
+            </div>
+        </div>
+        <div class="kpi-item" style="background: linear-gradient(135deg, #a18cd1, #fbc2eb);">
+            <i class="bi bi-trophy icon-bg"></i>
+            <div class="kpi-icon"><i class="bi bi-trophy-fill"></i></div>
+            <div class="kpi-body">
+                <div class="kpi-label">أرخص مورد شامل</div>
+                <div class="kpi-value" id="s-best-supplier" style="font-size:1rem;">—</div>
+                <div class="kpi-sub">الأكثر توفيرًا</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Results -->
+    <div id="content">
+        <div class="table-card">
+            <div class="table-empty">
+                <i class="bi bi-hourglass-split"></i>
+                جاري التحميل...
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+const API = 'http://localhost:5000/api/v1';
+
+
+async function loadLists() {
+    try {
+        const [itemsR, suppR] = await Promise.all([
+            fetch(`${API}/items/`).then(x => x.json()),
+            fetch(`${API}/suppliers/`).then(x => x.json())
+        ]);
+
+        const items = itemsR.data || [];
+        const suppliers = suppR.data || [];
+
+        document.getElementById('flt-item').innerHTML =
+            '<option value="">— كل الأصناف —</option>' +
+            items.map(i => `<option value="${i.id}">${i.code} - ${i.name_ar}</option>`).join('');
+
+        document.getElementById('flt-supplier').innerHTML =
+            '<option value="">— كل الموردين —</option>' +
+            suppliers.map(s => `<option value="${s.id}">${s.code} - ${s.name_ar}</option>`).join('');
+    } catch (e) {
+        console.error(e);
+    }
+}
+
+
+async function load() {
+    const itemId = document.getElementById('flt-item').value;
+    const supplierId = document.getElementById('flt-supplier').value;
+    const from = document.getElementById('flt-from').value;
+    const to = document.getElementById('flt-to').value;
+
+    let url = `${API}/reports/price-comparison?`;
+    if (itemId) url += `item_id=${itemId}&`;
+    if (supplierId) url += `supplier_id=${supplierId}&`;
+    if (from) url += `date_from=${from}&`;
+    if (to) url += `date_to=${to}&`;
+
+    document.getElementById('content').innerHTML = `
+        <div class="table-card">
+            <div class="table-empty">
+                <i class="bi bi-hourglass-split"></i>
+                جاري التحميل...
+            </div>
+        </div>`;
+
+    try {
+        const r = await fetch(url).then(x => x.json());
+        if (!r.success) {
+            document.getElementById('content').innerHTML = `
+                <div class="table-card">
+                    <div class="table-empty">
+                        <i class="bi bi-exclamation-triangle"></i>
+                        ${r.message || 'خطأ في التحميل'}
+                    </div>
+                </div>`;
+            return;
+        }
+        render(r.data, r.totals);
+    } catch (e) {
+        console.error(e);
+    }
+}
+
+
+function render(data, totals) {
+    const items = data || [];
+
+    // KPIs
+    document.getElementById('s-items').textContent = totals.items_count || 0;
+    document.getElementById('s-savings').textContent = fmtNum(totals.total_savings || 0);
+
+    // أرخص مورد شامل
+    const supplierScores = {};
+    items.forEach(item => {
+        if (item.best_supplier) {
+            const sid = item.best_supplier.supplier_id;
+            const name = item.best_supplier.supplier_name;
+            supplierScores[sid] = supplierScores[sid] || { name: name, wins: 0 };
+            supplierScores[sid].wins++;
+        }
+    });
+
+    const bestSupplier = Object.values(supplierScores).sort((a, b) => b.wins - a.wins)[0];
+    document.getElementById('s-best-supplier').textContent =
+        bestSupplier ? `${bestSupplier.name} (${bestSupplier.wins} صنف)` : '—';
+
+    if (!items.length) {
+        document.getElementById('content').innerHTML = `
+            <div class="table-card">
+                <div class="table-empty">
+                    <i class="bi bi-inbox"></i>
+                    لا توجد بيانات مطابقة للفلاتر
+                </div>
+            </div>`;
+        return;
+    }
+
+    let html = '';
+
+    items.forEach(item => {
+        const suppliers = item.suppliers || [];
+        const best = item.best_supplier || {};
+        const savings = item.price_diff || 0;
+        const savingsPct = item.price_diff_pct || 0;
+
+        html += `
+        <div class="table-card">
+            <div class="item-header">
+                <div class="item-name">
+                    <i class="bi bi-box"></i>
+                    <code>${item.item_code}</code>
+                    ${item.item_name}
+                </div>
+                <div class="item-stats">
+                    <span>عدد الموردين: <span class="stat-value">${suppliers.length}</span></span>
+                    <span>الأرخص: <span class="stat-value" style="color:#16a34a;">${best.supplier_name || '-'} (${fmtNum(best.min_price || 0)})</span></span>
+                    ${savings > 0 ? `<span class="savings-badge">توفير محتمل: ${fmtNum(savings)} (${savingsPct.toFixed(1)}%)</span>` : ''}
+                </div>
+            </div>
+
+            <table>
+                <thead>
+                    <tr>
+                        <th>المورد</th>
+                        <th class="text-end">عدد الفواتير</th>
+                        <th class="text-end">إجمالي الكمية</th>
+                        <th class="text-end">أقل سعر</th>
+                        <th class="text-end">متوسط السعر</th>
+                        <th class="text-end">أعلى سعر</th>
+                        <th class="text-end">التقييم</th>
+                    </tr>
+                </thead>
+                <tbody>`;
+
+        suppliers.forEach((s, idx) => {
+            const isBest = idx === 0;
+            const isWorst = idx === suppliers.length - 1 && suppliers.length > 1;
+            const badge = isBest
+                ? '<span class="badge-best"><i class="bi bi-trophy-fill"></i> الأرخص</span>'
+                : (isWorst ? '<span class="badge-worst"><i class="bi bi-exclamation-triangle"></i> الأغلى</span>' : '');
+
+            html += `
+                <tr>
+                    <td>
+                        <code>${s.supplier_code}</code>
+                        <strong>${s.supplier_name}</strong>
+                    </td>
+                    <td class="text-end">${s.invoice_count}</td>
+                    <td class="text-end">${fmtNum(s.total_qty)}</td>
+                    <td class="text-end price-min">${fmtNum(s.min_price)}</td>
+                    <td class="text-end price-avg">${fmtNum(s.avg_price)}</td>
+                    <td class="text-end price-max">${fmtNum(s.max_price)}</td>
+                    <td class="text-end">${badge}</td>
+                </tr>`;
+        });
+
+        html += `</tbody></table></div>`;
+    });
+
+    document.getElementById('content').innerHTML = html;
+}
+
+
+function fmtNum(n) {
+    return parseFloat(n || 0).toLocaleString('ar-EG', {
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    });
+}
+
+
+(async () => {
+    await loadLists();
+    await load();
+})();
+</script>
+
+<script>
+// دالة تصدير Excel
+function exportToExcel(templateKey) {
+    if (!templateKey) {
+        alert('مفيش قالب تصدير');
+        return;
+    }
+    window.location.href = '/api/v1/export/excel/export/' + templateKey;
+}
+</script>
+
+</body>
+</html>

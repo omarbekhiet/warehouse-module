@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>تصنيفات المصروفات</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+body { font-family: 'Cairo','Segoe UI',Tahoma,sans-serif; background: #f5f6fa; padding: 20px; font-size: 13px; }
+.container-box { max-width: 1200px; margin: 0 auto; }
+h2 { color: #1e3c72; font-weight: 700; }
+.card-box { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 1px 10px rgba(0,0,0,0.05); }
+</style>
+<script src="permissions.js"></script>
+
+<style>
+.upload-area {
+    border: 2px dashed #cbd5e1;
+    border-radius: 12px;
+    padding: 30px 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: #f8fafc;
+}
+.upload-area:hover {
+    border-color: #3b82f6;
+    background: #eff6ff;
+}
+.upload-area.dragover {
+    border-color: #10b981;
+    background: #ecfdf5;
+    transform: scale(1.02);
+}
+.upload-area i {
+    font-size: 2.5rem;
+    color: #94a3b8;
+    margin-bottom: 8px;
+}
+.upload-area .title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #475569;
+    margin-bottom: 4px;
+}
+.upload-area .sub {
+    font-size: 0.78rem;
+    color: #94a3b8;
+}
+.import-stats {
+    display: flex;
+    gap: 10px;
+    margin: 10px 0;
+}
+.import-stats .item {
+    flex: 1;
+    background: #f8fafc;
+    padding: 10px;
+    border-radius: 8px;
+    text-align: center;
+    border: 1px solid #e2e8f0;
+}
+.import-stats .num {
+    font-size: 1.4rem;
+    font-weight: 800;
+}
+.import-stats .lbl {
+    font-size: 0.72rem;
+    color: #64748b;
+}
+.preview-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.78rem;
+    margin-top: 8px;
+}
+.preview-table th {
+    background: #f1f5f9;
+    padding: 6px 8px;
+    text-align: right;
+    font-weight: 700;
+    color: #475569;
+    border-bottom: 1px solid #cbd5e1;
+}
+.preview-table td {
+    padding: 5px 8px;
+    border-bottom: 1px solid #f1f5f9;
+}
+</style>
+
+</head>
+<body>
+<div class="container-box">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="bi bi-tags text-warning"></i> تصنيفات المصروفات</h2>
+        <div>
+            <a href="expenses.html" class="btn btn-outline-danger"><i class="bi bi-receipt-cutoff"></i> المصروفات</a>
+            <button class="btn btn-sm btn-outline-success" onclick="exportToExcel('expense_categories')" title="تصدير Excel">
+                <i class="bi bi-file-earmark-excel"></i> Excel
+            </button>
+            <button class="btn btn-sm btn-outline-primary" onclick="openImportModal('expense_categories')" title="استيراد Excel">
+                <i class="bi bi-file-earmark-arrow-up"></i> استيراد
+            </button>
+            <a href="index.html" class="btn btn-outline-secondary"><i class="bi bi-house"></i> الرئيسية</a>
+            <button class="btn btn-warning" onclick="openAdd()"><i class="bi bi-plus-circle"></i> تصنيف جديد</button>
+        </div>
+    </div>
+
+    <div class="card-box">
+        <table class="table table-hover">
+            <thead class="table-light">
+                <tr>
+                    <th>الكود</th>
+                    <th>الاسم</th>
+                    <th>الحساب المحاسبي</th>
+                    <th>الحالة</th>
+                    <th>إجراءات</th>
+                </tr>
+            </thead>
+            <tbody id="tbl"><tr><td colspan="5" class="text-center text-muted">جاري التحميل...</td></tr></tbody>
+        </table>
+    </div>
+</div>
+
+<div class="modal fade" id="catModal" tabindex="-1">
+<div class="modal-dialog">
+<div class="modal-content">
+<div class="modal-header bg-warning">
+    <h5 class="modal-title" id="modalTitle"><i class="bi bi-plus-circle"></i> تصنيف جديد</h5>
+    <button class="btn-close" data-bs-dismiss="modal"></button>
+</div>
+<div class="modal-body">
+    <div class="row g-3">
+        <div class="col-md-4">
+            <label class="form-label">الكود</label>
+            <input class="form-control" id="f-code" placeholder="تلقائي">
+        </div>
+        <div class="col-md-8">
+            <label class="form-label">الاسم بالعربي *</label>
+            <input class="form-control" id="f-name_ar">
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">الاسم بالإنجليزي</label>
+            <input class="form-control" id="f-name_en">
+        </div>
+        <div class="col-md-6">
+            <label class="form-label">الحساب المحاسبي *</label>
+            <select class="form-select" id="f-account_code"></select>
+        </div>
+        <div class="col-12">
+            <label class="form-label">ملاحظات</label>
+            <textarea class="form-control" id="f-notes" rows="2"></textarea>
+        </div>
+    </div>
+</div>
+<div class="modal-footer">
+    <button class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+    <button class="btn btn-warning" onclick="save()"><i class="bi bi-check-circle"></i> حفظ</button>
+</div>
+</div></div></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+const API = '/api/v1';
+const catModal = new bootstrap.Modal(document.getElementById('catModal'));
+let categories = [];
+let leaves = [];
+let editId = null;
+
+async function loadRefs() {
+    const a = await fetch(`${API}/cash-boxes/accounts/leaves`).then(r => r.json());
+    leaves = a.data || [];
+    document.getElementById('f-account_code').innerHTML = 
+        '<option value="">— اختر حساب —</option>' +
+        leaves.map(x => `<option value="${x.code}">${x.code} - ${x.name_ar}</option>`).join('');
+}
+
+async function load() {
+    const r = await fetch(`${API}/expenses/categories/`).then(x => x.json());
+    categories = r.data || [];
+    document.getElementById('tbl').innerHTML = categories.length ? categories.map(c => `
+        <tr>
+            <td><code>${c.code}</code></td>
+            <td><strong>${c.name_ar}</strong></td>
+            <td><code>${c.account_code}</code> <small>${c.account_name || ''}</small></td>
+            <td><span class="badge bg-${c.is_active ? 'success' : 'secondary'}">${c.is_active ? 'نشط' : 'موقوف'}</span></td>
+            <td>
+                <button class="btn btn-sm btn-outline-warning" onclick="openEdit(${c.id})"><i class="bi bi-pencil"></i></button>
+                <button class="btn btn-sm btn-outline-danger" onclick="del(${c.id})"><i class="bi bi-trash"></i></button>
+            </td>
+        </tr>
+    `).join('') : '<tr><td colspan="5" class="text-center text-muted">لا توجد تصنيفات</td></tr>';
+}
+
+function openAdd() {
+    editId = null;
+    ['f-code', 'f-name_ar', 'f-name_en', 'f-notes'].forEach(id => document.getElementById(id).value = '');
+    document.getElementById('f-account_code').value = '';
+    document.getElementById('modalTitle').innerHTML = '<i class="bi bi-plus-circle"></i> تصنيف جديد';
+    catModal.show();
+}
+
+function openEdit(id) {
+    editId = id;
+    const c = categories.find(x => x.id === id);
+    if (!c) return;
+    document.getElementById('f-code').value = c.code;
+    document.getElementById('f-name_ar').value = c.name_ar;
+    document.getElementById('f-name_en').value = c.name_en || '';
+    document.getElementById('f-account_code').value = c.account_code;
+    document.getElementById('f-notes').value = c.notes || '';
+    document.getElementById('modalTitle').innerHTML = '<i class="bi bi-pencil"></i> تعديل تصنيف';
+    catModal.show();
+}
+
+async function save() {
+    const data = {
+        code: document.getElementById('f-code').value.trim(),
+        name_ar: document.getElementById('f-name_ar').value.trim(),
+        name_en: document.getElementById('f-name_en').value.trim(),
+        account_code: document.getElementById('f-account_code').value,
+        notes: document.getElementById('f-notes').value.trim()
+    };
+    
+    if (!data.name_ar) { alert('الاسم مطلوب'); return; }
+    if (!data.account_code) { alert('الحساب مطلوب'); return; }
+    
+    const url = editId ? `${API}/expenses/categories/${editId}` : `${API}/expenses/categories/`;
+    const method = editId ? 'PUT' : 'POST';
+    
+    const r = await fetch(url, {
+        method, headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify(data)
+    }).then(x => x.json());
+    
+    if (r.success) {
+        catModal.hide();
+        load();
+    } else alert(r.message || 'خطأ');
+}
+
+async function del(id) {
+    if (!confirm('حذف التصنيف؟')) return;
+    const r = await fetch(`${API}/expenses/categories/${id}`, {method: 'DELETE'}).then(x => x.json());
+    if (r.success) load();
+    else alert(r.message || 'خطأ');
+}
+
+(async () => {
+    await loadRefs();
+    await load();
+})();
+</script>
+
+<script>
+// دالة تصدير Excel
+function exportToExcel(templateKey) {
+    if (!templateKey) {
+        alert('مفيش قالب تصدير');
+        return;
+    }
+    window.location.href = '/api/v1/export/excel/export/' + templateKey;
+}
+</script>
+
+
+<!-- Import Modal -->
+<div class="modal fade" id="importExcelModal" tabindex="-1">
+<div class="modal-dialog modal-lg">
+<div class="modal-content">
+<div class="modal-header bg-primary text-white">
+    <h5 class="modal-title"><i class="bi bi-file-earmark-arrow-up"></i> استيراد من Excel</h5>
+    <button class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+</div>
+<div class="modal-body">
+    <!-- Step 1: Instructions -->
+    <div id="import-step-1">
+        <div class="alert alert-info">
+            <i class="bi bi-info-circle"></i>
+            <strong>الخطوات:</strong>
+            <ol class="mb-0 mt-2" style="padding-right: 20px;">
+                <li>حمّل القالب الفارغ</li>
+                <li>املأ البيانات</li>
+                <li>ارفع الملف</li>
+                <li>اضغط "معاينة" للتأكد</li>
+                <li>اضغط "استيراد" للحفظ</li>
+            </ol>
+        </div>
+        
+        <button class="btn btn-outline-primary w-100 mb-3" onclick="downloadImportTemplate()">
+            <i class="bi bi-download"></i> تحميل القالب الفارغ
+        </button>
+        
+        <div class="upload-area" id="import-upload-area" onclick="document.getElementById('import-file-input').click()">
+            <i class="bi bi-cloud-upload"></i>
+            <div class="title">اسحب الملف هنا أو اضغط للاختيار</div>
+            <div class="sub">ملفات Excel فقط (.xlsx, .xls)</div>
+        </div>
+        <input type="file" id="import-file-input" accept=".xlsx,.xls" style="display:none" onchange="handleImportFile(this.files[0])">
+        
+        <div id="import-file-info" style="display:none;" class="mt-3">
+            <div class="alert alert-success py-2 mb-0">
+                <i class="bi bi-file-earmark-excel"></i>
+                <span id="import-file-name"></span>
+                <button class="btn btn-sm btn-outline-danger float-end" onclick="clearImportFile()">
+                    <i class="bi bi-x"></i>
+                </button>
+            </div>
+            <div class="d-flex gap-2 mt-2">
+                <button class="btn btn-outline-info flex-fill" onclick="previewImport()">
+                    <i class="bi bi-eye"></i> معاينة
+                </button>
+                <button class="btn btn-primary flex-fill" onclick="confirmImport()">
+                    <i class="bi bi-upload"></i> استيراد
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Result -->
+    <div id="import-step-2" style="display:none;"></div>
+</div>
+<div class="modal-footer">
+    <button class="btn btn-secondary" data-bs-dismiss="modal">إغلاق</button>
+</div>
+</div>
+</div>
+</div>
+
+
+<script>
+// متغيرات
+let currentImportFile = null;
+let currentImportTemplate = null;
+
+// فتح نافذة الاستيراد
+function openImportModal(templateKey) {
+    currentImportTemplate = templateKey;
+    currentImportFile = null;
+    
+    document.getElementById('import-step-1').style.display = 'block';
+    document.getElementById('import-step-2').style.display = 'none';
+    document.getElementById('import-file-info').style.display = 'none';
+    document.getElementById('import-file-input').value = '';
+    
+    const modal = new bootstrap.Modal(document.getElementById('importExcelModal'));
+    modal.show();
+}
+
+// تحميل القالب
+function downloadImportTemplate() {
+    if (!currentImportTemplate) return;
+    window.location.href = '/api/v1/export/excel/import-template/' + currentImportTemplate;
+}
+
+// معالجة الملف
+function handleImportFile(file) {
+    if (!file) return;
+    if (!file.name.match(/\.(xlsx|xls)$/i)) {
+        alert('الملف يجب أن يكون Excel');
+        return;
+    }
+    currentImportFile = file;
+    document.getElementById('import-file-name').textContent = 
+        file.name + ' (' + (file.size / 1024).toFixed(1) + ' KB)';
+    document.getElementById('import-file-info').style.display = 'block';
+}
+
+// مسح الملف
+function clearImportFile() {
+    currentImportFile = null;
+    document.getElementById('import-file-input').value = '';
+    document.getElementById('import-file-info').style.display = 'none';
+}
+
+// معاينة
+async function previewImport() {
+    if (!currentImportFile) { alert('اختر ملف'); return; }
+    
+    const formData = new FormData();
+    formData.append('file', currentImportFile);
+    
+    const resultEl = document.getElementById('import-step-2');
+    resultEl.innerHTML = '<div class="alert alert-info"><i class="bi bi-hourglass-split"></i> جاري المعاينة...</div>';
+    resultEl.style.display = 'block';
+    document.getElementById('import-step-1').style.display = 'none';
+    
+    try {
+        const r = await fetch('/api/v1/export/excel/preview/' + currentImportTemplate, {
+            method: 'POST',
+            body: formData
+        }).then(x => x.json());
+        
+        if (r.success) {
+            const d = r.data;
+            let html = '<h6><i class="bi bi-eye text-info"></i> معاينة</h6>';
+            html += '<div class="import-stats">';
+            html += '<div class="item"><div class="num text-info">' + d.total_rows + '</div><div class="lbl">صفوف صحيحة</div></div>';
+            html += '<div class="item"><div class="num text-danger">' + ((d.errors || []).length) + '</div><div class="lbl">أخطاء</div></div>';
+            html += '</div>';
+            
+            if (d.preview && d.preview.length) {
+                html += '<div class="mt-3"><strong>عينة من البيانات:</strong>';
+                html += '<table class="preview-table"><thead><tr>';
+                Object.keys(d.preview[0].data).forEach(k => html += '<th>' + k + '</th>');
+                html += '</tr></thead><tbody>';
+                d.preview.forEach(row => {
+                    html += '<tr>';
+                    Object.values(row.data).forEach(v => html += '<td>' + (v || '-') + '</td>');
+                    html += '</tr>';
+                });
+                html += '</tbody></table></div>';
+            }
+            
+            if (d.errors && d.errors.length) {
+                html += '<div class="alert alert-warning mt-3 py-2 mb-0" style="font-size:0.82rem;">';
+                html += '<strong>أخطاء:</strong><ul class="mb-0">';
+                d.errors.forEach(e => html += '<li>' + e + '</li>');
+                html += '</ul></div>';
+            }
+            
+            html += '<div class="d-flex gap-2 mt-3">';
+            html += '<button class="btn btn-secondary flex-fill" onclick="backToImport()"><i class="bi bi-arrow-right"></i> رجوع</button>';
+            html += '<button class="btn btn-primary flex-fill" onclick="confirmImport()"><i class="bi bi-upload"></i> تأكيد الاستيراد</button>';
+            html += '</div>';
+            
+            resultEl.innerHTML = html;
+        } else {
+            resultEl.innerHTML = '<div class="alert alert-danger"><i class="bi bi-x-circle"></i> ' + r.message + '</div>' +
+                '<button class="btn btn-secondary" onclick="backToImport()"><i class="bi bi-arrow-right"></i> رجوع</button>';
+        }
+    } catch (e) {
+        resultEl.innerHTML = '<div class="alert alert-danger">خطأ في الاتصال</div>' +
+            '<button class="btn btn-secondary" onclick="backToImport()"><i class="bi bi-arrow-right"></i> رجوع</button>';
+    }
+}
+
+// رجوع
+function backToImport() {
+    document.getElementById('import-step-1').style.display = 'block';
+    document.getElementById('import-step-2').style.display = 'none';
+}
+
+// استيراد
+async function confirmImport() {
+    if (!currentImportFile) { alert('اختر ملف'); return; }
+    
+    const formData = new FormData();
+    formData.append('file', currentImportFile);
+    
+    const resultEl = document.getElementById('import-step-2');
+    resultEl.innerHTML = '<div class="alert alert-info"><i class="bi bi-hourglass-split"></i> جاري الاستيراد...</div>';
+    resultEl.style.display = 'block';
+    document.getElementById('import-step-1').style.display = 'none';
+    
+    try {
+        const r = await fetch('/api/v1/export/excel/import/' + currentImportTemplate, {
+            method: 'POST',
+            body: formData
+        }).then(x => x.json());
+        
+        if (r.success) {
+            const d = r.data;
+            let html = '<div class="alert alert-success"><h5><i class="bi bi-check-circle-fill"></i> تم الاستيراد بنجاح</h5></div>';
+            html += '<div class="import-stats">';
+            html += '<div class="item"><div class="num text-success">' + (d.imported || 0) + '</div><div class="lbl">جديد</div></div>';
+            html += '<div class="item"><div class="num text-primary">' + (d.updated || 0) + '</div><div class="lbl">محدث</div></div>';
+            html += '<div class="item"><div class="num">' + (d.total || 0) + '</div><div class="lbl">الإجمالي</div></div>';
+            html += '</div>';
+            
+            if (d.errors && d.errors.length) {
+                html += '<div class="alert alert-warning py-2 mt-3 mb-0" style="font-size:0.82rem;">';
+                html += '<strong>أخطاء (' + d.errors.length + '):</strong><ul class="mb-0">';
+                d.errors.forEach(e => html += '<li>' + e + '</li>');
+                html += '</ul></div>';
+            }
+            
+            html += '<div class="d-flex gap-2 mt-3">';
+            html += '<button class="btn btn-success flex-fill" onclick="location.reload()"><i class="bi bi-arrow-clockwise"></i> تحديث الصفحة</button>';
+            html += '</div>';
+            
+            resultEl.innerHTML = html;
+        } else {
+            resultEl.innerHTML = '<div class="alert alert-danger"><i class="bi bi-x-circle"></i> ' + r.message + '</div>' +
+                '<button class="btn btn-secondary" onclick="backToImport()"><i class="bi bi-arrow-right"></i> رجوع</button>';
+        }
+    } catch (e) {
+        resultEl.innerHTML = '<div class="alert alert-danger">خطأ في الاتصال</div>' +
+            '<button class="btn btn-secondary" onclick="backToImport()"><i class="bi bi-arrow-right"></i> رجوع</button>';
+    }
+}
+
+// Drag & Drop
+document.addEventListener('DOMContentLoaded', function() {
+    const area = document.getElementById('import-upload-area');
+    if (!area) return;
+    
+    area.addEventListener('dragover', e => { e.preventDefault(); area.classList.add('dragover'); });
+    area.addEventListener('dragleave', () => area.classList.remove('dragover'));
+    area.addEventListener('drop', e => {
+        e.preventDefault();
+        area.classList.remove('dragover');
+        if (e.dataTransfer.files.length) handleImportFile(e.dataTransfer.files[0]);
+    });
+});
+</script>
+
+</body>
+</html>

@@ -1,0 +1,672 @@
+﻿<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>المستخدمين والصلاحيات</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+* { font-family: Cairo, sans-serif; box-sizing: border-box; }
+body { background: #f5f6fa; padding: 12px; font-size: 13px; color: #1e293b; line-height: 1.5; }
+.container-box { max-width: 1300px; margin: 0 auto; }
+.page-head { background: white; border-radius: 10px; padding: 14px 18px; margin-bottom: 14px; box-shadow: 0 1px 6px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+.page-head h2 { margin: 0; font-size: 1.15rem; font-weight: 700; color: #1e3c72; display: flex; align-items: center; gap: 8px; }
+.page-head h2 i { color: #ef4444; }
+.page-head .btn { font-size: 0.82rem; padding: 6px 14px; border-radius: 7px; }
+.nav-tabs { background: white; border-radius: 10px 10px 0 0; padding: 8px 14px 0; border-bottom: none; }
+.nav-tabs .nav-link { font-size: 0.85rem; font-weight: 600; color: #64748b; border: none; border-bottom: 3px solid transparent; padding: 8px 14px; }
+.nav-tabs .nav-link.active { color: #1e3c72; background: transparent; border-bottom-color: #ef4444; }
+.tab-content { background: white; border-radius: 0 0 10px 10px; padding: 20px; box-shadow: 0 1px 6px rgba(0,0,0,0.05); margin-bottom: 14px; }
+.table-card { background: white; border-radius: 10px; padding: 16px 18px; box-shadow: 0 1px 6px rgba(0,0,0,0.05); margin-bottom: 14px; }
+table { width: 100%; border-collapse: collapse; font-size: 0.82rem; margin: 0; }
+table thead th { background: #f8fafc; color: #475569; font-weight: 600; padding: 9px 10px; text-align: right; font-size: 0.76rem; border-bottom: 1.5px solid #e2e8f0; }
+table tbody td { padding: 9px 10px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
+table tbody tr:hover { background: #fafbfc; }
+.badge-role { display: inline-block; padding: 3px 9px; border-radius: 4px; font-size: 0.72rem; font-weight: 700; }
+.btn-sm { font-size: 0.75rem; padding: 4px 8px; }
+.empty-state { text-align: center; padding: 40px 20px; color: #94a3b8; }
+.empty-state i { font-size: 3rem; opacity: 0.35; display: block; margin-bottom: 10px; }
+.badge-perms { font-size: 0.7rem; padding: 2px 8px; border-radius: 10px; font-weight: 600; }
+.badge-perms.custom { background: #fef3c7; color: #92400e; }
+.badge-perms.role { background: #e0f2fe; color: #0369a1; }
+.badge-branch { font-size: 0.7rem; padding: 2px 8px; border-radius: 10px; font-weight: 600; }
+.badge-branch.all { background: #dcfce7; color: #15803d; }
+.badge-branch.specific { background: #dbeafe; color: #1e40af; }
+
+/* Permissions Box */
+.perms-box { max-height: 400px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 12px; background: #fafbfc; }
+.perm-group { margin-bottom: 12px; background: white; border-radius: 6px; padding: 8px 10px; border: 1px solid #e2e8f0; }
+.perm-group-title { font-weight: 700; color: #1e3c72; font-size: 0.85rem; margin-bottom: 8px; padding-bottom: 5px; border-bottom: 1.5px solid #f1f5f9; display: flex; align-items: center; justify-content: space-between; }
+.perm-group-title .group-count { font-size: 0.7rem; background: #e2e8f0; color: #475569; padding: 2px 8px; border-radius: 10px; font-weight: 600; margin-right: 8px; }
+.perm-group-title input[type="checkbox"] { margin-right: 6px; cursor: pointer; }
+.perm-item { display: flex; align-items: center; gap: 8px; padding: 4px 6px; border-radius: 4px; }
+.perm-item:hover { background: #f1f5f9; }
+.perm-item input[type="checkbox"] { cursor: pointer; width: 16px; height: 16px; flex-shrink: 0; }
+.perm-item label { cursor: pointer; font-size: 0.78rem; margin: 0; flex: 1; display: flex; align-items: center; gap: 6px; }
+.perm-item label code { background: #f1f5f9; padding: 1px 5px; border-radius: 3px; font-size: 0.7rem; color: #64748b; }
+.perms-actions { display: flex; gap: 8px; margin-bottom: 8px; flex-wrap: wrap; }
+.perms-actions .btn { font-size: 0.75rem; padding: 4px 10px; }
+
+/* Branch Box */
+.branch-box { border: 1px solid #e2e8f0; border-radius: 8px; padding: 10px 12px; background: #fafbfc; }
+.branch-list { max-height: 200px; overflow-y: auto; margin-top: 8px; }
+.branch-item { display: flex; align-items: center; gap: 8px; padding: 4px 6px; border-radius: 4px; }
+.branch-item:hover { background: #f1f5f9; }
+.branch-item input[type="checkbox"] { cursor: pointer; width: 16px; height: 16px; }
+.branch-item label { cursor: pointer; font-size: 0.8rem; margin: 0; }
+
+/* Roles Grid */
+.roles-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; }
+.role-card { border-radius: 10px; padding: 16px; border-right: 5px solid #64748b; background: white; box-shadow: 0 1px 6px rgba(0,0,0,0.05); transition: transform 0.15s; position: relative; }
+.role-card:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+.role-card .role-code { font-weight: 800; font-size: 0.95rem; margin-bottom: 4px; }
+.role-card .role-name { font-size: 0.85rem; color: #475569; margin-bottom: 8px; }
+.role-card .role-perms-count { font-size: 0.75rem; color: #94a3b8; margin-bottom: 10px; }
+.role-card .role-actions { display: flex; gap: 6px; }
+.role-card .role-actions .btn { font-size: 0.72rem; padding: 3px 8px; }
+.role-card .system-badge { position: absolute; top: 8px; left: 8px; font-size: 0.65rem; background: #e0f2fe; color: #0369a1; padding: 2px 6px; border-radius: 8px; font-weight: 600; }
+
+/* Role Modal */
+#roleModal .modal-dialog { max-width: 1200px !important; }
+#roleModal .perms-box { max-height: 500px !important; padding: 14px 16px !important; }
+#role-perms-box .perm-items-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px 8px; }
+#role-perms-box .perm-item label { font-size: 0.88rem !important; }
+#role-perms-box .perm-item label code { font-size: 0.72rem !important; }
+#role-perms-box .perm-group-title { font-size: 0.95rem !important; }
+#roleModal .form-control, #roleModal .form-select { font-size: 0.95rem !important; padding: 8px 12px !important; }
+#roleModal input[type="color"] { height: 42px !important; cursor: pointer; }
+@media (max-width: 768px) {
+    #role-perms-box .perm-items-grid { grid-template-columns: 1fr; }
+}
+</style>
+<script src="permissions.js"></script>
+</head>
+<body>
+<div class="container-box">
+<div class="page-head">
+<h2><i class="bi bi-person-badge"></i> المستخدمين والصلاحيات</h2>
+<div class="d-flex gap-2">
+<a href="settings.html" class="btn btn-outline-info"><i class="bi bi-arrow-right"></i> الإعدادات</a>
+<a href="index.html" class="btn btn-outline-secondary"><i class="bi bi-house-fill"></i> الرئيسية</a>
+</div>
+</div>
+
+<ul class="nav nav-tabs" role="tablist">
+<li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-users"><i class="bi bi-people"></i> المستخدمين</button></li>
+<li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-roles"><i class="bi bi-shield-lock"></i> الأدوار</button></li>
+</ul>
+
+<div class="tab-content">
+    <div class="tab-pane fade show active" id="tab-users">
+        <div class="table-card">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="mb-0"><i class="bi bi-people-fill"></i> قائمة المستخدمين</h5>
+                <button class="btn btn-primary btn-sm" onclick="addUser()"><i class="bi bi-plus-circle"></i> مستخدم جديد</button>
+            </div>
+            <table>
+                <thead>
+                    <tr>
+                        <th>الاسم</th><th>اسم المستخدم</th><th>الدور</th><th>الصلاحيات</th><th>الفروع</th><th>الحالة</th><th>إجراءات</th>
+                    </tr>
+                </thead>
+                <tbody id="users-body">
+                    <tr><td colspan="7"><div class="empty-state"><i class="bi bi-inbox"></i> جاري التحميل...</div></td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="tab-pane fade" id="tab-roles">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="mb-0"><i class="bi bi-shield-lock-fill"></i> الأدوار</h5>
+            <button class="btn btn-primary btn-sm" onclick="addRole()"><i class="bi bi-plus-circle"></i> دور جديد</button>
+        </div>
+        <div class="roles-grid" id="roles-grid">
+            <div class="text-center text-muted p-4">جاري التحميل...</div>
+        </div>
+    </div>
+</div>
+</div>
+
+<!-- User Modal -->
+<div class="modal fade" id="userModal" tabindex="-1">
+<div class="modal-dialog modal-lg">
+<div class="modal-content">
+<div class="modal-header bg-primary text-white">
+<h5 class="modal-title" id="user-modal-title"><i class="bi bi-plus-circle"></i> مستخدم جديد</h5>
+<button class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+</div>
+<div class="modal-body">
+<div class="row g-3 mb-3">
+<div class="col-md-6"><label class="form-label">اسم المستخدم *</label><input class="form-control" id="f-username"></div>
+<div class="col-md-6"><label class="form-label">الاسم الكامل</label><input class="form-control" id="f-full_name"></div>
+<div class="col-md-6"><label class="form-label">البريد الإلكتروني</label><input type="email" class="form-control" id="f-email"></div>
+<div class="col-md-6"><label class="form-label">الدور *</label><select class="form-select" id="f-role"></select></div>
+<div class="col-md-6"><label class="form-label">كلمة السر <span id="pwd-hint" class="text-muted" style="font-size:0.75rem;"></span></label><input type="password" class="form-control" id="f-password"></div>
+<div class="col-md-6" id="active-group" style="display:none;"><label class="form-label">الحالة</label><select class="form-select" id="f-is_active"><option value="1">نشط</option><option value="0">معطل</option></select></div>
+</div>
+<div class="mb-3">
+<label class="form-label mb-2"><i class="bi bi-building"></i> الفروع (المستودعات)</label>
+<div class="branch-box">
+<label style="font-size:0.82rem; cursor:pointer;"><input type="checkbox" id="f-all-branches" onchange="toggleAllBranches()"> <strong>كل الفروع</strong></label>
+<div class="branch-list" id="branches-list"><div class="text-center text-muted p-3">جاري التحميل...</div></div>
+</div>
+</div>
+<div class="mb-2">
+<div class="d-flex justify-content-between align-items-center mb-2">
+<label class="form-label mb-0"><i class="bi bi-key-fill"></i> الصلاحيات الفردية <span class="text-muted" style="font-size:0.75rem;">(لو فاضية، هياخد صلاحيات الدور)</span></label>
+<div class="perms-actions">
+<button type="button" class="btn btn-outline-primary btn-sm" onclick="selectAllPerms()"><i class="bi bi-check-all"></i> تحديد الكل</button>
+<button type="button" class="btn btn-outline-secondary btn-sm" onclick="clearAllPerms()"><i class="bi bi-x-circle"></i> إلغاء الكل</button>
+<button type="button" class="btn btn-outline-info btn-sm" onclick="loadRolePerms()"><i class="bi bi-arrow-clockwise"></i> صلاحيات الدور</button>
+</div>
+</div>
+<div class="perms-box" id="perms-box"></div>
+</div>
+</div>
+<div class="modal-footer">
+<button class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+<button class="btn btn-primary" onclick="saveUser()"><i class="bi bi-check-circle"></i> حفظ</button>
+</div>
+</div>
+</div>
+</div>
+
+<!-- Role Modal -->
+<div class="modal fade" id="roleModal" tabindex="-1">
+<div class="modal-dialog modal-xl">
+<div class="modal-content">
+<div class="modal-header bg-success text-white">
+<h5 class="modal-title" id="role-modal-title"><i class="bi bi-plus-circle"></i> دور جديد</h5>
+<button class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+</div>
+<div class="modal-body">
+<div class="row g-3 mb-3">
+<div class="col-md-4"><label class="form-label">الكود *</label><input class="form-control" id="r-code" placeholder="مثال: MANAGER"></div>
+<div class="col-md-4"><label class="form-label">الاسم بالعربي *</label><input class="form-control" id="r-name_ar"></div>
+<div class="col-md-4"><label class="form-label">الاسم بالإنجليزي</label><input class="form-control" id="r-name_en"></div>
+<div class="col-md-3"><label class="form-label">اللون</label><input type="color" class="form-control" id="r-color" value="#64748b"></div>
+</div>
+<div class="mb-2">
+<div class="d-flex justify-content-between align-items-center mb-2">
+<label class="form-label mb-0"><i class="bi bi-key-fill"></i> الصلاحيات</label>
+<div class="perms-actions">
+<button type="button" class="btn btn-outline-primary btn-sm" onclick="selectAllRolePerms()"><i class="bi bi-check-all"></i> تحديد الكل</button>
+<button type="button" class="btn btn-outline-secondary btn-sm" onclick="clearAllRolePerms()"><i class="bi bi-x-circle"></i> إلغاء الكل</button>
+</div>
+</div>
+<div class="perms-box" id="role-perms-box"></div>
+</div>
+</div>
+<div class="modal-footer">
+<button class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+<button class="btn btn-success" onclick="saveRole()"><i class="bi bi-check-circle"></i> حفظ</button>
+</div>
+</div>
+</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+var API = "http://localhost:5000/api/v1";
+var userModal = new bootstrap.Modal(document.getElementById('userModal'));
+var roleModal = new bootstrap.Modal(document.getElementById('roleModal'));
+var editUserId = null;
+var editRoleId = null;
+var allBranches = [];
+var allRoles = [];
+
+var SCREENS = [
+    { group: '📦 البيانات الأساسية', screens: [
+        {file: 'warehouses.html', name: 'المستودعات'}, {file: 'items.html', name: 'الأصناف'},
+        {file: 'item_groups.html', name: 'مجموعات الأصناف'}, {file: 'uom.html', name: 'وحدات القياس'},
+        {file: 'suppliers.html', name: 'الموردون'}, {file: 'customers.html', name: 'العملاء'}
+    ]},
+    { group: '🛒 المشتريات', screens: [
+        {file: 'requisitions.html', name: 'طلبات الاحتياج'}, {file: 'purchase_orders.html', name: 'أوامر الشراء'},
+        {file: 'purchase_invoices.html', name: 'فواتير الشراء'}, {file: 'payments.html', name: 'مدفوعات الموردين'},
+        {file: 'payment_methods.html', name: 'طرق الدفع'}, {file: 'settlements.html', name: 'التسويات'},
+        {file: 'purchase_returns.html', name: 'مرتجع شراء'}, {file: 'receipts.html', name: 'الاستلام'}
+    ]},
+    { group: '💰 المبيعات', screens: [
+        {file: 'sales_invoices.html', name: 'فواتير البيع'}, {file: 'customer_receipts.html', name: 'تحصيلات العملاء'},
+        {file: 'sales_returns.html', name: 'مرتجع بيع'}, {file: 'issues.html', name: 'الصرف'}
+    ]},
+    { group: '📦 المخازن', screens: [
+        {file: 'material_requests.html', name: 'طلبات الصرف'}, {file: 'transfers.html', name: 'التحويلات'},
+        {file: 'counts.html', name: 'الجرد'}, {file: 'stock_adjustments.html', name: 'التسويات المخزنية'},
+        {file: 'adjustments_report.html', name: 'تقرير التسويات'}, {file: 'inventory_by_warehouse.html', name: 'المخزون حسب المستودع'}
+    ]},
+    
+   
+    { group: '🧮 المحاسبة', screens: [
+    {file: 'accounts.html', name: 'الدليل المحاسبي'}, {file: 'journal.html', name: 'القيود'},
+    {file: 'clearing.html', name: 'الحسابات الوسيطة'}, {file: 'financial_reports.html', name: 'التقارير المالية'},
+    {file: 'cash_boxes.html', name: 'الخزائن والبنوك'}, {file: 'cash_box_transactions.html', name: 'حركات الخزائن'},
+    {file: 'expenses.html', name: 'صرف النثريات'}, {file: 'expense_categories.html', name: 'تصنيفات المصروفات'},
+    {file: 'bank_reconciliation.html', name: 'التسوية البنكية'}, {file: 'cash_box_reports.html', name: 'تقارير الخزائن'},
+    {file: 'branches.html', name: 'الفروع'},
+    {file: 'movements_journal.html', name: 'ربط الحركات بالقيود'},
+    ]},
+
+
+    
+    { group: '📈 التقارير', screens: [
+        {file: 'reports.html', name: 'تقارير المخازن'}, {file: 'batches_report.html', name: 'تقارير الدفعات'},
+        {file: 'supplier_rating.html', name: 'تقييم الموردين'}, {file: 'price_comparison.html', name: 'مقارنة الأسعار'},
+        {file: 'supplier_balances.html', name: 'أرصدة الموردين'}, {file: 'customer_balances.html', name: 'أرصدة العملاء'},
+        {file: 'supplier_statement.html', name: 'كشف حساب مورد'}, {file: 'customer_statement.html', name: 'كشف حساب عميل'},
+        {file: 'trial_balance.html', name: 'ميزان المراجعة'}, {file: 'balance_sheet.html', name: 'الميزانية'},
+        {file: 'income_statement.html', name: 'قائمة الدخل'}, {file: 'cash_flow.html', name: 'التدفقات النقدية'},
+        {file: 'audit_entries.html', name: 'تدقيق القيود'}
+    ]},
+    { group: '⚙️ الإعدادات', screens: [
+        {file: 'settings.html', name: 'إعدادات النظام'}, {file: 'settings_company.html', name: 'إعدادات الشركة'},
+        {file: 'settings_accounting.html', name: 'إعدادات المحاسبة'}, {file: 'settings_cash.html', name: 'إعدادات النقدية'},
+        {file: 'settings_inventory.html', name: 'إعدادات المخزون'}, {file: 'settings_suppliers.html', name: 'إعدادات الموردين'},
+        {file: 'settings_customers.html', name: 'إعدادات العملاء'}, {file: 'settings_users.html', name: 'إعدادات المستخدمين'},
+        {file: 'settings_print.html', name: 'إعدادات الطباعة'}, {file: 'data_io.html', name: 'استيراد وتصدير'}
+    ]}
+];
+
+async function loadBranches() {
+    try {
+        var r = await fetch(API + "/warehouses/").then(function(x) { return x.json(); });
+        allBranches = r.data || [];
+        renderBranchesList();
+    } catch(e) { console.error(e); }
+}
+
+function renderBranchesList(selected) {
+    selected = selected || [];
+    var html = '';
+    if (!allBranches.length) {
+        html = '<div class="text-center text-muted p-3">لا توجد فروع</div>';
+    } else {
+        allBranches.forEach(function(b) {
+            var checked = selected.indexOf(b.id) !== -1 ? 'checked' : '';
+            html += '<div class="branch-item">';
+            html += '<input type="checkbox" id="br-' + b.id + '" value="' + b.id + '" ' + checked + ' onchange="updateAllBranchesCheckbox()">';
+            html += '<label for="br-' + b.id + '"><code>' + b.code + '</code> — ' + b.name_ar + '</label>';
+            html += '</div>';
+        });
+    }
+    document.getElementById('branches-list').innerHTML = html;
+    updateAllBranchesCheckbox();
+}
+
+function toggleAllBranches() {
+    var allChk = document.getElementById('f-all-branches').checked;
+    document.querySelectorAll('#branches-list input[type="checkbox"]').forEach(function(cb) { cb.checked = allChk; });
+}
+
+function updateAllBranchesCheckbox() {
+    var all = document.querySelectorAll('#branches-list input[type="checkbox"]');
+    var checked = document.querySelectorAll('#branches-list input[type="checkbox"]:checked');
+    var allChk = document.getElementById('f-all-branches');
+    if (allChk) {
+        allChk.checked = (all.length > 0 && checked.length === all.length);
+        allChk.indeterminate = (checked.length > 0 && checked.length < all.length);
+    }
+}
+
+function getSelectedBranches() {
+    var selected = [];
+    document.querySelectorAll('#branches-list input[type="checkbox"]:checked').forEach(function(cb) {
+        selected.push(parseInt(cb.value));
+    });
+    return selected;
+}
+
+function renderPermsBox(containerId, selected, groupPrefix) {
+    selected = selected || [];
+    groupPrefix = groupPrefix || 'u';
+    var html = '';
+
+    SCREENS.forEach(function(group, gIdx) {
+        var groupId = groupPrefix + '-grp-' + gIdx;
+        html += '<div class="perm-group">';
+        html += '<div class="perm-group-title">';
+        html += '<span><input type="checkbox" id="chk-' + groupId + '" onchange="toggleGroup(\'' + containerId + '\',\'' + groupId + '\', this.checked)"> ' + group.group + ' <span class="group-count" id="cnt-' + groupId + '">0/0</span></span>';
+        html += '</div>';
+
+        var useGrid = (containerId === 'role-perms-box');
+        if (useGrid) html += '<div class="perm-items-grid">';
+
+        group.screens.forEach(function(s) {
+            var checked = selected.indexOf(s.file) !== -1 ? 'checked' : '';
+            html += '<div class="perm-item">';
+            html += '<input type="checkbox" id="' + groupPrefix + '-perm-' + s.file + '" data-container="' + containerId + '" data-group="' + groupId + '" value="' + s.file + '" ' + checked + ' onchange="updateGroupCount(\'' + containerId + '\',\'' + groupId + '\')">';
+            html += '<label for="' + groupPrefix + '-perm-' + s.file + '"><span>' + s.name + '</span><code>' + s.file + '</code></label>';
+            html += '</div>';
+        });
+
+        if (useGrid) html += '</div>';
+        html += '</div>';
+    });
+
+    document.getElementById(containerId).innerHTML = html;
+    SCREENS.forEach(function(g, i) { updateGroupCount(containerId, groupPrefix + '-grp-' + i); });
+}
+
+function toggleGroup(containerId, groupId, checked) {
+    document.querySelectorAll('#' + containerId + ' input[data-group="' + groupId + '"]').forEach(function(cb) { cb.checked = checked; });
+    updateGroupCount(containerId, groupId);
+}
+
+function updateGroupCount(containerId, groupId) {
+    var all = document.querySelectorAll('#' + containerId + ' input[data-group="' + groupId + '"]');
+    var checked = document.querySelectorAll('#' + containerId + ' input[data-group="' + groupId + '"]:checked');
+    var cntEl = document.getElementById('cnt-' + groupId);
+    if (cntEl) cntEl.textContent = checked.length + '/' + all.length;
+    var groupChk = document.getElementById('chk-' + groupId);
+    if (groupChk) {
+        groupChk.checked = (checked.length === all.length && all.length > 0);
+        groupChk.indeterminate = (checked.length > 0 && checked.length < all.length);
+    }
+}
+
+function selectAllIn(containerId) {
+    document.querySelectorAll('#' + containerId + ' input[type="checkbox"]').forEach(function(cb) { cb.checked = true; });
+    var prefix = containerId === 'perms-box' ? 'u' : 'r';
+    SCREENS.forEach(function(g, i) { updateGroupCount(containerId, prefix + '-grp-' + i); });
+}
+
+function clearAllIn(containerId) {
+    document.querySelectorAll('#' + containerId + ' input[type="checkbox"]').forEach(function(cb) { cb.checked = false; });
+    var prefix = containerId === 'perms-box' ? 'u' : 'r';
+    SCREENS.forEach(function(g, i) { updateGroupCount(containerId, prefix + '-grp-' + i); });
+}
+
+function selectAllPerms() { selectAllIn('perms-box'); }
+function clearAllPerms() { clearAllIn('perms-box'); }
+function selectAllRolePerms() { selectAllIn('role-perms-box'); }
+function clearAllRolePerms() { clearAllIn('role-perms-box'); }
+
+function getSelectedFrom(containerId) {
+    var selected = [];
+    document.querySelectorAll('#' + containerId + ' input[data-group]:checked').forEach(function(cb) { selected.push(cb.value); });
+    return selected;
+}
+
+function loadRolePerms() {
+    var roleCode = document.getElementById('f-role').value;
+    var role = allRoles.find(function(r) { return r.code === roleCode; });
+    if (!role || !role.permissions) { clearAllPerms(); return; }
+    try {
+        var perms = JSON.parse(role.permissions);
+        document.querySelectorAll('#perms-box input[data-group]').forEach(function(cb) {
+            cb.checked = perms.indexOf('*') !== -1 || perms.indexOf(cb.value) !== -1;
+        });
+        SCREENS.forEach(function(g, i) { updateGroupCount('perms-box', 'u-grp-' + i); });
+    } catch(e) { console.error(e); }
+}
+
+async function loadUsers() {
+    try {
+        var r = await fetch(API + "/auth/users").then(function(x) { return x.json(); });
+        var users = r.data || [];
+        var tbody = document.getElementById("users-body");
+
+        if (!users.length) {
+            tbody.innerHTML = '<tr><td colspan="7"><div class="empty-state"><i class="bi bi-inbox"></i> لا يوجد مستخدمون</div></td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = users.map(function(u) {
+            var roleObj = allRoles.find(function(r) { return r.code === u.role; });
+            var roleName = roleObj ? roleObj.name_ar : (u.role || '—');
+            var roleColor = roleObj ? roleObj.color : '#64748b';
+            var status = u.is_active ? '<span class="badge bg-success">نشط</span>' : '<span class="badge bg-secondary">معطل</span>';
+
+            var permsBadge = '<span class="badge-perms role">حسب الدور</span>';
+            if (u.permissions) {
+                try {
+                    var p = typeof u.permissions === 'string' ? JSON.parse(u.permissions) : u.permissions;
+                    if (Array.isArray(p)) {
+                        var isAll = p.indexOf('*') !== -1;
+                        permsBadge = '<span class="badge-perms custom">' + (isAll ? 'الكل' : p.length + ' شاشة') + '</span>';
+                    }
+                } catch(e) {}
+            }
+
+            var branchBadge = '<span class="badge-branch all">كل الفروع</span>';
+            if (u.branch_ids) {
+                try {
+                    var b = typeof u.branch_ids === 'string' ? JSON.parse(u.branch_ids) : u.branch_ids;
+                    if (Array.isArray(b) && b.length > 0 && b.length < allBranches.length) {
+                        branchBadge = '<span class="badge-branch specific">' + b.length + ' فرع</span>';
+                    }
+                } catch(e) {}
+            }
+
+            return '<tr>' +
+                '<td><strong>' + (u.full_name || u.username) + '</strong></td>' +
+                '<td><code>' + u.username + '</code></td>' +
+                '<td><span class="badge-role" style="background:' + roleColor + '20;color:' + roleColor + ';">' + roleName + '</span></td>' +
+                '<td>' + permsBadge + '</td>' +
+                '<td>' + branchBadge + '</td>' +
+                '<td>' + status + '</td>' +
+                '<td>' +
+                '<button class="btn btn-sm btn-outline-warning" onclick="editUser(' + u.id + ')"><i class="bi bi-pencil"></i></button> ' +
+                '<button class="btn btn-sm btn-outline-danger" onclick="delUser(' + u.id + ',\'' + u.username + '\')"><i class="bi bi-trash"></i></button>' +
+                '</td>' +
+                '</tr>';
+        }).join("");
+    } catch (e) {
+        console.error(e);
+        document.getElementById("users-body").innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4">خطأ في التحميل</td></tr>';
+    }
+}
+
+function renderRoleOptions(selectedRole) {
+    var html = '';
+    allRoles.forEach(function(r) {
+        var sel = (r.code === selectedRole) ? 'selected' : '';
+        html += '<option value="' + r.code + '" ' + sel + '>' + r.name_ar + ' (' + r.code + ')</option>';
+    });
+    document.getElementById('f-role').innerHTML = html;
+}
+
+function addUser() {
+    editUserId = null;
+    document.getElementById("user-modal-title").innerHTML = '<i class="bi bi-plus-circle"></i> مستخدم جديد';
+    document.getElementById("f-username").value = "";
+    document.getElementById("f-username").disabled = false;
+    document.getElementById("f-full_name").value = "";
+    document.getElementById("f-email").value = "";
+    document.getElementById("f-password").value = "";
+    document.getElementById("f-password").required = true;
+    document.getElementById("pwd-hint").textContent = "(مطلوبة)";
+    document.getElementById("active-group").style.display = "none";
+    renderRoleOptions('VIEWER');
+    renderBranchesList([]);
+    renderPermsBox('perms-box', [], 'u');
+    userModal.show();
+}
+
+async function editUser(id) {
+    editUserId = id;
+    try {
+        var r = await fetch(API + "/auth/users").then(function(x) { return x.json(); });
+        var u = (r.data || []).find(function(x) { return x.id === id; });
+        if (!u) { alert("المستخدم غير موجود"); return; }
+
+        document.getElementById("user-modal-title").innerHTML = '<i class="bi bi-pencil"></i> تعديل المستخدم';
+        document.getElementById("f-username").value = u.username;
+        document.getElementById("f-username").disabled = true;
+        document.getElementById("f-full_name").value = u.full_name || "";
+        document.getElementById("f-email").value = u.email || "";
+        document.getElementById("f-password").value = "";
+        document.getElementById("f-password").required = false;
+        document.getElementById("pwd-hint").textContent = "(اتركها فاضية)";
+        document.getElementById("active-group").style.display = "block";
+        document.getElementById("f-is_active").value = u.is_active ? "1" : "0";
+        renderRoleOptions(u.role);
+
+        var perms = [];
+        if (u.permissions) {
+            try {
+                perms = typeof u.permissions === 'string' ? JSON.parse(u.permissions) : u.permissions;
+                if (!Array.isArray(perms)) perms = [];
+            } catch(e) { perms = []; }
+        }
+        renderPermsBox('perms-box', perms, 'u');
+
+        var branches = [];
+        if (u.branch_ids) {
+            try {
+                branches = typeof u.branch_ids === 'string' ? JSON.parse(u.branch_ids) : u.branch_ids;
+                if (!Array.isArray(branches)) branches = [];
+            } catch(e) { branches = []; }
+        }
+        renderBranchesList(branches);
+        userModal.show();
+    } catch (e) { console.error(e); }
+}
+
+async function saveUser() {
+    var perms = getSelectedFrom('perms-box');
+    var branches = getSelectedBranches();
+
+    var data = {
+        full_name: document.getElementById("f-full_name").value.trim(),
+        email: document.getElementById("f-email").value.trim(),
+        role: document.getElementById("f-role").value,
+        permissions: perms.length > 0 ? perms : null,
+        branch_ids: branches.length > 0 ? branches : null
+    };
+
+    if (editUserId) {
+        if (document.getElementById("f-password").value) data.password = document.getElementById("f-password").value;
+        data.is_active = parseInt(document.getElementById("f-is_active").value);
+        var r = await fetch(API + "/auth/users/" + editUserId, {
+            method: "PUT", headers: {"Content-Type": "application/json"}, body: JSON.stringify(data)
+        }).then(function(x) { return x.json(); });
+        if (r.success) { userModal.hide(); loadUsers(); } else alert(r.message || "خطأ");
+    } else {
+        data.username = document.getElementById("f-username").value.trim();
+        data.password = document.getElementById("f-password").value;
+        if (!data.username) { alert("اسم المستخدم مطلوب"); return; }
+        if (!data.password) { alert("كلمة السر مطلوبة"); return; }
+        var r = await fetch(API + "/auth/users", {
+            method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(data)
+        }).then(function(x) { return x.json(); });
+        if (r.success) { userModal.hide(); loadUsers(); } else alert(r.message || "خطأ");
+    }
+}
+
+async function delUser(id, username) {
+    if (!confirm('حذف المستخدم "' + username + '"؟')) return;
+    var r = await fetch(API + "/auth/users/" + id, { method: "DELETE" }).then(function(x) { return x.json(); });
+    if (r.success) loadUsers(); else alert(r.message || "خطأ");
+}
+
+async function loadRoles() {
+    try {
+        var r = await fetch(API + "/auth/roles").then(function(x) { return x.json(); });
+        allRoles = r.data || [];
+        renderRolesGrid();
+        renderRoleOptions();
+    } catch(e) {
+        console.error(e);
+        document.getElementById('roles-grid').innerHTML = '<div class="text-center text-muted p-4">خطأ في التحميل</div>';
+    }
+}
+
+function renderRolesGrid() {
+    if (!allRoles.length) {
+        document.getElementById('roles-grid').innerHTML = '<div class="text-center text-muted p-4">لا توجد أدوار</div>';
+        return;
+    }
+    var html = '';
+    allRoles.forEach(function(r) {
+        var permsText = 'حسب الدور';
+        try {
+            var p = r.permissions ? JSON.parse(r.permissions) : [];
+            if (p.indexOf('*') !== -1) permsText = 'كل الشاشات';
+            else permsText = p.length + ' شاشة';
+        } catch(e) {}
+
+        html += '<div class="role-card" style="border-right-color:' + r.color + ';">';
+        if (r.is_system) html += '<span class="system-badge">دور نظام</span>';
+        html += '<div class="role-code" style="color:' + r.color + ';">' + r.code + '</div>';
+        html += '<div class="role-name">' + r.name_ar + (r.name_en ? ' — ' + r.name_en : '') + '</div>';
+        html += '<div class="role-perms-count"><i class="bi bi-key"></i> ' + permsText + '</div>';
+        html += '<div class="role-actions">';
+        html += '<button class="btn btn-outline-warning" onclick="editRole(' + r.id + ')"><i class="bi bi-pencil"></i> تعديل</button>';
+        if (!r.is_system) html += '<button class="btn btn-outline-danger" onclick="delRole(' + r.id + ',\'' + r.code + '\')"><i class="bi bi-trash"></i> حذف</button>';
+        html += '</div></div>';
+    });
+    document.getElementById('roles-grid').innerHTML = html;
+}
+
+function addRole() {
+    editRoleId = null;
+    document.getElementById("role-modal-title").innerHTML = '<i class="bi bi-plus-circle"></i> دور جديد';
+    document.getElementById("r-code").value = "";
+    document.getElementById("r-code").disabled = false;
+    document.getElementById("r-name_ar").value = "";
+    document.getElementById("r-name_en").value = "";
+    document.getElementById("r-color").value = "#64748b";
+    renderPermsBox('role-perms-box', [], 'r');
+    roleModal.show();
+}
+
+function editRole(id) {
+    editRoleId = id;
+    var r = allRoles.find(function(x) { return x.id === id; });
+    if (!r) return;
+    document.getElementById("role-modal-title").innerHTML = '<i class="bi bi-pencil"></i> تعديل الدور';
+    document.getElementById("r-code").value = r.code;
+    document.getElementById("r-code").disabled = true;
+    document.getElementById("r-name_ar").value = r.name_ar;
+    document.getElementById("r-name_en").value = r.name_en || "";
+    document.getElementById("r-color").value = r.color || "#64748b";
+    var perms = [];
+    if (r.permissions) {
+        try { perms = JSON.parse(r.permissions); if (!Array.isArray(perms)) perms = []; } catch(e) { perms = []; }
+    }
+    renderPermsBox('role-perms-box', perms, 'r');
+    roleModal.show();
+}
+
+async function saveRole() {
+    var perms = getSelectedFrom('role-perms-box');
+    var data = {
+        name_ar: document.getElementById("r-name_ar").value.trim(),
+        name_en: document.getElementById("r-name_en").value.trim(),
+        color: document.getElementById("r-color").value,
+        permissions: perms.length > 0 ? perms : null
+    };
+    if (!data.name_ar) { alert("الاسم بالعربي مطلوب"); return; }
+
+    if (editRoleId) {
+        var r = await fetch(API + "/auth/roles/" + editRoleId, {
+            method: "PUT", headers: {"Content-Type": "application/json"}, body: JSON.stringify(data)
+        }).then(function(x) { return x.json(); });
+        if (r.success) { roleModal.hide(); await loadRoles(); loadUsers(); } else alert(r.message || "خطأ");
+    } else {
+        data.code = document.getElementById("r-code").value.trim().toUpperCase();
+        if (!data.code) { alert("الكود مطلوب"); return; }
+        var r = await fetch(API + "/auth/roles", {
+            method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify(data)
+        }).then(function(x) { return x.json(); });
+        if (r.success) { roleModal.hide(); await loadRoles(); loadUsers(); } else alert(r.message || "خطأ");
+    }
+}
+
+async function delRole(id, code) {
+    if (!confirm('حذف الدور "' + code + '"؟')) return;
+    var r = await fetch(API + "/auth/roles/" + id, { method: "DELETE" }).then(function(x) { return x.json(); });
+    if (r.success) { await loadRoles(); loadUsers(); } else alert(r.message || "خطأ");
+}
+
+(async function() {
+    await loadBranches();
+    await loadRoles();
+    loadUsers();
+})();
+</script>
+</body>
+</html>

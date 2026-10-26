@@ -1,6 +1,6 @@
-﻿from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify
 from app.database import db
-from app.utils import json_safe, to_decimal, round_decimal
+from app.utils import json_safe, to_decimal, round_decimal, get_user_id, enrich_with_user
 from datetime import datetime
 
 mr_bp = Blueprint('material_requests', __name__)
@@ -51,6 +51,7 @@ def list_requests():
             ORDER BY mr.id DESC LIMIT 200""",
         vals
     )
+    rows = enrich_with_user(rows)
     return jsonify({'success': True, 'data': json_safe(rows)})
 
 
@@ -159,9 +160,11 @@ def approve_request(rid):
         row = cur.fetchone()
         if not row or row['status'] != 'DRAFT':
             return jsonify({'success': False, 'message': 'يمكن اعتماد المسودة فقط'}), 400
+
+        user_id = get_user_id()
         conn.execute(
-            "UPDATE material_requests SET status='APPROVED', approved_at=CURRENT_TIMESTAMP, approved_by=1 WHERE id=?",
-            (rid,)
+            "UPDATE material_requests SET status='APPROVED', approved_at=CURRENT_TIMESTAMP, approved_by=? WHERE id=?",
+            (user_id, rid)
         )
     return jsonify({'success': True, 'message': 'تم الاعتماد'})
 
@@ -184,8 +187,8 @@ def restore_request(rid):
 def issue_request(rid):
     """تنفيذ الصرف - إنشاء إذن صرف + قيد محاسبي."""
     d = request.get_json() or {}
-    issue_lines = d.get('lines', [])  # [{line_id, issue_qty}]
-    
+    issue_lines = d.get('lines', [])
+
     with db.transaction() as conn:
         cur = conn.execute("SELECT * FROM material_requests WHERE id=? AND status='APPROVED'", (rid,))
         r = cur.fetchone()
@@ -201,7 +204,7 @@ def issue_request(rid):
             (rid,)
         )
         all_lines = [dict(x) for x in cur.fetchall()]
-        
+
         lines = []
         for ol in all_lines:
             if issue_lines:
@@ -211,16 +214,15 @@ def issue_request(rid):
                 qty_to_issue = float(il['issue_qty'])
             else:
                 qty_to_issue = float(ol['requested_qty']) - float(ol['issued_qty'] or 0)
-            
+
             if qty_to_issue <= 0:
                 continue
-            
+
             lines.append({**ol, 'issue_qty': qty_to_issue})
-        
+
         if not lines:
             return jsonify({'success': False, 'message': 'لا توجد بنود للصرف'}), 400
 
-        # Check stock availability
         for line in lines:
             cur = conn.execute(
                 "SELECT COALESCE(SUM(quantity),0) as q FROM stock_balances WHERE warehouse_id=? AND item_id=?",
@@ -231,14 +233,15 @@ def issue_request(rid):
                 return jsonify({'success': False, 'message': f'الكمية غير كافية للصنف {line["name_ar"]}. المتاح: {available}'}), 400
 
         txn_no = _next_txn_no(conn, 'ISS', 'ISSUE')
+        user_id = get_user_id()
         cur = conn.execute(
             """INSERT INTO stock_transactions
                (transaction_no, transaction_type, transaction_date,
                 from_warehouse_id, reference_type, reference_no,
                 status, notes, created_by)
-               VALUES (?, 'ISSUE', ?, ?, 'MATERIAL_REQUEST', ?, 'POSTED', ?, 1)""",
+               VALUES (?, 'ISSUE', ?, ?, 'MATERIAL_REQUEST', ?, 'POSTED', ?, ?)""",
             (txn_no, d.get('issue_date', datetime.now().strftime('%Y-%m-%d')),
-             r['warehouse_id'], r['request_no'], f"صرف بموجب طلب {r['request_no']}")
+             r['warehouse_id'], r['request_no'], f"صرف بموجب طلب {r['request_no']}", user_id)
         )
         txn_id = cur.lastrowid
 
@@ -249,8 +252,7 @@ def issue_request(rid):
             base_qty = float(line['issue_qty'])
             factor = float(line['base_requested_qty']) / float(line['requested_qty']) if float(line['requested_qty']) > 0 else 1
             base_qty_full = float(line['issue_qty']) * factor
-            
-            # Get avg cost
+
             cur = conn.execute(
                 "SELECT COALESCE(SUM(total_value),0) as v, COALESCE(SUM(quantity),0) as q FROM stock_balances WHERE warehouse_id=? AND item_id=?",
                 (r['warehouse_id'], line['item_id'])
@@ -268,7 +270,6 @@ def issue_request(rid):
                  line['issue_qty'], base_qty_full, avg, line_cost)
             )
 
-            # Deduct stock
             conn.execute(
                 """UPDATE stock_balances
                    SET quantity = quantity - ?,
@@ -280,7 +281,6 @@ def issue_request(rid):
                  r['warehouse_id'], line['item_id'])
             )
 
-            # Update requested line
             conn.execute(
                 "UPDATE material_request_lines SET issued_qty = issued_qty + ? WHERE id=?",
                 (line['issue_qty'], line['id'])
@@ -294,18 +294,17 @@ def issue_request(rid):
             (total_qty, round(total_cost, 4), txn_id)
         )
 
-        # Journal: Debit cost account, Credit inventory
         je_no = f"JE-{datetime.now().year}-{str(conn.execute('SELECT COUNT(*)+1 as n FROM journal_entries').fetchone()['n']).zfill(6)}"
+        user_id = get_user_id()
         cur = conn.execute(
             """INSERT INTO journal_entries
-               (entry_no, entry_date, reference_type, reference_id, reference_no, description, status)
-               VALUES (?, ?, 'MATERIAL_REQUEST', ?, ?, ?, 'POSTED')""",
+               (entry_no, entry_date, reference_type, reference_id, reference_no, description, status, created_by)
+               VALUES (?, ?, 'MATERIAL_REQUEST', ?, ?, ?, 'POSTED', ?)""",
             (je_no, d.get('issue_date', datetime.now().strftime('%Y-%m-%d')),
-             rid, r['request_no'], f"صرف بموجب طلب {r['request_no']}")
+             rid, r['request_no'], f"صرف بموجب طلب {r['request_no']}", user_id)
         )
         je_id = cur.lastrowid
 
-        # Aggregate by cost account
         cost_by_account = {}
         for line in lines:
             acc = line['cost_account'] or '5563'
@@ -315,14 +314,12 @@ def issue_request(rid):
                 "SELECT COALESCE(SUM(total_value),0) as v, COALESCE(SUM(quantity),0) as q FROM stock_balances WHERE warehouse_id=? AND item_id=?",
                 (r['warehouse_id'], line['item_id'])
             )
-            # approximate
             cost_by_account[acc] = cost_by_account.get(acc, 0) + (float(line['issue_qty']) * factor * 0)
 
         line_no = 1
         td = 0
         tc = 0
 
-        # Debit expense account
         cost_acc_default = '5563'
         conn.execute(
             """INSERT INTO journal_entry_lines
@@ -333,7 +330,6 @@ def issue_request(rid):
         td = round(total_cost, 2)
         line_no += 1
 
-        # Credit inventory
         inv_by_account = {}
         for line in lines:
             factor = float(line['base_requested_qty']) / float(line['requested_qty']) if float(line['requested_qty']) > 0 else 1
@@ -342,10 +338,8 @@ def issue_request(rid):
                 "SELECT COALESCE(SUM(total_value),0) as v, COALESCE(SUM(quantity),0) as q FROM stock_balances WHERE warehouse_id=? AND item_id=?",
                 (r['warehouse_id'], line['item_id'])
             )
-            # Use approximate cost
             inv_by_account[line['inventory_account']] = inv_by_account.get(line['inventory_account'], 0)
 
-        # Fallback: single credit entry
         conn.execute(
             """INSERT INTO journal_entry_lines
                (journal_entry_id, line_no, account_code, description, debit_amount, credit_amount)
@@ -357,7 +351,6 @@ def issue_request(rid):
         conn.execute("UPDATE journal_entries SET total_debit=?, total_credit=? WHERE id=?",
                      (td, tc, je_id))
 
-        # Check if fully issued
         cur = conn.execute("SELECT SUM(requested_qty) as total, SUM(issued_qty) as issued FROM material_request_lines WHERE request_id=?", (rid,))
         rs = cur.fetchone()
         if float(rs['issued'] or 0) >= float(rs['total'] or 0):

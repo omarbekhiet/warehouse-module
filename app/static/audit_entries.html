@@ -1,0 +1,109 @@
+﻿<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>مراجعة وتدقيق القيود المحاسبية</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="permissions.js"></script>
+    <style>
+        body { font-family: 'Cairo', sans-serif; background: #f4f6f9; padding: 20px; }
+        .table-container { background: #fff; padding: 20px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); }
+        .table th { background: #343a40; color: white; font-size: 14px; }
+        .table td { font-size: 13px; vertical-align: middle; }
+        .badge-asset { background-color: #0d6efd; }
+        .badge-liab { background-color: #dc3545; }
+        .badge-eq { background-color: #198754; }
+        .badge-rev { background-color: #0dcaf0; color: #000; }
+        .badge-exp { background-color: #ffc107; color: #000; }
+        .badge-unknown { background-color: #6c757d; }
+        .unbalanced-row { background-color: #f8d7da !important; }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="table-container">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h3 class="m-0"><i class="bi bi-shield-check"></i> مراجعة وتدقيق القيود المحاسبية</h3>
+                <div class="d-flex gap-2">
+                    <input type="date" id="f-asof" class="form-control" style="width: 180px;">
+                    <button class="btn btn-primary" onclick="loadAudit()">عرض القيود</button>
+                    <a href="financial_reports.html" class="btn btn-outline-primary">التقارير</a>
+                    <a href="index.html" class="btn btn-outline-secondary"><i class="bi bi-house"></i></a>
+                </div>
+            </div>
+            
+            <div id="audit-content">
+                <div class="text-center py-5 text-muted">جاري تحميل البيانات...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function loadAudit() {
+            const content = document.getElementById('audit-content');
+            content.innerHTML = '<div class="text-center py-5 text-primary">جاري جلب القيود...</div>';
+            
+            const asOf = document.getElementById('f-asof').value;
+            const qs = asOf ? `?as_of=${asOf}` : '';
+            
+            try {
+                // نستخدم نفس مسار الـ API الخاص بالميزانية لجلب كل الحسابات
+                const res = await fetch(`/api/v1/reports/financial-reports/balance-sheet${qs}`).then(r => r.json());
+                if (!res.success) throw new Error(res.message);
+                
+                const data = res.data;
+                const fmt = (v) => (Number(v) || 0).toLocaleString('en-US', {minimumFractionDigits:2});
+                
+                let html = `<table class="table table-bordered table-hover">
+                    <thead>
+                        <tr>
+                            <th>الكود</th>
+                            <th>اسم الحساب</th>
+                            <th>المستوى</th>
+                            <th>التصنيف (الدليل)</th>
+                            <th>الرصيد (مدين - دائن)</th>
+                            <th>طبيعة الرصيد</th>
+                        </tr>
+                    </thead>
+                    <tbody>`;
+                    
+                data.forEach(r => {
+                    let badge = '<span class="badge badge-unknown">غير محدد</span>';
+                    let nature = '-';
+                    
+                    if (r.code.startsWith('1')) { badge = '<span class="badge badge-asset">أصول</span>'; nature = 'مدين'; }
+                    else if (r.code.startsWith('2')) { badge = '<span class="badge badge-liab">التزامات</span>'; nature = 'دائن'; }
+                    else if (r.code.startsWith('8')) { badge = '<span class="badge badge-eq">حقوق ملكية</span>'; nature = 'دائن'; }
+                    else if (r.code.startsWith('4')) { badge = '<span class="badge badge-rev">إيرادات</span>'; nature = 'دائن'; }
+                    else if (r.code.startsWith('5')) { badge = '<span class="badge badge-exp">مصروفات</span>'; nature = 'مدين'; }
+                    
+                    // إذا كان الرصيد سالباً في حساب مدين، فهذا يعني أنه دائن (والعكس صحيح)
+                    let actualNature = r.balance >= 0 ? (nature === 'مدين' ? 'مدين' : 'دائن') : (nature === 'مدين' ? 'دائن' : 'مدين');
+                    
+                    html += `<tr>
+                        <td><strong>${r.code}</strong></td>
+                        <td>${r.name}</td>
+                        <td>${r.level}</td>
+                        <td>${badge}</td>
+                        <td class="${r.balance < 0 ? 'text-danger' : 'text-success'} fw-bold">${fmt(r.balance)}</td>
+                        <td>${actualNature}</td>
+                    </tr>`;
+                });
+                
+                html += `</tbody></table>`;
+                content.innerHTML = html;
+                
+            } catch (e) {
+                content.innerHTML = `<div class="alert alert-danger">خطأ: ${e.message}</div>`;
+            }
+        }
+        
+        window.onload = () => {
+            document.getElementById('f-asof').value = new Date().toISOString().split('T')[0];
+            loadAudit();
+        };
+    </script>
+</body>
+</html>

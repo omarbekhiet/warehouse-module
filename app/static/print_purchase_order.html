@@ -1,0 +1,157 @@
+﻿<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>طباعة أمر شراء</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="print_common.css" rel="stylesheet">
+<script src="permissions.js"></script>
+</head>
+<body>
+
+<div id="toolbar"></div>
+<div id="content"></div>
+
+<script src="company_config.js"></script>
+<script src="print_common.js"></script>
+<script>
+async function load() {
+    const id = getIdFromUrl();
+    if (!id) return;
+
+    document.getElementById('content').innerHTML = renderLoading('جاري تحميل أمر الشراء...');
+
+    try {
+        const r = await fetch(`${PRINT_API}/purchase-orders/${id}`).then(x => x.json());
+        if (!r.success) {
+            document.getElementById('content').innerHTML = renderError(r.message || 'خطأ');
+            return;
+        }
+        render(r.data);
+    } catch (e) {
+        document.getElementById('content').innerHTML = renderError('خطأ في الاتصال بالسيرفر');
+    }
+}
+
+function render(data) {
+    const po = data.po || data;
+    const lines = data.lines || [];
+
+    document.getElementById('toolbar').innerHTML = renderToolbar('معاينة طباعة - أمر شراء');
+
+    let subtotal = 0;
+    lines.forEach(l => subtotal += parseFloat(l.total_cost || 0));
+
+    const taxRate = parseFloat(po.tax_rate || 0);
+    const taxAmount = subtotal * (taxRate / 100);
+    const grandTotal = subtotal + taxAmount;
+
+    let linesHtml = '';
+    if (lines.length === 0) {
+        linesHtml = '<tr><td colspan="7" style="text-align:center; padding:20px; color:#94a3b8;">لا توجد بنود</td></tr>';
+    } else {
+        lines.forEach((l, idx) => {
+            linesHtml += `
+                <tr>
+                    <td>${idx + 1}</td>
+                    <td><strong>${l.item_code || '—'}</strong></td>
+                    <td class="text-right">${l.item_name || '—'}</td>
+                    <td>${l.uom_name || l.uom_code || '—'}</td>
+                    <td>${fmtNum(l.quantity)}</td>
+                    <td>${fmtNum(l.unit_cost)}</td>
+                    <td><strong>${fmtNum(l.total_cost)}</strong></td>
+                </tr>`;
+        });
+    }
+
+    const statusClass = 'status-' + (po.status || 'DRAFT');
+
+    document.getElementById('content').innerHTML = `
+    <div class="a4-page">
+        <div class="doc-header">
+            ${renderCompanyHeader()}
+            <div class="doc-title-box">
+                <div class="doc-title"><i class="bi bi-file-earmark-text"></i> أمر شراء</div>
+                <div class="doc-no-box">
+                    رقم الأمر: <strong>${po.po_no || '—'}</strong>
+                </div>
+            </div>
+        </div>
+
+        <div class="info-grid">
+            <div class="info-box">
+                <div class="info-box-title"><i class="bi bi-truck"></i> بيانات المورد</div>
+                <div class="info-box-body">
+                    <div class="info-row">
+                        <span class="label">الاسم:</span>
+                        <span class="value">${po.supplier_name || '—'}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="label">الكود:</span>
+                        <span class="value">${po.supplier_code || '—'}</span>
+                    </div>
+                </div>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title"><i class="bi bi-info-circle"></i> بيانات الأمر</div>
+                <div class="info-box-body">
+                    <div class="info-row">
+                        <span class="label">التاريخ:</span>
+                        <span class="value">${po.po_date || '—'}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="label">المستودع:</span>
+                        <span class="value">${po.warehouse_name || '—'}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="label">تاريخ التسليم المتوقع:</span>
+                        <span class="value">${po.expected_date || '—'}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="label">الحالة:</span>
+                        <span class="value"><span class="status-badge ${statusClass}">${statusAr(po.status)}</span></span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <table class="items-table">
+            <thead>
+                <tr>
+                    <th style="width:40px;">#</th>
+                    <th style="width:90px;">الكود</th>
+                    <th>الصنف</th>
+                    <th style="width:70px;">الوحدة</th>
+                    <th style="width:80px;">الكمية</th>
+                    <th style="width:90px;">سعر الوحدة</th>
+                    <th style="width:100px;">الإجمالي</th>
+                </tr>
+            </thead>
+            <tbody>${linesHtml}</tbody>
+        </table>
+
+        <div class="totals-wrap">
+            <div class="tafqeet-box">
+                <div class="label"><i class="bi bi-volume-up-fill"></i> المبلغ كتابةً:</div>
+                <div class="text">${tafqeet(grandTotal)}</div>
+            </div>
+            <table class="totals-table">
+                <tr><td>المجموع الفرعي:</td><td>${fmtNum(subtotal)} ج.م</td></tr>
+                ${taxRate > 0 ? `<tr><td>الضريبة (${taxRate}%):</td><td>${fmtNum(taxAmount)} ج.م</td></tr>` : ''}
+                <tr class="grand-total"><td>الإجمالي:</td><td>${fmtNum(grandTotal)} ج.م</td></tr>
+            </table>
+        </div>
+
+        ${po.notes ? `<div class="notes-box"><div class="label"><i class="bi bi-sticky"></i> ملاحظات:</div><div>${po.notes}</div></div>` : ''}
+
+        ${renderSignatures('توقيع المستلم', 'توقيع المدير')}
+        ${renderPageFooter()}
+    </div>`;
+}
+
+loadCompanyInfo().then(() => load());
+</script>
+</body>
+</html>

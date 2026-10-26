@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>ميزان المراجعة</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        body { background: #f1f5f9; padding: 15px; font-size: 13px; }
+        .report-card { max-width: 1200px; margin: 0 auto; background: white; border-radius: 10px; padding: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .table th { background: #e2e8f0; font-weight: 700; }
+    </style>
+</head>
+<body>
+<div class="container-fluid">
+    <div class="report-card">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h4><i class="bi bi-list-columns-reverse"></i> ميزان المراجعة</h4>
+            <a href="index.html" class="btn btn-sm btn-outline-secondary"><i class="bi bi-house"></i> الرئيسية</a>
+        </div>
+        
+        <!-- Filters -->
+        <div class="row mb-3">
+            <div class="col-md-2">
+                <label class="form-label">من تاريخ</label>
+                <input type="date" id="fromDate" class="form-control form-control-sm">
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">إلى تاريخ</label>
+                <input type="date" id="toDate" class="form-control form-control-sm">
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">مستوى العرض</label>
+                <select id="f-level" class="form-select form-select-sm" onchange="loadTrialBalance()">
+                    <option value="99">كل المستويات</option>
+                    <option value="1">المستوى الأول فقط</option>
+                    <option value="2" selected>المستوى الثاني فقط</option>
+                    <option value="3">المستوى الثالث فقط</option>
+                    <option value="4">المستوى الرابع فقط</option>
+                    <option value="5">المستوى الخامس فقط</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">نوع القائمة</label>
+                <select id="f-stmt" class="form-select form-select-sm" onchange="loadTrialBalance()">
+                    <option value="all">كل القوائم</option>
+                    <option value="BS">الميزانية العمومية</option>
+                    <option value="IS">قائمة الدخل</option>
+                </select>
+            </div>
+            <div class="col-md-2 d-flex align-items-end">
+                <button class="btn btn-primary btn-sm w-100" onclick="loadTrialBalance()"><i class="bi bi-search"></i> عرض</button>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover text-center" style="font-size: 12px;">
+                <thead>
+                    <tr>
+                        <th rowspan="2">كود الحساب</th>
+                        <th rowspan="2">اسم الحساب</th>
+                        <th>نوع القائمة</th>
+                        <th colspan="2">رصيد أول الفترة</th>
+                        <th colspan="2">حركة الفترة</th>
+                        <th colspan="2">رصيد آخر الفترة</th>
+                    </tr>
+                    <tr>
+                        <th>مدين</th>
+                        <th>دائن</th>
+                        <th>مدين</th>
+                        <th>دائن</th>
+                        <th>مدين</th>
+                        <th>دائن</th>
+                    </tr>
+                </thead>
+                <tbody id="tbBody">
+                    <tr><td colspan="8" class="text-center text-muted">جاري التحميل...</td></tr>
+                </tbody>
+                <tfoot id="tbFooter" style="display:none; background:#e2e8f0; font-weight:bold;">
+                    <tr>
+                        <td colspan="3" class="text-end">الإجمالي العام:</td>
+                        <td id="ft_opD" class="text-success">0.00</td>
+                        <td id="ft_opC" class="text-danger">0.00</td>
+                        <td id="ft_pD" class="text-success">0.00</td>
+                        <td id="ft_pC" class="text-danger">0.00</td>
+                        <td id="ft_clD" class="text-success">0.00</td>
+                        <td id="ft_clC" class="text-danger">0.00</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    </div>
+</div>
+<script>
+const API = '/api/v1';
+
+
+
+
+
+
+
+async function loadTrialBalance() {
+    const f = document.getElementById('fromDate').value;
+    const t = document.getElementById('toDate').value;
+    const level = document.getElementById('f-level').value;
+    const stmt = document.getElementById('f-stmt').value;
+    
+    const qs = new URLSearchParams();
+    if (f) qs.append('from_date', f);
+    if (t) qs.append('to_date', t);
+    if (level) qs.append('level', level);
+    
+    try {
+        const res = await fetch(`${API}/reports/trial-balance?${qs.toString()}`).then(r => r.json());
+        const tbody = document.getElementById('tbBody');
+        const tfoot = document.getElementById('tbFooter');
+        
+        if (!res.success || !res.data || res.data.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="9" class="text-center text-danger">لا توجد بيانات</td></tr>';
+            tfoot.style.display = 'none';
+            return;
+        }
+        
+        const getNumLevel = (lvl) => {
+            if (typeof lvl === 'number') return lvl;
+            if (typeof lvl === 'string') return parseInt(lvl.replace('L', '')) || 1;
+            return 1;
+        };
+        
+        // فلترة نوع القائمة
+        let data = res.data;
+        if (stmt !== 'all') {
+            if (stmt === 'BS') {
+                data = data.filter(r => r.financial_statement === 'BS' || r.financial_statement === 'EQ');
+            } else if (stmt === 'IS') {
+                data = data.filter(r => r.financial_statement === 'IS');
+            }
+        }
+        
+        // فلترة المستوى (إذا لم يكن 99)
+        if (level !== '99') {
+            const target = parseInt(level);
+            data = data.filter(r => getNumLevel(r.level) === target);
+        }
+        
+        const parentCodes = new Set();
+        data.forEach(row => {
+            if (row.parent_code) parentCodes.add(row.parent_code);
+        });
+        
+        let sumOpD = 0, sumOpC = 0, sumPd = 0, sumPc = 0, sumClD = 0, sumClC = 0;
+        
+        tbody.innerHTML = data.map(r => {
+            const openingDebit = r.opening_balance > 0 ? r.opening_balance : 0;
+            const openingCredit = r.opening_balance < 0 ? -r.opening_balance : 0;
+            const closingDebit = r.closing_balance > 0 ? r.closing_balance : 0;
+            const closingCredit = r.closing_balance < 0 ? -r.closing_balance : 0;
+            
+            sumOpD += openingDebit;
+            sumOpC += openingCredit;
+            sumPd += (r.period_debit || 0);
+            sumPc += (r.period_credit || 0);
+            sumClD += closingDebit;
+            sumClC += closingCredit;
+            
+            const lvl = getNumLevel(r.level);
+            const indent = lvl > 1 ? '&nbsp;&nbsp;&nbsp;&nbsp;'.repeat(lvl - 1) + '↳ ' : '';
+            
+            const isParent = parentCodes.has(r.code);
+            const rowClass = isParent ? 'fw-bold' : '';
+            
+            const stmtLabel = r.financial_statement === 'BS' ? 'ميزانية' : (r.financial_statement === 'EQ' ? 'حقوق ملكية' : (r.financial_statement === 'IS' ? 'دخل' : '—'));
+            
+            return `
+                <tr class="${rowClass}">
+                    <td>${r.code}</td>
+                    <td class="text-end">${indent}${r.name}</td>
+                    <td><span class="badge bg-secondary">${stmtLabel}</span></td>
+                    <td>${openingDebit.toLocaleString('en-US', {minimumFractionDigits:2})}</td>
+                    <td>${openingCredit.toLocaleString('en-US', {minimumFractionDigits:2})}</td>
+                    <td>${(r.period_debit || 0).toLocaleString('en-US', {minimumFractionDigits:2})}</td>
+                    <td>${(r.period_credit || 0).toLocaleString('en-US', {minimumFractionDigits:2})}</td>
+                    <td>${closingDebit.toLocaleString('en-US', {minimumFractionDigits:2})}</td>
+                    <td>${closingCredit.toLocaleString('en-US', {minimumFractionDigits:2})}</td>
+                </tr>
+            `;
+        }).join('');
+        
+        document.getElementById('ft_opD').textContent = sumOpD.toLocaleString('en-US', {minimumFractionDigits:2});
+        document.getElementById('ft_opC').textContent = sumOpC.toLocaleString('en-US', {minimumFractionDigits:2});
+        document.getElementById('ft_pD').textContent = sumPd.toLocaleString('en-US', {minimumFractionDigits:2});
+        document.getElementById('ft_pC').textContent = sumPc.toLocaleString('en-US', {minimumFractionDigits:2});
+        document.getElementById('ft_clD').textContent = sumClD.toLocaleString('en-US', {minimumFractionDigits:2});
+        document.getElementById('ft_clC').textContent = sumClC.toLocaleString('en-US', {minimumFractionDigits:2});
+        
+        tfoot.style.display = 'table-footer-group';
+        
+    } catch (e) {
+        alert('خطأ: ' + e.message);
+    }
+}
+window.onload = () => {
+    const today = new Date().toISOString().split('T')[0];
+    document.getElementById('toDate').value = today;
+    document.getElementById('fromDate').value = new Date(new Date().getFullYear(), 0, 1).toISOString().split('T')[0];
+    loadTrialBalance();
+};
+</script>
+</body>
+</html>

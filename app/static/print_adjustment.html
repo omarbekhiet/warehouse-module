@@ -1,0 +1,158 @@
+﻿<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>طباعة تسوية مخزنية</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="print_common.css" rel="stylesheet">
+<script src="permissions.js"></script>
+</head>
+<body>
+
+<div id="toolbar"></div>
+<div id="content"></div>
+
+<script src="company_config.js"></script>
+<script src="print_common.js"></script>
+<script>
+async function load() {
+    const id = getIdFromUrl();
+    if (!id) return;
+
+    document.getElementById('content').innerHTML = renderLoading('جاري تحميل التسوية...');
+
+    try {
+        const r = await fetch(`${PRINT_API}/counts/adjustments/${id}`).then(x => x.json());
+        if (!r.success) {
+            document.getElementById('content').innerHTML = renderError(r.message || 'خطأ');
+            return;
+        }
+        render(r.data);
+    } catch (e) {
+        document.getElementById('content').innerHTML = renderError('خطأ في الاتصال');
+    }
+}
+
+function render(data) {
+    const adj = data;
+    const lines = data.lines || [];
+
+    document.getElementById('toolbar').innerHTML = renderToolbar('معاينة طباعة - تسوية مخزنية');
+
+    const isShortage = (adj.notes || '').includes('[عجز]');
+    const typeAr = isShortage ? 'عجز' : 'زيادة';
+    const typeColor = isShortage ? '#dc2626' : '#16a34a';
+
+    let reasonAr = '—';
+    const m = (adj.notes || '').match(/السبب:\s*([^|]+)/);
+    if (m) reasonAr = m[1].trim();
+
+    let totalValue = 0;
+    let linesHtml = '';
+    if (lines.length === 0) {
+        linesHtml = '<tr><td colspan="7" style="text-align:center; padding:20px; color:#94a3b8;">لا توجد بنود</td></tr>';
+    } else {
+        lines.forEach((l, idx) => {
+            const variance = parseFloat(l.counted_qty) - parseFloat(l.system_qty);
+            const vColor = variance < 0 ? '#dc2626' : '#16a34a';
+            totalValue += Math.abs(parseFloat(l.variance_value || 0));
+
+            linesHtml += `
+                <tr>
+                    <td>${idx + 1}</td>
+                    <td><strong>${l.item_code || '—'}</strong></td>
+                    <td class="text-right">${l.item_name || '—'}</td>
+                    <td>${fmtNum(l.system_qty)}</td>
+                    <td>${fmtNum(l.counted_qty)}</td>
+                    <td style="color:${vColor}; font-weight:700;">${fmtNum(variance)}</td>
+                    <td><strong>${fmtNum(l.variance_value)}</strong></td>
+                </tr>`;
+        });
+    }
+
+    document.getElementById('content').innerHTML = `
+    <div class="a4-page">
+        <div class="doc-header">
+            ${renderCompanyHeader()}
+            <div class="doc-title-box">
+                <div class="doc-title" style="background:${isShortage ? '#fee2e2' : '#dcfce7'}; color:${typeColor};">
+                    <i class="bi bi-sliders"></i> تسوية مخزنية - ${typeAr}
+                </div>
+                <div class="doc-no-box">
+                    رقم التسوية: <strong>${adj.count_no || '—'}</strong>
+                </div>
+            </div>
+        </div>
+
+        <div class="info-grid">
+            <div class="info-box">
+                <div class="info-box-title"><i class="bi bi-info-circle"></i> بيانات التسوية</div>
+                <div class="info-box-body">
+                    <div class="info-row">
+                        <span class="label">التاريخ:</span>
+                        <span class="value">${adj.count_date || '—'}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="label">المستودع:</span>
+                        <span class="value">${adj.warehouse_name || '—'}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="label">النوع:</span>
+                        <span class="value" style="color:${typeColor}; font-weight:700;">${typeAr}</span>
+                    </div>
+                </div>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title"><i class="bi bi-exclamation-triangle"></i> السبب</div>
+                <div class="info-box-body">
+                    <div class="info-row">
+                        <span class="label">السبب:</span>
+                        <span class="value">${reasonAr}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="label">القيد:</span>
+                        <span class="value">${adj.entry_no || '—'}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <table class="items-table">
+            <thead>
+                <tr>
+                    <th style="width:40px;">#</th>
+                    <th style="width:90px;">الكود</th>
+                    <th>الصنف</th>
+                    <th style="width:80px;">الرصيد الدفتري</th>
+                    <th style="width:80px;">الرصيد الفعلي</th>
+                    <th style="width:70px;">الفرق</th>
+                    <th style="width:90px;">القيمة</th>
+                </tr>
+            </thead>
+            <tbody>${linesHtml}</tbody>
+        </table>
+
+        <div class="totals-wrap">
+            <div class="tafqeet-box">
+                <div class="label"><i class="bi bi-volume-up-fill"></i> المبلغ كتابةً:</div>
+                <div class="text">${tafqeet(totalValue)}</div>
+            </div>
+            <table class="totals-table">
+                <tr><td>عدد البنود:</td><td>${lines.length}</td></tr>
+                <tr class="grand-total"><td>القيمة الإجمالية:</td><td>${fmtNum(totalValue)} ج.م</td></tr>
+            </table>
+        </div>
+
+        ${adj.notes ? `<div class="notes-box"><div class="label"><i class="bi bi-sticky"></i> ملاحظات:</div><div>${adj.notes}</div></div>` : ''}
+
+        ${renderSignatures('توقيع أمين المخزن', 'توقيع المدير')}
+        ${renderPageFooter()}
+    </div>`;
+}
+
+loadCompanyInfo().then(() => load());
+</script>
+</body>
+</html>

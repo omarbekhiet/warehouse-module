@@ -1,0 +1,947 @@
+﻿<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>طباعة التقرير</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="print_common.css" rel="stylesheet">
+<style>
+.report-filters-box {
+    background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px;
+    padding: 10px 14px; margin-bottom: 12px; font-size: 0.82rem;
+}
+.report-filters-box .filter-label { color: #64748b; font-weight: 600; margin-left: 4px; }
+.report-filters-box .filter-value { color: #1e3c72; font-weight: 700; }
+.report-summary {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 12px;
+}
+.summary-card {
+    background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px;
+    padding: 10px 12px; text-align: center;
+}
+.summary-card .label { font-size: 0.72rem; color: #1e40af; font-weight: 600; margin-bottom: 4px; }
+.summary-card .value { font-size: 1rem; font-weight: 800; color: #1e3c72; }
+.summary-card.warning { background: #fef3c7; border-color: #fcd34d; }
+.summary-card.warning .label { color: #92400e; }
+.summary-card.danger { background: #fee2e2; border-color: #fecaca; }
+.summary-card.danger .label { color: #991b1b; }
+.summary-card.success { background: #dcfce7; border-color: #bbf7d0; }
+.summary-card.success .label { color: #15803d; }
+.wh-block h4 {
+    margin: 12px 0 6px; color: #1e3c72; font-size: 0.95rem; font-weight: 800;
+}
+.wh-block h4 .wh-total { color: #dc2626; margin-right: 8px; font-size: 0.85rem; }
+@media print {
+    .report-filters-box, .report-summary { page-break-inside: avoid; }
+    .wh-block { page-break-inside: avoid; }
+}
+</style>
+<script src="permissions.js"></script>
+</head>
+<body>
+
+<div id="toolbar"></div>
+<div id="content"></div>
+
+<script src="company_config.js"></script>
+<script src="print_common.js"></script>
+<script>
+
+// ==========================================
+// 1. حركة الصنف
+// ==========================================
+async function loadItemMovement() {
+    const itemId = getQueryParam('item_id');
+    if (!itemId) { showError('item_id مطلوب'); return; }
+
+    const from = getQueryParam('date_from') || '';
+    const to = getQueryParam('date_to') || '';
+    const wh = getQueryParam('warehouse_id') || '';
+    const ttype = getQueryParam('transaction_type') || '';
+
+    let url = `${PRINT_API}/reports/item-card?item_id=${itemId}`;
+    if (from) url += `&date_from=${from}`;
+    if (to) url += `&date_to=${to}`;
+    if (wh) url += `&warehouse_id=${wh}`;
+    if (ttype) url += `&transaction_type=${ttype}`;
+
+    const r = await fetch(url).then(x => x.json());
+    if (!r.success) { showError(r.message || 'خطأ'); return; }
+
+    const item = r.item || {};
+    const rows = r.data || [];
+    const openingQty = parseFloat(r.opening_qty || 0);
+    const currentQty = parseFloat(r.current_qty || 0);
+
+    document.getElementById('toolbar').innerHTML = renderToolbar('حركة الصنف - ' + (item.name_ar || ''));
+
+    let totalIn = 0, totalOut = 0;
+    rows.forEach(tx => {
+        const q = parseFloat(tx.quantity || 0);
+        if (q > 0) totalIn += q; else totalOut += Math.abs(q);
+    });
+
+    const TYPE_LABELS = {
+        PURCHASE: 'شراء', SALE: 'بيع', PURCHASE_RETURN: 'مرتجع شراء',
+        SALE_RETURN: 'مرتجع بيع', TRANSFER: 'تحويل', COUNT_ADJUST: 'تسوية',
+        RECEIPT: 'استلام', ISSUE: 'صرف'
+    };
+
+    let linesHtml = '';
+    if (!rows.length) {
+        linesHtml = '<tr><td colspan="8" style="text-align:center; padding:20px; color:#94a3b8;">لا توجد حركات في الفترة</td></tr>';
+    } else {
+        let running = openingQty;
+        rows.forEach((tx, idx) => {
+            const q = parseFloat(tx.quantity || 0);
+            running += q;
+            const typeLabel = TYPE_LABELS[tx.transaction_type] || tx.transaction_type || '—';
+            let desc = '';
+            if (tx.transaction_type === 'TRANSFER') {
+                desc = `من: ${tx.from_warehouse || '—'} → إلى: ${tx.to_warehouse || '—'}`;
+            } else if (tx.to_warehouse) desc = `إلى: ${tx.to_warehouse}`;
+            else if (tx.from_warehouse) desc = `من: ${tx.from_warehouse}`;
+
+            linesHtml += `
+                <tr>
+                    <td>${idx + 1}</td>
+                    <td>${tx.transaction_date || '—'}</td>
+                    <td><code>${tx.transaction_no || '—'}</code></td>
+                    <td>${typeLabel}</td>
+                    <td class="text-right">${desc || '—'}</td>
+                    <td style="color:#16a34a;">${q > 0 ? fmtNum(q) : '—'}</td>
+                    <td style="color:#dc2626;">${q < 0 ? fmtNum(Math.abs(q)) : '—'}</td>
+                    <td><strong>${fmtNum(running)}</strong></td>
+                </tr>`;
+        });
+    }
+
+    document.getElementById('content').innerHTML = `
+    <div class="a4-page">
+        <div class="doc-header">
+            ${renderCompanyHeader()}
+            <div class="doc-title-box">
+                <div class="doc-title"><i class="bi bi-graph-up"></i> حركة الصنف</div>
+                <div class="doc-no-box"><strong>${item.code || ''}</strong> - ${item.name_ar || ''}</div>
+            </div>
+        </div>
+        <div class="report-filters-box">
+            <span class="filter-label">الفترة:</span>
+            <span class="filter-value">${from || 'من البداية'} → ${to || 'حتى اليوم'}</span>
+            <span style="margin:0 10px;">|</span>
+            <span class="filter-label">طُبع في:</span>
+            <span class="filter-value">${new Date().toLocaleDateString('ar-EG')}</span>
+        </div>
+        <div class="report-summary">
+            <div class="summary-card"><div class="label">رصيد افتتاحي</div><div class="value">${fmtNum(openingQty)}</div></div>
+            <div class="summary-card success"><div class="label">إجمالي الوارد</div><div class="value">${fmtNum(totalIn)}</div></div>
+            <div class="summary-card danger"><div class="label">إجمالي الصادر</div><div class="value">${fmtNum(totalOut)}</div></div>
+            <div class="summary-card warning"><div class="label">الرصيد الحالي</div><div class="value">${fmtNum(currentQty)}</div></div>
+        </div>
+        <table class="items-table">
+            <thead>
+                <tr>
+                    <th style="width:35px;">#</th>
+                    <th style="width:85px;">التاريخ</th>
+                    <th style="width:110px;">المرجع</th>
+                    <th style="width:80px;">النوع</th>
+                    <th>البيان</th>
+                    <th style="width:70px;">وارد</th>
+                    <th style="width:70px;">صادر</th>
+                    <th style="width:80px;">الرصيد</th>
+                </tr>
+            </thead>
+            <tbody>${linesHtml}</tbody>
+        </table>
+        ${renderPageFooter()}
+    </div>`;
+}
+
+// ==========================================
+// 2. التسويات
+// ==========================================
+async function loadAdjustments() {
+    const from = getQueryParam('date_from') || '';
+    const to = getQueryParam('date_to') || '';
+    const wh = getQueryParam('warehouse_id') || '';
+    const type = getQueryParam('adjustment_type') || '';
+    const reason = getQueryParam('reason') || '';
+
+    let url = `${PRINT_API}/reports/adjustments?`;
+    if (from) url += `date_from=${from}&`;
+    if (to) url += `date_to=${to}&`;
+    if (wh) url += `warehouse_id=${wh}&`;
+    if (type) url += `adjustment_type=${type}&`;
+    if (reason) url += `reason=${encodeURIComponent(reason)}&`;
+
+    const r = await fetch(url).then(x => x.json());
+    if (!r.success) { showError(r.message || 'خطأ'); return; }
+
+    const rows = r.data || [];
+    const totals = r.totals || {};
+
+    document.getElementById('toolbar').innerHTML = renderToolbar('تقرير التسويات المخزنية');
+
+    let linesHtml = '';
+    if (!rows.length) {
+        linesHtml = '<tr><td colspan="8" style="text-align:center; padding:20px; color:#94a3b8;">لا توجد تسويات</td></tr>';
+    } else {
+        rows.forEach((x, idx) => {
+            const isShortage = x.adjustment_type === 'SHORTAGE';
+            const typeAr = isShortage ? 'عجز' : 'زيادة';
+            const sv = parseFloat(x.shortage_value || 0);
+            const pv = parseFloat(x.surplus_value || 0);
+
+            linesHtml += `
+                <tr>
+                    <td>${idx + 1}</td>
+                    <td><code>${x.count_no || '—'}</code></td>
+                    <td>${x.count_date || '—'}</td>
+                    <td>${x.warehouse_name || '—'}</td>
+                    <td style="color:${isShortage ? '#dc2626' : '#16a34a'}; font-weight:700;">${typeAr}</td>
+                    <td>${x.reason_ar || '—'}</td>
+                    <td style="color:#dc2626;">${sv > 0 ? fmtNum(sv) : '—'}</td>
+                    <td style="color:#16a34a;">${pv > 0 ? fmtNum(pv) : '—'}</td>
+                </tr>`;
+        });
+    }
+
+    document.getElementById('content').innerHTML = `
+    <div class="a4-page">
+        <div class="doc-header">
+            ${renderCompanyHeader()}
+            <div class="doc-title-box">
+                <div class="doc-title"><i class="bi bi-bar-chart-fill"></i> تقرير التسويات</div>
+                <div class="doc-no-box">عدد التسويات: <strong>${rows.length}</strong></div>
+            </div>
+        </div>
+        <div class="report-filters-box">
+            <span class="filter-label">الفترة:</span>
+            <span class="filter-value">${from || 'من البداية'} → ${to || 'حتى اليوم'}</span>
+        </div>
+        <div class="report-summary">
+            <div class="summary-card"><div class="label">إجمالي التسويات</div><div class="value">${totals.count || 0}</div></div>
+            <div class="summary-card danger"><div class="label">إجمالي العجز</div><div class="value">${fmtNum(totals.shortage || 0)}</div></div>
+            <div class="summary-card success"><div class="label">إجمالي الزيادة</div><div class="value">${fmtNum(totals.surplus || 0)}</div></div>
+            <div class="summary-card warning"><div class="label">الصافي</div><div class="value">${fmtNum(totals.net || 0)}</div></div>
+        </div>
+        <table class="items-table">
+            <thead>
+                <tr>
+                    <th style="width:35px;">#</th>
+                    <th style="width:100px;">رقم التسوية</th>
+                    <th style="width:80px;">التاريخ</th>
+                    <th>المستودع</th>
+                    <th style="width:60px;">النوع</th>
+                    <th style="width:90px;">السبب</th>
+                    <th style="width:90px;">قيمة العجز</th>
+                    <th style="width:90px;">قيمة الزيادة</th>
+                </tr>
+            </thead>
+            <tbody>${linesHtml}</tbody>
+        </table>
+        <div class="totals-wrap" style="margin-top:12px;">
+            <div class="tafqeet-box">
+                <div class="label"><i class="bi bi-info-circle"></i> ملاحظة:</div>
+                <div class="text">صافي التسويات = إجمالي الزيادة - إجمالي العجز</div>
+            </div>
+            <table class="totals-table">
+                <tr><td>إجمالي العجز:</td><td style="color:#dc2626;">${fmtNum(totals.shortage || 0)} ج.م</td></tr>
+                <tr><td>إجمالي الزيادة:</td><td style="color:#16a34a;">${fmtNum(totals.surplus || 0)} ج.م</td></tr>
+                <tr class="grand-total"><td>الصافي:</td><td>${fmtNum(totals.net || 0)} ج.م</td></tr>
+            </table>
+        </div>
+        ${renderPageFooter()}
+    </div>`;
+}
+
+// ==========================================
+// 3. أرصدة المخزون
+// ==========================================
+async function loadStockBalance() {
+    const wh = getQueryParam('warehouse_id') || '';
+    const item = getQueryParam('item_id') || '';
+    const optype = getQueryParam('operating_type') || '';
+
+    let url = `${PRINT_API}/reports/stock-balance?`;
+    if (wh) url += `warehouse_id=${wh}&`;
+    if (item) url += `item_id=${item}&`;
+    if (optype) url += `operating_type=${optype}&`;
+
+    const r = await fetch(url).then(x => x.json());
+    if (!r.success) { showError(r.message || 'خطأ'); return; }
+
+    const rows = r.data || [];
+    const totalValue = parseFloat(r.total_value || 0);
+
+    document.getElementById('toolbar').innerHTML = renderToolbar('تقرير أرصدة المخزون');
+
+    let linesHtml = '';
+    let totalQty = 0;
+    if (!rows.length) {
+        linesHtml = '<tr><td colspan="7" style="text-align:center; padding:20px; color:#94a3b8;">لا توجد أرصدة</td></tr>';
+    } else {
+        rows.forEach((x, idx) => {
+            const q = parseFloat(x.quantity || 0);
+            totalQty += q;
+            linesHtml += `
+                <tr>
+                    <td>${idx + 1}</td>
+                    <td><strong>${x.item_code || '—'}</strong></td>
+                    <td class="text-right">${x.item_name || '—'}</td>
+                    <td>${x.warehouse_name || '—'}</td>
+                    <td>${fmtNum(q)}</td>
+                    <td>${fmtNum(x.average_cost)}</td>
+                    <td><strong>${fmtNum(x.total_value)}</strong></td>
+                </tr>`;
+        });
+    }
+
+    document.getElementById('content').innerHTML = `
+    <div class="a4-page">
+        <div class="doc-header">
+            ${renderCompanyHeader()}
+            <div class="doc-title-box">
+                <div class="doc-title"><i class="bi bi-boxes"></i> أرصدة المخزون</div>
+                <div class="doc-no-box">عدد الأصناف: <strong>${rows.length}</strong></div>
+            </div>
+        </div>
+        <div class="report-filters-box">
+            <span class="filter-label">التاريخ:</span>
+            <span class="filter-value">${new Date().toLocaleDateString('ar-EG')}</span>
+        </div>
+        <div class="report-summary">
+            <div class="summary-card"><div class="label">عدد السجلات</div><div class="value">${rows.length}</div></div>
+            <div class="summary-card success"><div class="label">إجمالي الكميات</div><div class="value">${fmtNum(totalQty)}</div></div>
+            <div class="summary-card warning"><div class="label">إجمالي القيمة</div><div class="value">${fmtNum(totalValue)}</div></div>
+        </div>
+        <table class="items-table">
+            <thead>
+                <tr>
+                    <th style="width:35px;">#</th>
+                    <th style="width:90px;">الكود</th>
+                    <th>الصنف</th>
+                    <th style="width:120px;">المستودع</th>
+                    <th style="width:80px;">الكمية</th>
+                    <th style="width:90px;">متوسط التكلفة</th>
+                    <th style="width:100px;">القيمة</th>
+                </tr>
+            </thead>
+            <tbody>${linesHtml}</tbody>
+        </table>
+        <div class="totals-wrap" style="margin-top:12px;">
+            <div class="tafqeet-box">
+                <div class="label"><i class="bi bi-volume-up-fill"></i> القيمة الإجمالية كتابةً:</div>
+                <div class="text">${tafqeet(totalValue)}</div>
+            </div>
+            <table class="totals-table">
+                <tr class="grand-total"><td>إجمالي القيمة:</td><td>${fmtNum(totalValue)} ج.م</td></tr>
+            </table>
+        </div>
+        ${renderPageFooter()}
+    </div>`;
+}
+
+// ==========================================
+// 4. تقييم المخزون
+// ==========================================
+async function loadValuation() {
+    const r = await fetch(`${PRINT_API}/reports/valuation`).then(x => x.json());
+    if (!r.success) { showError(r.message || 'خطأ'); return; }
+
+    const rows = r.data || [];
+    document.getElementById('toolbar').innerHTML = renderToolbar('تقييم المخزون');
+
+    const ITEM_TYPES = {
+        'RAW_MATERIAL': 'مادة خام',
+        'FINISHED_GOODS': 'منتج تام',
+        'MERCHANDISE': 'بضاعة تجارية',
+        'SUPPLIES': 'مستلزمات',
+        'SERVICE': 'خدمة'
+    };
+
+    let grandQty = 0, grandValue = 0;
+    let linesHtml = '';
+    rows.forEach((x, idx) => {
+        const qty = parseFloat(x.total_qty || 0);
+        const val = parseFloat(x.total_value || 0);
+        grandQty += qty; grandValue += val;
+        const typeLabel = ITEM_TYPES[x.item_type] || x.item_type || '—';
+        linesHtml += `
+            <tr>
+                <td>${idx + 1}</td>
+                <td>${typeLabel}</td>
+                <td>${x.item_count}</td>
+                <td>${fmtNum(qty)}</td>
+                <td><strong>${fmtNum(val)}</strong></td>
+            </tr>`;
+    });
+
+    document.getElementById('content').innerHTML = `
+    <div class="a4-page">
+        <div class="doc-header">
+            ${renderCompanyHeader()}
+            <div class="doc-title-box">
+                <div class="doc-title"><i class="bi bi-cash-stack"></i> تقييم المخزون</div>
+                <div class="doc-no-box">عدد التصنيفات: <strong>${rows.length}</strong></div>
+            </div>
+        </div>
+        <div class="report-filters-box">
+            <span class="filter-label">التاريخ:</span>
+            <span class="filter-value">${new Date().toLocaleDateString('ar-EG')}</span>
+        </div>
+        <div class="report-summary">
+            <div class="summary-card"><div class="label">عدد التصنيفات</div><div class="value">${rows.length}</div></div>
+            <div class="summary-card success"><div class="label">إجمالي الكميات</div><div class="value">${fmtNum(grandQty)}</div></div>
+            <div class="summary-card warning"><div class="label">إجمالي القيمة</div><div class="value">${fmtNum(grandValue)}</div></div>
+        </div>
+        <table class="items-table">
+            <thead>
+                <tr>
+                    <th style="width:40px;">#</th>
+                    <th>التصنيف</th>
+                    <th style="width:100px;">عدد الأصناف</th>
+                    <th style="width:120px;">إجمالي الكميات</th>
+                    <th style="width:150px;">القيمة (ج.م)</th>
+                </tr>
+            </thead>
+            <tbody>${linesHtml}</tbody>
+        </table>
+        <div class="totals-wrap" style="margin-top:12px;">
+            <div class="tafqeet-box">
+                <div class="label"><i class="bi bi-volume-up-fill"></i> القيمة كتابةً:</div>
+                <div class="text">${tafqeet(grandValue)}</div>
+            </div>
+            <table class="totals-table">
+                <tr class="grand-total"><td>الإجمالي:</td><td>${fmtNum(grandValue)} ج.م</td></tr>
+            </table>
+        </div>
+        ${renderPageFooter()}
+    </div>`;
+}
+
+// ==========================================
+// 5. أصناف تحت الحد الأدنى
+// ==========================================
+async function loadLowStock() {
+    const r = await fetch(`${PRINT_API}/reports/low-stock`).then(x => x.json());
+    if (!r.success) { showError(r.message || 'خطأ'); return; }
+
+    const rows = r.data || [];
+    document.getElementById('toolbar').innerHTML = renderToolbar('أصناف تحت الحد الأدنى');
+
+    let linesHtml = '';
+    if (!rows.length) {
+        linesHtml = '<tr><td colspan="6" style="text-align:center; padding:20px; color:#16a34a; font-weight:700;">كل الأصناف فوق الحد الأدنى</td></tr>';
+    } else {
+        rows.forEach((x, idx) => {
+            const shortage = parseFloat(x.reorder_level || 0) - parseFloat(x.total_qty || 0);
+            linesHtml += `
+                <tr>
+                    <td>${idx + 1}</td>
+                    <td><code>${x.code || '—'}</code></td>
+                    <td class="text-right">${x.name_ar || '—'}</td>
+                    <td>${fmtNum(x.total_qty)}</td>
+                    <td>${fmtNum(x.reorder_level)}</td>
+                    <td style="color:#dc2626; font-weight:700;">${fmtNum(shortage)}</td>
+                </tr>`;
+        });
+    }
+
+    document.getElementById('content').innerHTML = `
+    <div class="a4-page">
+        <div class="doc-header">
+            ${renderCompanyHeader()}
+            <div class="doc-title-box">
+                <div class="doc-title" style="background:#fef3c7; color:#92400e;">
+                    <i class="bi bi-exclamation-triangle"></i> أصناف تحت الحد الأدنى
+                </div>
+                <div class="doc-no-box">عدد الأصناف: <strong style="color:#dc2626;">${rows.length}</strong></div>
+            </div>
+        </div>
+        <div class="report-filters-box">
+            <span class="filter-label">التاريخ:</span>
+            <span class="filter-value">${new Date().toLocaleDateString('ar-EG')}</span>
+        </div>
+        <table class="items-table">
+            <thead>
+                <tr>
+                    <th style="width:40px;">#</th>
+                    <th style="width:100px;">الكود</th>
+                    <th>الصنف</th>
+                    <th style="width:90px;">المتاح</th>
+                    <th style="width:100px;">الحد الأدنى</th>
+                    <th style="width:90px;">النقص</th>
+                </tr>
+            </thead>
+            <tbody>${linesHtml}</tbody>
+        </table>
+        ${renderPageFooter()}
+    </div>`;
+}
+
+// ==========================================
+// 6. المخزون حسب المستودع
+// ==========================================
+async function loadInventoryByWarehouse() {
+    const r = await fetch(`${PRINT_API}/reports/inventory-by-warehouse`).then(x => x.json());
+    if (!r.success) { showError(r.message || 'خطأ'); return; }
+
+    const rows = r.data || [];
+    document.getElementById('toolbar').innerHTML = renderToolbar('المخزون حسب المستودع');
+
+    const OP_LABELS = {
+        'OPERATING': 'تشغيلي',
+        'NON_OPERATING': 'غير تشغيلي',
+        'CAPITAL': 'رأسمالي'
+    };
+
+    let html = '';
+    let grandValue = 0;
+
+    rows.forEach(wh => {
+        const whVal = parseFloat(wh.total_value || 0);
+        grandValue += whVal;
+
+        html += `
+        <div class="wh-block">
+        <h4>
+            <i class="bi bi-building"></i> ${wh.warehouse}
+            <span class="wh-total">(${fmtNum(whVal)} ج.م)</span>
+        </h4>
+        <table class="items-table">
+            <thead>
+                <tr>
+                    <th>التصنيف التشغيلي</th>
+                    <th style="width:100px;">عدد الأصناف</th>
+                    <th style="width:110px;">إجمالي الكميات</th>
+                    <th style="width:140px;">القيمة (ج.م)</th>
+                </tr>
+            </thead>
+            <tbody>`;
+
+        wh.items.forEach(it => {
+            html += `
+                <tr>
+                    <td>${OP_LABELS[it.operating_type] || it.operating_type}</td>
+                    <td>${it.item_count}</td>
+                    <td>${fmtNum(it.total_qty)}</td>
+                    <td><strong>${fmtNum(it.total_value)}</strong></td>
+                </tr>`;
+        });
+
+        html += `</tbody></table></div>`;
+    });
+
+    document.getElementById('content').innerHTML = `
+    <div class="a4-page">
+        <div class="doc-header">
+            ${renderCompanyHeader()}
+            <div class="doc-title-box">
+                <div class="doc-title"><i class="bi bi-building"></i> المخزون حسب المستودع</div>
+                <div class="doc-no-box">عدد المستودعات: <strong>${rows.length}</strong></div>
+            </div>
+        </div>
+        <div class="report-filters-box">
+            <span class="filter-label">التاريخ:</span>
+            <span class="filter-value">${new Date().toLocaleDateString('ar-EG')}</span>
+        </div>
+        ${html}
+        <div class="totals-wrap" style="margin-top:20px;">
+            <div class="tafqeet-box">
+                <div class="label"><i class="bi bi-volume-up-fill"></i> القيمة الإجمالية:</div>
+                <div class="text">${tafqeet(grandValue)}</div>
+            </div>
+            <table class="totals-table">
+                <tr class="grand-total"><td>الإجمالي:</td><td>${fmtNum(grandValue)} ج.م</td></tr>
+            </table>
+        </div>
+        ${renderPageFooter()}
+    </div>`;
+}
+
+// ==========================================
+// 7. تقرير الاستلامات
+// ==========================================
+async function loadReceiptsReport() {
+    const from = getQueryParam('date_from') || '';
+    const to = getQueryParam('date_to') || '';
+    const wh = getQueryParam('warehouse_id') || '';
+
+    let url = `${PRINT_API}/reports/receipts?`;
+    if (from) url += `date_from=${from}&`;
+    if (to) url += `date_to=${to}&`;
+    if (wh) url += `warehouse_id=${wh}&`;
+
+    const r = await fetch(url).then(x => x.json());
+    if (!r.success) { showError(r.message || 'خطأ'); return; }
+
+    const rows = r.data || [];
+    document.getElementById('toolbar').innerHTML = renderToolbar('تقرير الاستلامات');
+
+    let totalQty = 0, totalValue = 0;
+    let linesHtml = '';
+    if (!rows.length) {
+        linesHtml = '<tr><td colspan="8" style="text-align:center; padding:20px; color:#94a3b8;">لا توجد استلامات</td></tr>';
+    } else {
+        rows.forEach((x, idx) => {
+            const q = parseFloat(x.quantity || 0);
+            const v = parseFloat(x.total_cost || 0);
+            totalQty += q; totalValue += v;
+            linesHtml += `
+                <tr>
+                    <td>${idx + 1}</td>
+                    <td>${x.transaction_date || '—'}</td>
+                    <td><code>${x.transaction_no || '—'}</code></td>
+                    <td>${x.warehouse_name || '—'}</td>
+                    <td><code>${x.item_code || '—'}</code></td>
+                    <td class="text-right">${x.item_name || '—'}</td>
+                    <td>${fmtNum(q)}</td>
+                    <td><strong>${fmtNum(v)}</strong></td>
+                </tr>`;
+        });
+    }
+
+    document.getElementById('content').innerHTML = `
+    <div class="a4-page">
+        <div class="doc-header">
+            ${renderCompanyHeader()}
+            <div class="doc-title-box">
+                <div class="doc-title"><i class="bi bi-arrow-down-circle"></i> تقرير الاستلامات</div>
+                <div class="doc-no-box">عدد الحركات: <strong>${rows.length}</strong></div>
+            </div>
+        </div>
+        <div class="report-filters-box">
+            <span class="filter-label">الفترة:</span>
+            <span class="filter-value">${from || 'من البداية'} → ${to || 'حتى اليوم'}</span>
+        </div>
+        <div class="report-summary">
+            <div class="summary-card"><div class="label">عدد الحركات</div><div class="value">${rows.length}</div></div>
+            <div class="summary-card success"><div class="label">إجمالي الكميات</div><div class="value">${fmtNum(totalQty)}</div></div>
+            <div class="summary-card warning"><div class="label">إجمالي القيمة</div><div class="value">${fmtNum(totalValue)}</div></div>
+        </div>
+        <table class="items-table">
+            <thead>
+                <tr>
+                    <th style="width:35px;">#</th>
+                    <th style="width:85px;">التاريخ</th>
+                    <th style="width:110px;">رقم الإذن</th>
+                    <th>المستودع</th>
+                    <th style="width:85px;">كود الصنف</th>
+                    <th>الصنف</th>
+                    <th style="width:70px;">الكمية</th>
+                    <th style="width:90px;">القيمة</th>
+                </tr>
+            </thead>
+            <tbody>${linesHtml}</tbody>
+        </table>
+        <div class="totals-wrap" style="margin-top:12px;">
+            <div class="tafqeet-box">
+                <div class="label"><i class="bi bi-volume-up-fill"></i> القيمة كتابةً:</div>
+                <div class="text">${tafqeet(totalValue)}</div>
+            </div>
+            <table class="totals-table">
+                <tr><td>إجمالي الكميات:</td><td>${fmtNum(totalQty)}</td></tr>
+                <tr class="grand-total"><td>الإجمالي:</td><td>${fmtNum(totalValue)} ج.م</td></tr>
+            </table>
+        </div>
+        ${renderPageFooter()}
+    </div>`;
+}
+
+// ==========================================
+// 8. تقرير الصرف
+// ==========================================
+async function loadIssuesReport() {
+    const from = getQueryParam('date_from') || '';
+    const to = getQueryParam('date_to') || '';
+    const wh = getQueryParam('warehouse_id') || '';
+
+    let url = `${PRINT_API}/reports/issues?`;
+    if (from) url += `date_from=${from}&`;
+    if (to) url += `date_to=${to}&`;
+    if (wh) url += `warehouse_id=${wh}&`;
+
+    const r = await fetch(url).then(x => x.json());
+    if (!r.success) { showError(r.message || 'خطأ'); return; }
+
+    const rows = r.data || [];
+    document.getElementById('toolbar').innerHTML = renderToolbar('تقرير الصرف');
+
+    let totalQty = 0, totalValue = 0;
+    let linesHtml = '';
+    if (!rows.length) {
+        linesHtml = '<tr><td colspan="8" style="text-align:center; padding:20px; color:#94a3b8;">لا توجد صرفيات</td></tr>';
+    } else {
+        rows.forEach((x, idx) => {
+            const q = Math.abs(parseFloat(x.quantity || 0));
+            const v = Math.abs(parseFloat(x.total_cost || 0));
+            totalQty += q; totalValue += v;
+            linesHtml += `
+                <tr>
+                    <td>${idx + 1}</td>
+                    <td>${x.transaction_date || '—'}</td>
+                    <td><code>${x.transaction_no || '—'}</code></td>
+                    <td>${x.warehouse_name || '—'}</td>
+                    <td><code>${x.item_code || '—'}</code></td>
+                    <td class="text-right">${x.item_name || '—'}</td>
+                    <td>${fmtNum(q)}</td>
+                    <td><strong>${fmtNum(v)}</strong></td>
+                </tr>`;
+        });
+    }
+
+    document.getElementById('content').innerHTML = `
+    <div class="a4-page">
+        <div class="doc-header">
+            ${renderCompanyHeader()}
+            <div class="doc-title-box">
+                <div class="doc-title"><i class="bi bi-arrow-up-circle"></i> تقرير الصرف</div>
+                <div class="doc-no-box">عدد الحركات: <strong>${rows.length}</strong></div>
+            </div>
+        </div>
+        <div class="report-filters-box">
+            <span class="filter-label">الفترة:</span>
+            <span class="filter-value">${from || 'من البداية'} → ${to || 'حتى اليوم'}</span>
+        </div>
+        <div class="report-summary">
+            <div class="summary-card"><div class="label">عدد الحركات</div><div class="value">${rows.length}</div></div>
+            <div class="summary-card danger"><div class="label">إجمالي الكميات</div><div class="value">${fmtNum(totalQty)}</div></div>
+            <div class="summary-card warning"><div class="label">إجمالي القيمة</div><div class="value">${fmtNum(totalValue)}</div></div>
+        </div>
+        <table class="items-table">
+            <thead>
+                <tr>
+                    <th style="width:35px;">#</th>
+                    <th style="width:85px;">التاريخ</th>
+                    <th style="width:110px;">رقم الإذن</th>
+                    <th>المستودع</th>
+                    <th style="width:85px;">كود الصنف</th>
+                    <th>الصنف</th>
+                    <th style="width:70px;">الكمية</th>
+                    <th style="width:90px;">القيمة</th>
+                </tr>
+            </thead>
+            <tbody>${linesHtml}</tbody>
+        </table>
+        <div class="totals-wrap" style="margin-top:12px;">
+            <div class="tafqeet-box">
+                <div class="label"><i class="bi bi-volume-up-fill"></i> القيمة كتابةً:</div>
+                <div class="text">${tafqeet(totalValue)}</div>
+            </div>
+            <table class="totals-table">
+                <tr><td>إجمالي الكميات:</td><td>${fmtNum(totalQty)}</td></tr>
+                <tr class="grand-total"><td>الإجمالي:</td><td>${fmtNum(totalValue)} ج.م</td></tr>
+            </table>
+        </div>
+        ${renderPageFooter()}
+    </div>`;
+}
+
+// ==========================================
+// 9. تقرير التحويلات
+// ==========================================
+async function loadTransfersReport() {
+    const from = getQueryParam('date_from') || '';
+    const to = getQueryParam('date_to') || '';
+
+    let url = `${PRINT_API}/reports/transfers?`;
+    if (from) url += `date_from=${from}&`;
+    if (to) url += `date_to=${to}&`;
+
+    const r = await fetch(url).then(x => x.json());
+    if (!r.success) { showError(r.message || 'خطأ'); return; }
+
+    const rows = r.data || [];
+    document.getElementById('toolbar').innerHTML = renderToolbar('تقرير التحويلات');
+
+    let totalQty = 0, totalValue = 0;
+    let linesHtml = '';
+    if (!rows.length) {
+        linesHtml = '<tr><td colspan="7" style="text-align:center; padding:20px; color:#94a3b8;">لا توجد تحويلات</td></tr>';
+    } else {
+        rows.forEach((x, idx) => {
+            const q = parseFloat(x.quantity || 0);
+            const v = parseFloat(x.total_cost || 0);
+            totalQty += q; totalValue += v;
+            linesHtml += `
+                <tr>
+                    <td>${idx + 1}</td>
+                    <td>${x.transaction_date || '—'}</td>
+                    <td><code>${x.transaction_no || '—'}</code></td>
+                    <td>${x.from_warehouse || '—'}</td>
+                    <td>${x.to_warehouse || '—'}</td>
+                    <td class="text-right"><code>${x.item_code || '—'}</code> ${x.item_name || ''}</td>
+                    <td>${fmtNum(q)}</td>
+                </tr>`;
+        });
+    }
+
+    document.getElementById('content').innerHTML = `
+    <div class="a4-page">
+        <div class="doc-header">
+            ${renderCompanyHeader()}
+            <div class="doc-title-box">
+                <div class="doc-title"><i class="bi bi-arrow-left-right"></i> تقرير التحويلات</div>
+                <div class="doc-no-box">عدد الحركات: <strong>${rows.length}</strong></div>
+            </div>
+        </div>
+        <div class="report-filters-box">
+            <span class="filter-label">الفترة:</span>
+            <span class="filter-value">${from || 'من البداية'} → ${to || 'حتى اليوم'}</span>
+        </div>
+        <table class="items-table">
+            <thead>
+                <tr>
+                    <th style="width:35px;">#</th>
+                    <th style="width:85px;">التاريخ</th>
+                    <th style="width:110px;">رقم التحويل</th>
+                    <th style="width:120px;">من مستودع</th>
+                    <th style="width:120px;">إلى مستودع</th>
+                    <th>الصنف</th>
+                    <th style="width:70px;">الكمية</th>
+                </tr>
+            </thead>
+            <tbody>${linesHtml}</tbody>
+        </table>
+        <div class="totals-wrap" style="margin-top:12px;">
+            <div class="tafqeet-box">
+                <div class="label"><i class="bi bi-calculator"></i> الإجماليات:</div>
+                <div class="text">${rows.length} حركة | ${fmtNum(totalQty)} وحدة</div>
+            </div>
+            <table class="totals-table">
+                <tr class="grand-total"><td>إجمالي الكميات:</td><td>${fmtNum(totalQty)}</td></tr>
+            </table>
+        </div>
+        ${renderPageFooter()}
+    </div>`;
+}
+
+// ==========================================
+// 10. القيود اليومية
+// ==========================================
+async function loadJournalEntries() {
+    const r = await fetch(`${PRINT_API}/reports/journal-entries`).then(x => x.json());
+    if (!r.success) { showError(r.message || 'خطأ'); return; }
+
+    const rows = r.data || [];
+    document.getElementById('toolbar').innerHTML = renderToolbar('دفتر اليومية');
+
+    let totalDebit = 0, totalCredit = 0;
+    let linesHtml = '';
+    if (!rows.length) {
+        linesHtml = '<tr><td colspan="7" style="text-align:center; padding:20px; color:#94a3b8;">لا توجد قيود</td></tr>';
+    } else {
+        rows.forEach((x, idx) => {
+            const d = parseFloat(x.debit_amount || 0);
+            const c = parseFloat(x.credit_amount || 0);
+            totalDebit += d; totalCredit += c;
+            linesHtml += `
+                <tr>
+                    <td>${idx + 1}</td>
+                    <td>${x.entry_date || '—'}</td>
+                    <td><code>${x.entry_no || '—'}</code></td>
+                    <td class="text-right">${x.description || '—'}</td>
+                    <td><code>${x.account_code || '—'}</code></td>
+                    <td style="color:#dc2626;">${d > 0 ? fmtNum(d) : '—'}</td>
+                    <td style="color:#16a34a;">${c > 0 ? fmtNum(c) : '—'}</td>
+                </tr>`;
+        });
+    }
+
+    document.getElementById('content').innerHTML = `
+    <div class="a4-page">
+        <div class="doc-header">
+            ${renderCompanyHeader()}
+            <div class="doc-title-box">
+                <div class="doc-title"><i class="bi bi-journal-text"></i> دفتر اليومية</div>
+                <div class="doc-no-box">عدد السطور: <strong>${rows.length}</strong></div>
+            </div>
+        </div>
+        <div class="report-filters-box">
+            <span class="filter-label">التاريخ:</span>
+            <span class="filter-value">${new Date().toLocaleDateString('ar-EG')}</span>
+        </div>
+        <div class="report-summary">
+            <div class="summary-card"><div class="label">عدد السطور</div><div class="value">${rows.length}</div></div>
+            <div class="summary-card danger"><div class="label">إجمالي المدين</div><div class="value">${fmtNum(totalDebit)}</div></div>
+            <div class="summary-card success"><div class="label">إجمالي الدائن</div><div class="value">${fmtNum(totalCredit)}</div></div>
+        </div>
+        <table class="items-table">
+            <thead>
+                <tr>
+                    <th style="width:35px;">#</th>
+                    <th style="width:85px;">التاريخ</th>
+                    <th style="width:120px;">رقم القيد</th>
+                    <th>البيان</th>
+                    <th style="width:90px;">الحساب</th>
+                    <th style="width:90px;">مدين</th>
+                    <th style="width:90px;">دائن</th>
+                </tr>
+            </thead>
+            <tbody>${linesHtml}</tbody>
+        </table>
+        <div class="totals-wrap" style="margin-top:12px;">
+            <div class="tafqeet-box">
+                <div class="label"><i class="bi bi-check-circle"></i> توازن:</div>
+                <div class="text">${Math.abs(totalDebit - totalCredit) < 0.01 ? 'متوازن ✓' : 'غير متوازن ⚠'}</div>
+            </div>
+            <table class="totals-table">
+                <tr><td>إجمالي المدين:</td><td style="color:#dc2626;">${fmtNum(totalDebit)}</td></tr>
+                <tr><td>إجمالي الدائن:</td><td style="color:#16a34a;">${fmtNum(totalCredit)}</td></tr>
+                <tr class="grand-total"><td>الفرق:</td><td>${fmtNum(totalDebit - totalCredit)}</td></tr>
+            </table>
+        </div>
+        ${renderPageFooter()}
+    </div>`;
+}
+
+// ==========================================
+// Router الرئيسي
+// ==========================================
+function showError(msg) {
+    document.getElementById('content').innerHTML = renderError(msg);
+}
+
+async function load() {
+    const type = getQueryParam('type');
+    if (!type) {
+        document.getElementById('content').innerHTML = renderError('نوع التقرير غير محدد. تأكد من وجود ?type= في الرابط');
+        return;
+    }
+
+    document.getElementById('content').innerHTML = renderLoading('جاري تحميل التقرير...');
+
+    const handlers = {
+        'item_movement': loadItemMovement,
+        'adjustments': loadAdjustments,
+        'stock_balance': loadStockBalance,
+        'valuation': loadValuation,
+        'low_stock': loadLowStock,
+        'inventory_by_warehouse': loadInventoryByWarehouse,
+        'receipts': loadReceiptsReport,
+        'issues': loadIssuesReport,
+        'transfers': loadTransfersReport,
+        'journal_entries': loadJournalEntries
+    };
+
+    const handler = handlers[type];
+    if (!handler) {
+        document.getElementById('content').innerHTML = renderError('نوع التقرير غير مدعوم: ' + type);
+        return;
+    }
+
+    try {
+        await handler();
+    } catch (e) {
+        console.error(e);
+        document.getElementById('content').innerHTML = renderError('خطأ في التحميل: ' + e.message);
+    }
+}
+
+loadCompanyInfo().then(() => load());
+</script>
+</body>
+</html>

@@ -1,0 +1,575 @@
+"""
+ترقية data_io.html
+- عرض كل قوالب الاستيراد (13)
+- عرض كل قوالب التصدير (44) مجمعة
+- إضافة معاينة قبل الحفظ
+"""
+import os
+
+BASE = os.path.dirname(os.path.abspath(__file__))
+path = os.path.join(BASE, 'app', 'static', 'data_io.html')
+
+print("=" * 60)
+print("🎨 ترقية data_io.html")
+print("=" * 60)
+
+# HTML جديد كامل
+new_html = '''<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>استيراد وتصدير Excel</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+<link href="style.css" rel="stylesheet">
+<style>
+.import-export-card {
+    background: white;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 1px 8px rgba(0,0,0,0.06);
+    margin-bottom: 16px;
+}
+.card-header-custom {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding-bottom: 12px;
+    margin-bottom: 16px;
+    border-bottom: 2px solid #f1f5f9;
+}
+.card-header-custom .icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    color: white;
+}
+.icon-export { background: linear-gradient(135deg, #10b981, #34d399); }
+.icon-import { background: linear-gradient(135deg, #3b82f6, #60a5fa); }
+
+.category-title {
+    font-size: 0.78rem;
+    font-weight: 800;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 8px 12px;
+    background: #f8fafc;
+    border-radius: 6px;
+    margin: 12px 0 6px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.template-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 14px;
+    background: #fafbfc;
+    border: 1px solid #f1f5f9;
+    border-radius: 8px;
+    margin-bottom: 6px;
+    transition: all 0.15s;
+}
+.template-item:hover {
+    background: #f1f5f9;
+    border-color: #e2e8f0;
+    transform: translateX(-3px);
+}
+.template-item .name {
+    font-weight: 600;
+    color: #1e3c72;
+    font-size: 0.88rem;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.template-item .name i {
+    color: #94a3b8;
+}
+.template-item .actions {
+    display: flex;
+    gap: 6px;
+}
+
+.upload-area {
+    border: 2px dashed #cbd5e1;
+    border-radius: 12px;
+    padding: 30px 20px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.2s;
+    background: #f8fafc;
+    margin-bottom: 12px;
+}
+.upload-area:hover {
+    border-color: #3b82f6;
+    background: #eff6ff;
+}
+.upload-area.dragover {
+    border-color: #10b981;
+    background: #ecfdf5;
+    transform: scale(1.02);
+}
+.upload-area i {
+    font-size: 2.5rem;
+    color: #94a3b8;
+    margin-bottom: 8px;
+}
+.upload-area .title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #475569;
+    margin-bottom: 4px;
+}
+.upload-area .sub {
+    font-size: 0.78rem;
+    color: #94a3b8;
+}
+
+.result-box {
+    background: #f0fdf4;
+    border: 1px solid #86efac;
+    border-radius: 8px;
+    padding: 14px;
+    margin-top: 12px;
+}
+.result-box.error {
+    background: #fef2f2;
+    border-color: #fca5a5;
+}
+.result-box.warning {
+    background: #fffbeb;
+    border-color: #fcd34d;
+}
+
+.preview-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.78rem;
+    margin-top: 8px;
+}
+.preview-table th {
+    background: #f1f5f9;
+    padding: 6px 8px;
+    text-align: right;
+    font-weight: 700;
+    color: #475569;
+    border-bottom: 1px solid #cbd5e1;
+}
+.preview-table td {
+    padding: 5px 8px;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.stats-mini {
+    display: flex;
+    gap: 10px;
+    margin: 10px 0;
+}
+.stats-mini .item {
+    flex: 1;
+    background: white;
+    padding: 8px;
+    border-radius: 6px;
+    text-align: center;
+    border: 1px solid #e2e8f0;
+}
+.stats-mini .item .num {
+    font-size: 1.2rem;
+    font-weight: 800;
+}
+.stats-mini .item .lbl {
+    font-size: 0.7rem;
+    color: #64748b;
+}
+</style>
+<script src="permissions.js"></script>
+</head>
+<body>
+<div class="container-box">
+
+    <!-- Header -->
+    <div class="page-head">
+        <h2><i class="bi bi-file-earmark-excel text-success"></i> استيراد وتصدير Excel</h2>
+        <div class="d-flex gap-2">
+            <a href="index.html" class="btn btn-sm btn-outline-secondary">
+                <i class="bi bi-house-fill"></i> الرئيسية
+            </a>
+        </div>
+    </div>
+
+    <!-- Tabs -->
+    <ul class="nav nav-tabs" style="margin-bottom: 16px; border-bottom: 2px solid #e2e8f0;">
+        <li class="nav-item">
+            <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-export">
+                <i class="bi bi-download text-success"></i> تصدير
+            </button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-import">
+                <i class="bi bi-upload text-primary"></i> استيراد
+            </button>
+        </li>
+    </ul>
+
+    <div class="tab-content">
+        <!-- Export Tab -->
+        <div class="tab-pane fade show active" id="tab-export">
+            <div class="import-export-card">
+                <div class="card-header-custom">
+                    <div class="icon icon-export">
+                        <i class="bi bi-download"></i>
+                    </div>
+                    <div>
+                        <h5 class="mb-0">📤 تصدير البيانات</h5>
+                        <small class="text-muted">تصدير أي جدول لملف Excel</small>
+                    </div>
+                </div>
+                <div id="export-templates">
+                    <div class="text-center text-muted p-4">جاري التحميل...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Import Tab -->
+        <div class="tab-pane fade" id="tab-import">
+            <div class="import-export-card">
+                <div class="card-header-custom">
+                    <div class="icon icon-import">
+                        <i class="bi bi-upload"></i>
+                    </div>
+                    <div>
+                        <h5 class="mb-0">📥 استيراد البيانات</h5>
+                        <small class="text-muted">ارفع ملف Excel لاستيراد البيانات</small>
+                    </div>
+                </div>
+
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">نوع البيانات *</label>
+                        <select class="form-select" id="import-type">
+                            <option value="">— اختر نوع —</option>
+                        </select>
+                        <small class="text-muted">اختر نوع البيانات ثم حمّل القالب أو ارفع ملفك</small>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">&nbsp;</label>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-outline-primary btn-sm" onclick="downloadTemplate()">
+                                <i class="bi bi-download"></i> تحميل قالب فارغ
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="upload-area mt-3" id="upload-area" onclick="document.getElementById('file-input').click()">
+                    <i class="bi bi-cloud-upload"></i>
+                    <div class="title">اسحب الملف هنا أو اضغط للاختيار</div>
+                    <div class="sub">ملفات Excel فقط (.xlsx, .xls)</div>
+                </div>
+                <input type="file" id="file-input" accept=".xlsx,.xls" style="display:none" onchange="handleFile(this.files[0])">
+
+                <div id="file-info" class="mt-3" style="display:none;">
+                    <div class="alert alert-info py-2 mb-0">
+                        <i class="bi bi-file-earmark-excel"></i>
+                        <span id="file-name"></span>
+                        <button class="btn btn-sm btn-outline-danger float-end" onclick="clearFile()">
+                            <i class="bi bi-x"></i>
+                        </button>
+                    </div>
+                    <div class="d-flex gap-2 mt-2">
+                        <button class="btn btn-outline-info flex-fill" onclick="previewFile()">
+                            <i class="bi bi-eye"></i> معاينة قبل الحفظ
+                        </button>
+                        <button class="btn btn-primary flex-fill" onclick="uploadFile(false)">
+                            <i class="bi bi-upload"></i> استيراد مباشرة
+                        </button>
+                    </div>
+                </div>
+
+                <div id="import-result"></div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+const API = '/api/v1';
+
+let allTemplates = { export: [], import: [] };
+let currentFile = null;
+
+// تصنيفات العرض
+const EXPORT_CATEGORIES = {
+    'بيانات أساسية': ['accounts', 'customers', 'suppliers', 'items', 'warehouses', 'item_groups', 'uom'],
+    'مشتريات': ['purchase_invoices', 'purchase_returns', 'supplier_payments', 'payment_methods', 'settlements'],
+    'مبيعات': ['sales_invoices', 'sales_returns', 'customer_receipts'],
+    'مخازن': ['stock_transactions', 'inventory_counts', 'stock_adjustments', 'transfers'],
+    'محاسبة': ['journal_entries', 'cash_boxes', 'banks', 'cash_box_transactions', 'expenses', 'expense_categories', 'branches'],
+    'تقارير': ['supplier_balances', 'customer_balances', 'supplier_statement', 'customer_statement', 'supplier_rating', 'price_comparison', 'item_movement', 'batches_report'],
+};
+
+// ============================================
+// Load Templates
+// ============================================
+async function loadTemplates() {
+    try {
+        const r = await fetch(`${API}/export/excel/templates`).then(x => x.json());
+        if (!r.success) return;
+
+        allTemplates = r.data;
+
+        // Export templates — مجمّعة
+        const exportEl = document.getElementById('export-templates');
+        if (allTemplates.export.length) {
+            let html = '';
+            const grouped = {};
+
+            allTemplates.export.forEach(t => {
+                let cat = 'أخرى';
+                for (const [c, keys] of Object.entries(EXPORT_CATEGORIES)) {
+                    if (keys.includes(t.key)) { cat = c; break; }
+                }
+                if (!grouped[cat]) grouped[cat] = [];
+                grouped[cat].push(t);
+            });
+
+            for (const [cat, items] of Object.entries(grouped)) {
+                html += `<div class="category-title"><i class="bi bi-folder-fill"></i> ${cat} (${items.length})</div>`;
+                html += items.map(t => `
+                    <div class="template-item">
+                        <div class="name">
+                            <i class="bi bi-file-earmark-spreadsheet"></i>
+                            ${t.name}
+                        </div>
+                        <button class="btn btn-sm btn-success" onclick="exportExcel('${t.key}')">
+                            <i class="bi bi-download"></i> تصدير
+                        </button>
+                    </div>
+                `).join('');
+            }
+            exportEl.innerHTML = html;
+        } else {
+            exportEl.innerHTML = '<div class="text-center text-muted p-4">لا توجد قوالب</div>';
+        }
+
+        // Import templates
+        const importSelect = document.getElementById('import-type');
+        importSelect.innerHTML = '<option value="">— اختر نوع —</option>' +
+            allTemplates.import.map(t => `<option value="${t.key}">${t.name}</option>`).join('');
+
+    } catch (e) {
+        console.error(e);
+    }
+}
+
+// ============================================
+// Export
+// ============================================
+function exportExcel(key) {
+    window.location.href = `${API}/export/excel/export/${key}`;
+}
+
+// ============================================
+// Download Template
+// ============================================
+function downloadTemplate() {
+    const key = document.getElementById('import-type').value;
+    if (!key) {
+        alert('اختر نوع البيانات أولاً');
+        return;
+    }
+    window.location.href = `${API}/export/excel/import-template/${key}`;
+}
+
+// ============================================
+// File Upload
+// ============================================
+const uploadArea = document.getElementById('upload-area');
+
+uploadArea.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    uploadArea.classList.add('dragover');
+});
+
+uploadArea.addEventListener('dragleave', () => {
+    uploadArea.classList.remove('dragover');
+});
+
+uploadArea.addEventListener('drop', (e) => {
+    e.preventDefault();
+    uploadArea.classList.remove('dragover');
+    const files = e.dataTransfer.files;
+    if (files.length) handleFile(files[0]);
+});
+
+function handleFile(file) {
+    if (!file) return;
+    if (!file.name.match(/\\.(xlsx|xls)$/i)) {
+        alert('الملف يجب أن يكون Excel');
+        return;
+    }
+    currentFile = file;
+    document.getElementById('file-name').textContent = `${file.name} (${(file.size / 1024).toFixed(1)} KB)`;
+    document.getElementById('file-info').style.display = 'block';
+    document.getElementById('import-result').innerHTML = '';
+}
+
+function clearFile() {
+    currentFile = null;
+    document.getElementById('file-input').value = '';
+    document.getElementById('file-info').style.display = 'none';
+    document.getElementById('import-result').innerHTML = '';
+}
+
+// ============================================
+// Preview (Dry Run)
+// ============================================
+async function previewFile() {
+    const key = document.getElementById('import-type').value;
+    if (!key) { alert('اختر نوع البيانات'); return; }
+    if (!currentFile) { alert('اختر ملف'); return; }
+
+    const formData = new FormData();
+    formData.append('file', currentFile);
+    formData.append('dry_run', 'true');
+
+    const resultEl = document.getElementById('import-result');
+    resultEl.innerHTML = '<div class="alert alert-info"><i class="bi bi-hourglass-split"></i> جاري المعاينة...</div>';
+
+    try {
+        const r = await fetch(`${API}/export/excel/preview/${key}`, {
+            method: 'POST',
+            body: formData
+        }).then(x => x.json());
+
+        if (r.success) {
+            const d = r.data;
+            let html = `
+                <div class="result-box">
+                    <h6><i class="bi bi-eye-fill text-info"></i> معاينة (Dry Run)</h6>
+                    <div class="stats-mini">
+                        <div class="item">
+                            <div class="num text-info">${d.total_rows}</div>
+                            <div class="lbl">صفوف صحيحة</div>
+                        </div>
+                        <div class="item">
+                            <div class="num text-danger">${d.errors ? d.errors.length : 0}</div>
+                            <div class="lbl">أخطاء</div>
+                        </div>
+                    </div>
+            `;
+
+            if (d.preview && d.preview.length) {
+                html += '<div class="mt-2"><strong>عينة:</strong><table class="preview-table"><thead><tr>';
+                Object.keys(d.preview[0].data).forEach(k => html += `<th>${k}</th>`);
+                html += '</tr></thead><tbody>';
+                d.preview.forEach(row => {
+                    html += '<tr>';
+                    Object.values(row.data).forEach(v => html += `<td>${v || '-'}</td>`);
+                    html += '</tr>';
+                });
+                html += '</tbody></table></div>';
+            }
+
+            if (d.errors && d.errors.length) {
+                html += `<div class="mt-2 alert alert-warning py-2 mb-0"><strong>أخطاء:</strong>
+                    <ul class="mb-0">${d.errors.map(e => `<li>${e}</li>`).join('')}</ul></div>`;
+            }
+
+            html += '<hr><button class="btn btn-primary w-100" onclick="uploadFile(false)"><i class="bi bi-upload"></i> تأكيد الاستيراد</button></div>';
+            resultEl.innerHTML = html;
+        } else {
+            resultEl.innerHTML = `<div class="result-box error"><i class="bi bi-x-circle"></i> ${r.message}</div>`;
+        }
+    } catch (e) {
+        resultEl.innerHTML = `<div class="result-box error">خطأ في الاتصال</div>`;
+    }
+}
+
+// ============================================
+// Upload
+// ============================================
+async function uploadFile(skipConfirm) {
+    const key = document.getElementById('import-type').value;
+    if (!key) { alert('اختر نوع البيانات'); return; }
+    if (!currentFile) { alert('اختر ملف'); return; }
+
+    if (!skipConfirm && !confirm('تأكيد الاستيراد؟')) return;
+
+    const formData = new FormData();
+    formData.append('file', currentFile);
+
+    const resultEl = document.getElementById('import-result');
+    resultEl.innerHTML = '<div class="alert alert-info"><i class="bi bi-hourglass-split"></i> جاري الاستيراد...</div>';
+
+    try {
+        const r = await fetch(`${API}/export/excel/import/${key}`, {
+            method: 'POST',
+            body: formData
+        }).then(x => x.json());
+
+        if (r.success) {
+            const d = r.data;
+            let html = `
+                <div class="result-box">
+                    <h6><i class="bi bi-check-circle-fill text-success"></i> تم الاستيراد بنجاح</h6>
+                    <div class="stats-mini">
+                        <div class="item"><div class="num text-success">${d.imported}</div><div class="lbl">جديد</div></div>
+                        <div class="item"><div class="num text-primary">${d.updated}</div><div class="lbl">محدث</div></div>
+                        <div class="item"><div class="num text-secondary">${d.skipped || 0}</div><div class="lbl">متجاهل</div></div>
+                        <div class="item"><div class="num">${d.total}</div><div class="lbl">الإجمالي</div></div>
+                    </div>
+            `;
+            if (d.errors && d.errors.length) {
+                html += `<div class="alert alert-warning py-2 mt-2 mb-0" style="font-size:0.78rem;">
+                    <strong>أخطاء (${d.errors.length}):</strong>
+                    <ul class="mb-0">${d.errors.map(e => `<li>${e}</li>`).join('')}</ul></div>`;
+            }
+            html += '</div>';
+            resultEl.innerHTML = html;
+
+            currentFile = null;
+            document.getElementById('file-info').style.display = 'none';
+        } else {
+            resultEl.innerHTML = `<div class="result-box error"><strong>خطأ:</strong> ${r.message}</div>`;
+        }
+    } catch (e) {
+        resultEl.innerHTML = `<div class="result-box error">خطأ في الاتصال</div>`;
+    }
+}
+
+loadTemplates();
+</script>
+</body>
+</html>
+'''
+
+# احفظ الملف
+with open(path, 'w', encoding='utf-8') as f:
+    f.write(new_html)
+
+print("  ✅ تم تحديث data_io.html")
+print()
+print("=" * 60)
+print("✅ تم!")
+print("=" * 60)
+print("""
+📌 الميزات الجديدة:
+   ✅ Tab للتصدير
+   ✅ Tab للاستيراد
+   ✅ 44 قالب تصدير (مجمعة)
+   ✅ 13 قالب استيراد
+   ✅ زر "معاينة قبل الحفظ"
+   ✅ Drag & Drop
+   ✅ عرض الأخطاء
+""")

@@ -1,0 +1,181 @@
+﻿<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>السياسات المحاسبية</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+* { font-family: Cairo, sans-serif; box-sizing: border-box; }
+body { background: #f5f6fa; padding: 12px; font-size: 13px; color: #1e293b; line-height: 1.5; }
+.container-box { max-width: 1300px; margin: 0 auto; }
+.page-head { background: white; border-radius: 10px; padding: 14px 18px; margin-bottom: 14px; box-shadow: 0 1px 6px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+.page-head h2 { margin: 0; font-size: 1.15rem; font-weight: 700; color: #1e3c72; display: flex; align-items: center; gap: 8px; }
+.page-head h2 i { color: #10b981; }
+.page-head .btn { font-size: 0.82rem; padding: 6px 14px; border-radius: 7px; }
+.nav-tabs { background: white; border-radius: 10px 10px 0 0; padding: 8px 14px 0; border-bottom: none; }
+.nav-tabs .nav-link { font-size: 0.85rem; font-weight: 600; color: #64748b; border: none; border-bottom: 3px solid transparent; padding: 8px 14px; }
+.nav-tabs .nav-link.active { color: #1e3c72; background: transparent; border-bottom-color: #10b981; }
+.tab-content { background: white; border-radius: 0 0 10px 10px; padding: 20px; box-shadow: 0 1px 6px rgba(0,0,0,0.05); margin-bottom: 14px; }
+.form-label { font-size: 0.8rem; font-weight: 600; color: #475569; margin-bottom: 4px; }
+.form-control, .form-select { font-size: 0.85rem; padding: 7px 12px; border-radius: 6px; border-color: #e2e8f0; }
+.form-section-title { font-weight: 700; font-size: 0.9rem; color: #1e3c72; padding-bottom: 8px; margin-bottom: 12px; border-bottom: 1.5px solid #f1f5f9; display: flex; align-items: center; gap: 6px; }
+.form-section-title i { color: #10b981; }
+.form-switch .form-check-input { width: 2.5em; height: 1.3em; cursor: pointer; }
+.form-check-label { font-size: 0.85rem; cursor: pointer; }
+.save-bar { background: white; border-radius: 10px; padding: 12px 18px; box-shadow: 0 -2px 10px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; position: sticky; bottom: 12px; z-index: 100; margin-top: 14px; }
+.save-bar .info { font-size: 0.82rem; color: #64748b; }
+.save-bar .info.dirty { color: #dc2626; font-weight: 600; }
+.toast-msg { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #16a34a; color: white; padding: 12px 24px; border-radius: 8px; font-weight: 600; box-shadow: 0 8px 24px rgba(0,0,0,0.15); z-index: 9999; display: none; align-items: center; gap: 8px; }
+.toast-msg.show { display: flex; }
+.toast-msg.error { background: #dc2626; }
+</style>
+<script src="permissions.js"></script>
+</head>
+<body>
+<div class="container-box">
+<div class="page-head">
+<h2><i class="bi bi-calculator"></i> السياسات المحاسبية</h2>
+<div class="d-flex gap-2">
+<a href="settings.html" class="btn btn-outline-info"><i class="bi bi-arrow-right"></i> الإعدادات</a>
+<a href="index.html" class="btn btn-outline-secondary"><i class="bi bi-house-fill"></i> الرئيسية</a>
+</div>
+</div>
+<ul class="nav nav-tabs" role="tablist">
+<li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#t1"><i class="bi bi-tags"></i> تقييم المخزون</button></li>
+<li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#t2"><i class="bi bi-journal-text"></i> القيود التلقائية</button></li>
+<li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#t3"><i class="bi bi-diagram-3"></i> الحسابات</button></li>
+<li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#t4"><i class="bi bi-calendar-range"></i> الفترة</button></li>
+</ul>
+<div class="tab-content">
+<div class="tab-pane fade show active" id="t1">
+<div class="form-section-title"><i class="bi bi-tags"></i> تقييم المخزون</div>
+<div class="row g-3">
+<div class="col-md-6"><label class="form-label">طريقة التكلفة</label>
+<select class="form-select" id="f-cost_method" onchange="markDirty()">
+<option value="WEIGHTED_AVERAGE">المتوسط المرجح</option>
+<option value="FIFO">FIFO</option>
+<option value="LIFO">LIFO</option>
+<option value="STANDARD">معياري</option>
+</select></div>
+<div class="col-md-6"><label class="form-label">نسبة VAT %</label>
+<input type="number" class="form-control" id="f-default_vat_rate" step="0.01" oninput="markDirty()"></div>
+<div class="col-md-6"><div class="form-check form-switch">
+<input class="form-check-input" type="checkbox" id="f-allow_negative_inventory" onchange="markDirty()">
+<label class="form-check-label" for="f-allow_negative_inventory">السماح بالمخزون السالب</label>
+</div></div>
+<div class="col-md-6"><div class="form-check form-switch">
+<input class="form-check-input" type="checkbox" id="f-monthly_revaluation" onchange="markDirty()">
+<label class="form-check-label" for="f-monthly_revaluation">إعادة التقييم الشهري</label>
+</div></div>
+</div>
+</div>
+<div class="tab-pane fade" id="t2">
+<div class="form-section-title"><i class="bi bi-magic"></i> القيود التلقائية</div>
+<div class="row g-3">
+<div class="col-md-6"><div class="form-check form-switch">
+<input class="form-check-input" type="checkbox" id="f-auto_journal_invoices" onchange="markDirty()">
+<label class="form-check-label" for="f-auto_journal_invoices">قيد تلقائي عند الفواتير</label>
+</div></div>
+<div class="col-md-6"><div class="form-check form-switch">
+<input class="form-check-input" type="checkbox" id="f-auto_journal_receipts" onchange="markDirty()">
+<label class="form-check-label" for="f-auto_journal_receipts">قيد تلقائي عند التحصيل</label>
+</div></div>
+<div class="col-md-6"><div class="form-check form-switch">
+<input class="form-check-input" type="checkbox" id="f-auto_journal_issues" onchange="markDirty()">
+<label class="form-check-label" for="f-auto_journal_issues">قيد تلقائي عند الصرف</label>
+</div></div>
+<div class="col-md-6"><div class="form-check form-switch">
+<input class="form-check-input" type="checkbox" id="f-auto_journal_transfers" onchange="markDirty()">
+<label class="form-check-label" for="f-auto_journal_transfers">قيد تلقائي عند التحويلات</label>
+</div></div>
+</div>
+</div>
+<div class="tab-pane fade" id="t3">
+<div class="form-section-title"><i class="bi bi-diagram-3"></i> الحسابات الافتراضية</div>
+<div class="row g-3">
+<div class="col-md-4"><label class="form-label">حساب المخزون</label><input class="form-control" id="f-default_inventory_account" oninput="markDirty()"></div>
+<div class="col-md-4"><label class="form-label">حساب المبيعات</label><input class="form-control" id="f-default_sales_account" oninput="markDirty()"></div>
+<div class="col-md-4"><label class="form-label">حساب COGS</label><input class="form-control" id="f-default_cogs_account" oninput="markDirty()"></div>
+<div class="col-md-4"><label class="form-label">VAT مدخلات</label><input class="form-control" id="f-vat_input_account" oninput="markDirty()"></div>
+<div class="col-md-4"><label class="form-label">VAT مخرجات</label><input class="form-control" id="f-vat_output_account" oninput="markDirty()"></div>
+<div class="col-md-4"><label class="form-label">ذمم العملاء</label><input class="form-control" id="f-ar_account" oninput="markDirty()"></div>
+<div class="col-md-4"><label class="form-label">ذمم الموردين</label><input class="form-control" id="f-ap_account" oninput="markDirty()"></div>
+<div class="col-md-4"><label class="form-label">الصندوق</label><input class="form-control" id="f-cash_account" oninput="markDirty()"></div>
+<div class="col-md-4"><label class="form-label">البنك</label><input class="form-control" id="f-bank_account" oninput="markDirty()"></div>
+<div class="col-md-4"><label class="form-label">حساب العجز</label><input class="form-control" id="f-shortage_account" oninput="markDirty()"></div>
+<div class="col-md-4"><label class="form-label">حساب الزيادة</label><input class="form-control" id="f-surplus_account" oninput="markDirty()"></div>
+</div>
+</div>
+<div class="tab-pane fade" id="t4">
+<div class="form-section-title"><i class="bi bi-calendar-range"></i> الفترة المالية</div>
+<div class="row g-3">
+<div class="col-md-6"><label class="form-label">بداية الفترة</label><input type="date" class="form-control" id="f-fiscal_period_start" oninput="markDirty()"></div>
+<div class="col-md-6"><label class="form-label">نهاية الفترة</label><input type="date" class="form-control" id="f-fiscal_period_end" oninput="markDirty()"></div>
+<div class="col-md-6"><div class="form-check form-switch">
+<input class="form-check-input" type="checkbox" id="f-auto_close_period" onchange="markDirty()">
+<label class="form-check-label" for="f-auto_close_period">إغلاق الفترة تلقائيًا</label>
+</div></div>
+<div class="col-md-6"><div class="form-check form-switch">
+<input class="form-check-input" type="checkbox" id="f-allow_backdated_entries" onchange="markDirty()">
+<label class="form-check-label" for="f-allow_backdated_entries">السماح بالقيود بأثر رجعي</label>
+</div></div>
+</div>
+</div>
+</div>
+<div class="save-bar">
+<div class="info" id="save-info"><i class="bi bi-info-circle"></i> لا توجد تغييرات</div>
+<button class="btn btn-primary" onclick="save()" id="btn-save"><i class="bi bi-check-circle-fill"></i> حفظ</button>
+</div>
+</div>
+<div class="toast-msg" id="toast"><i class="bi bi-check-circle-fill"></i> <span id="toast-text">تم الحفظ</span></div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+const API = "http://localhost:5000/api/v1";
+let isDirty = false;
+async function load() {
+    try {
+        const r = await fetch(API + "/settings/accounting").then(x => x.json());
+        if (!r.success) return;
+        for (const [k, v] of Object.entries(r.data)) {
+            const el = document.getElementById("f-" + k);
+            if (!el) continue;
+            if (el.type === "checkbox") el.checked = !!v;
+            else el.value = v ?? "";
+        }
+        isDirty = false; updateSaveBar();
+    } catch (e) { console.error(e); }
+}
+function markDirty() { isDirty = true; updateSaveBar(); }
+function updateSaveBar() {
+    const info = document.getElementById("save-info");
+    if (isDirty) { info.innerHTML = "<i class=\"bi bi-exclamation-circle\"></i> تغييرات غير محفوظة"; info.className = "info dirty"; }
+    else { info.innerHTML = "<i class=\"bi bi-info-circle\"></i> لا توجد تغييرات"; info.className = "info"; }
+}
+async function save() {
+    const btn = document.getElementById("btn-save");
+    btn.disabled = true; btn.innerHTML = "جاري الحفظ...";
+    const data = {};
+    document.querySelectorAll("[id^=\"f-\"]").forEach(el => {
+        const k = el.id.replace("f-", "");
+        data[k] = el.type === "checkbox" ? el.checked : el.value;
+    });
+    try {
+        const r = await fetch(API + "/settings/accounting", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify(data) }).then(x => x.json());
+        if (r.success) { showToast("تم حفظ السياسات"); isDirty = false; updateSaveBar(); }
+        else showToast(r.message || "خطأ", true);
+    } catch (e) { showToast("خطأ في الاتصال", true); }
+    finally { btn.disabled = false; btn.innerHTML = "حفظ"; }
+}
+function showToast(msg, err = false) {
+    const t = document.getElementById("toast");
+    document.getElementById("toast-text").textContent = msg;
+    t.className = "toast-msg show" + (err ? " error" : "");
+    setTimeout(() => t.className = "toast-msg", 3000);
+}
+window.addEventListener("beforeunload", e => { if (isDirty) { e.preventDefault(); e.returnValue = ""; } });
+load();
+</script>
+</body>
+</html>

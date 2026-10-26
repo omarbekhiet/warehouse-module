@@ -1,6 +1,6 @@
-﻿from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify
 from app.database import db
-from app.utils import json_safe
+from app.utils import json_safe, enrich_with_user
 
 supplier_bp = Blueprint('suppliers', __name__)
 
@@ -17,6 +17,7 @@ def list_suppliers():
         f"SELECT * FROM suppliers WHERE {where} ORDER BY code",
         values
     )
+    rows = enrich_with_user(rows)
     return jsonify({'success': True, 'data': json_safe(rows)})
 
 

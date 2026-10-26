@@ -1,0 +1,361 @@
+﻿<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>حركة الصنف</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/style.css"><script src="permissions.js"></script>
+</head>
+<body>
+
+<div class="container-box">
+
+    <div class="page-head no-print">
+        <h2><i class="bi bi-file-earmark-bar-graph-fill"></i> حركة الصنف (كارت الصنف)</h2>
+        <div class="d-flex gap-2">
+            <button class="btn btn-sm btn-outline-success" onclick="exportToExcel('item_movement')" title="تصدير Excel">
+                <i class="bi bi-file-earmark-excel"></i> Excel
+            </button>
+            <a href="index.html" class="btn btn-outline-secondary">
+                <i class="bi bi-house-fill"></i> الرئيسية
+            </a>
+            <a href="reports.html" class="btn btn-outline-info">
+                <i class="bi bi-file-earmark-bar-graph"></i> التقارير
+            </a>
+            <button class="btn btn-success" onclick="printReport()"><i class="bi bi-file-earmark-pdf"></i> طباعة A4</button>
+            <button class="btn btn-outline-primary" onclick="window.print()">
+                <i class="bi bi-printer-fill"></i> طباعة
+            </button>
+        </div>
+    </div>
+
+    <div class="filters-box no-print">
+        <div class="row g-2 align-items-end">
+            <div class="col-md-3">
+                <label class="form-label">الصنف *</label>
+                <select class="form-select" id="flt-item" onchange="load()">
+                    <option value="">— اختر صنف —</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">المستودع</label>
+                <select class="form-select" id="flt-wh" onchange="load()">
+                    <option value="">— الكل —</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">نوع الحركة</label>
+                <select class="form-select" id="flt-type" onchange="load()">
+                    <option value="">— الكل —</option>
+                    <option value="PURCHASE">شراء</option>
+                    <option value="SALE">بيع</option>
+                    <option value="PURCHASE_RETURN">مرتجع شراء</option>
+                    <option value="SALE_RETURN">مرتجع بيع</option>
+                    <option value="TRANSFER">تحويل</option>
+                    <option value="COUNT_ADJUST">تسوية</option>
+                    <option value="RECEIPT">استلام</option>
+                    <option value="ISSUE">صرف</option>
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">من تاريخ</label>
+                <input type="date" class="form-control" id="flt-from" onchange="load()">
+            </div>
+            <div class="col-md-2">
+                <label class="form-label">إلى تاريخ</label>
+                <input type="date" class="form-control" id="flt-to" onchange="load()">
+            </div>
+            <div class="col-md-1">
+                <button class="btn btn-primary w-100" onclick="load()">
+                    <i class="bi bi-search"></i>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div id="item-info" style="display:none;" class="mb-3">
+        <div class="d-flex flex-wrap gap-2">
+            <span class="info-chip"><i class="bi bi-upc-scan"></i> <strong id="i-code">—</strong></span>
+            <span class="info-chip"><i class="bi bi-box"></i> <strong id="i-name">—</strong></span>
+            <span class="info-chip"><i class="bi bi-tag"></i> <span id="i-type">—</span></span>
+        </div>
+    </div>
+
+    <div class="kpi-inline" id="kpis" style="display:none;">
+        <div class="kpi-item" style="background: linear-gradient(135deg, #fbbf24, #f59e0b);">
+            <i class="bi bi-box-arrow-in-down icon-bg"></i>
+            <div class="kpi-icon"><i class="bi bi-box-arrow-in-down"></i></div>
+            <div class="kpi-body">
+                <div class="kpi-label">الرصيد الافتتاحي</div>
+                <div class="kpi-value" id="s-opening">—</div>
+                <div class="kpi-sub">قبل الفترة</div>
+            </div>
+        </div>
+        <div class="kpi-item" style="background: linear-gradient(135deg, #43e97b, #38f9d7);">
+            <i class="bi bi-arrow-down-circle icon-bg"></i>
+            <div class="kpi-icon"><i class="bi bi-arrow-down-circle-fill"></i></div>
+            <div class="kpi-body">
+                <div class="kpi-label">إجمالي الوارد</div>
+                <div class="kpi-value" id="s-in">—</div>
+                <div class="kpi-sub">خلال الفترة</div>
+            </div>
+        </div>
+        <div class="kpi-item" style="background: linear-gradient(135deg, #f5576c, #f093fb);">
+            <i class="bi bi-arrow-up-circle icon-bg"></i>
+            <div class="kpi-icon"><i class="bi bi-arrow-up-circle-fill"></i></div>
+            <div class="kpi-body">
+                <div class="kpi-label">إجمالي الصادر</div>
+                <div class="kpi-value" id="s-out">—</div>
+                <div class="kpi-sub">خلال الفترة</div>
+            </div>
+        </div>
+        <div class="kpi-item" style="background: linear-gradient(135deg, #4facfe, #00f2fe);">
+            <i class="bi bi-wallet2 icon-bg"></i>
+            <div class="kpi-icon"><i class="bi bi-wallet2"></i></div>
+            <div class="kpi-body">
+                <div class="kpi-label">الرصيد الحالي</div>
+                <div class="kpi-value" id="s-current">—</div>
+                <div class="kpi-sub">بعد الفترة</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="table-card">
+        <h6>
+            <i class="bi bi-list-ul"></i>
+            حركات الصنف
+            <span class="badge" id="cnt-badge">0</span>
+        </h6>
+        <table>
+            <thead>
+                <tr>
+                    <th style="width:90px;">التاريخ</th>
+                    <th style="width:130px;">المرجع</th>
+                    <th style="width:120px;">النوع</th>
+                    <th>البيان</th>
+                    <th style="width:100px;" class="text-end">وارد</th>
+                    <th style="width:100px;" class="text-end">صادر</th>
+                    <th style="width:110px;" class="text-end">الرصيد</th>
+                </tr>
+            </thead>
+            <tbody id="tbl">
+                <tr><td colspan="7"><div class="table-empty"><i class="bi bi-inbox"></i> اختر صنفًا لعرض حركاته</div></td></tr>
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+const API = 'http://localhost:5000/api/v1';
+
+const TYPE_LABELS = {
+    PURCHASE: 'شراء',
+    SALE: 'بيع',
+    PURCHASE_RETURN: 'مرتجع شراء',
+    SALE_RETURN: 'مرتجع بيع',
+    TRANSFER: 'تحويل',
+    TRANSFER_IN: 'تحويل وارد',
+    TRANSFER_OUT: 'تحويل صادر',
+    COUNT_ADJUST: 'تسوية مخزنية',
+    RECEIPT: 'استلام',
+    ISSUE: 'صرف',
+    OPENING: 'رصيد افتتاحي'
+};
+
+const ITEM_TYPES = {
+    RAW_MATERIAL: 'مادة خام',
+    FINISHED_GOODS: 'منتج تام',
+    MERCHANDISE: 'بضاعة تجارية',
+    SUPPLIES: 'مستلزمات',
+    SERVICE: 'خدمة'
+};
+
+// الأنواع اللي بتزود الرصيد
+const IN_TYPES = ['PURCHASE', 'SALE_RETURN', 'RECEIPT', 'TRANSFER_IN', 'COUNT_ADJUST_IN', 'OPENING'];
+
+async function loadLists() {
+    const [i, w] = await Promise.all([
+        fetch(`${API}/items/`).then(r => r.json()),
+        fetch(`${API}/warehouses/`).then(r => r.json())
+    ]);
+
+    const items = i.data || [];
+    const whs = w.data || [];
+
+    document.getElementById('flt-item').innerHTML = '<option value="">— اختر صنف —</option>' +
+        items.map(x => `<option value="${x.id}">${x.code} - ${x.name_ar}</option>`).join('');
+
+    document.getElementById('flt-wh').innerHTML = '<option value="">— الكل —</option>' +
+        whs.map(x => `<option value="${x.id}">${x.code} - ${x.name_ar}</option>`).join('');
+
+    // لو فيه id في الـ URL
+    const params = new URLSearchParams(window.location.search);
+    const iid = params.get('item_id');
+    if (iid) {
+        document.getElementById('flt-item').value = iid;
+        load();
+    }
+}
+
+async function load() {
+    const itemId = document.getElementById('flt-item').value;
+    if (!itemId) {
+        document.getElementById('item-info').style.display = 'none';
+        document.getElementById('kpis').style.display = 'none';
+        document.getElementById('tbl').innerHTML = '<tr><td colspan="7"><div class="table-empty"><i class="bi bi-inbox"></i> اختر صنفًا لعرض حركاته</div></td></tr>';
+        document.getElementById('cnt-badge').textContent = '0';
+        return;
+    }
+
+    const wh = document.getElementById('flt-wh').value;
+    const type = document.getElementById('flt-type').value;
+    const from = document.getElementById('flt-from').value;
+    const to = document.getElementById('flt-to').value;
+
+    let url = `${API}/reports/item-card?item_id=${itemId}`;
+    if (wh) url += `&warehouse_id=${wh}`;
+    if (type) url += `&transaction_type=${type}`;
+    if (from) url += `&date_from=${from}`;
+    if (to) url += `&date_to=${to}`;
+
+    try {
+        const r = await fetch(url).then(x => x.json());
+        if (!r.success) { alert(r.message || 'خطأ'); return; }
+
+        const rows = r.data || [];
+        const item = r.item || {};
+        const openingQty = parseFloat(r.opening_qty || 0);
+        const currentQty = parseFloat(r.current_qty || 0);
+
+        // عرض معلومات الصنف
+        document.getElementById('item-info').style.display = 'block';
+        document.getElementById('i-code').textContent = item.code || '—';
+        document.getElementById('i-name').textContent = item.name_ar || '—';
+        document.getElementById('i-type').textContent = ITEM_TYPES[item.item_type] || item.item_type || '—';
+
+        // حساب الإجماليات
+        let totalIn = 0, totalOut = 0;
+        rows.forEach(tx => {
+            const q = parseFloat(tx.quantity || 0);
+            if (q > 0) totalIn += q;
+            else totalOut += Math.abs(q);
+        });
+
+        // KPIs
+        document.getElementById('kpis').style.display = 'flex';
+        document.getElementById('s-opening').textContent = openingQty.toFixed(2);
+        document.getElementById('s-in').textContent = totalIn.toFixed(2);
+        document.getElementById('s-out').textContent = totalOut.toFixed(2);
+        document.getElementById('s-current').textContent = currentQty.toFixed(2);
+
+        document.getElementById('cnt-badge').textContent = rows.length;
+
+        if (!rows.length) {
+            document.getElementById('tbl').innerHTML = '<tr><td colspan="7"><div class="table-empty"><i class="bi bi-inbox"></i> لا توجد حركات في هذه الفترة</div></td></tr>';
+            return;
+        }
+
+        // بناء الجدول
+        let html = '';
+        let running = openingQty;
+
+        // صف الرصيد الافتتاحي
+        if (from) {
+            html += `
+                <tr class="opening-row">
+                    <td>${from}</td>
+                    <td><code>—</code></td>
+                    <td><span class="badge-type badge-OTHER"><i class="bi bi-hourglass-split"></i> رصيد افتتاحي</span></td>
+                    <td>الرصيد قبل الفترة</td>
+                    <td class="text-end">—</td>
+                    <td class="text-end">—</td>
+                    <td class="text-end qty-balance">${openingQty.toFixed(2)}</td>
+                </tr>`;
+        }
+
+        rows.forEach(tx => {
+            const q = parseFloat(tx.quantity || 0);
+            running += q;
+
+            const typeLabel = TYPE_LABELS[tx.transaction_type] || tx.transaction_type;
+            const badgeClass = 'badge-' + (tx.transaction_type || 'OTHER');
+
+            // المستودع / البيان
+            let desc = '';
+            if (tx.transaction_type === 'TRANSFER') {
+                desc = `من: ${tx.from_warehouse || '—'} → إلى: ${tx.to_warehouse || '—'}`;
+            } else if (tx.to_warehouse) {
+                desc = `إلى: ${tx.to_warehouse}`;
+            } else if (tx.from_warehouse) {
+                desc = `من: ${tx.from_warehouse}`;
+            }
+            if (tx.notes) desc += (desc ? ' | ' : '') + tx.notes;
+
+            html += `
+                <tr>
+                    <td>${tx.transaction_date}</td>
+                    <td><code>${tx.transaction_no}</code></td>
+                    <td><span class="badge-type ${badgeClass}">${typeLabel}</span></td>
+                    <td>${desc || '—'}</td>
+                    <td class="text-end qty-in">${q > 0 ? q.toFixed(2) : '—'}</td>
+                    <td class="text-end qty-out">${q < 0 ? Math.abs(q).toFixed(2) : '—'}</td>
+                    <td class="text-end qty-balance">${running.toFixed(2)}</td>
+                </tr>`;
+        });
+
+        // صف الإجمالي
+        html += `
+            <tr class="total-row">
+                <td colspan="4" class="text-end"><i class="bi bi-calculator-fill"></i> الإجمالي:</td>
+                <td class="text-end qty-in">${totalIn.toFixed(2)}</td>
+                <td class="text-end qty-out">${totalOut.toFixed(2)}</td>
+                <td class="text-end qty-balance">${running.toFixed(2)}</td>
+            </tr>`;
+
+        document.getElementById('tbl').innerHTML = html;
+    } catch (e) {
+        console.error(e);
+        document.getElementById('tbl').innerHTML = '<tr><td colspan="7"><div class="table-empty"><i class="bi bi-wifi-off"></i> خطأ في الاتصال بالسيرفر</div></td></tr>';
+    }
+}
+
+(async () => { await loadLists(); })();
+
+
+// فتح شاشة طباعة التقرير
+function printReport() {
+    const itemId = document.getElementById('flt-item').value;
+    if (!itemId) { alert('اختر صنفًا أولاً'); return; }
+
+    const wh = document.getElementById('flt-wh').value;
+    const ttype = document.getElementById('flt-type').value;
+    const from = document.getElementById('flt-from').value;
+    const to = document.getElementById('flt-to').value;
+
+    let url = 'print_report.html?type=item_movement&item_id=' + itemId;
+    if (wh) url += '&warehouse_id=' + wh;
+    if (ttype) url += '&transaction_type=' + ttype;
+    if (from) url += '&date_from=' + from;
+    if (to) url += '&date_to=' + to;
+
+    window.open(url, '_blank');
+}</script>
+
+<script>
+// دالة تصدير Excel
+function exportToExcel(templateKey) {
+    if (!templateKey) {
+        alert('مفيش قالب تصدير');
+        return;
+    }
+    window.location.href = '/api/v1/export/excel/export/' + templateKey;
+}
+</script>
+
+</body>
+</html>

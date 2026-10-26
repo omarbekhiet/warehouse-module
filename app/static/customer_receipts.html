@@ -1,0 +1,762 @@
+﻿<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>تحصيلات العملاء</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+body { font-family: 'Cairo','Segoe UI',Tahoma,sans-serif; background: #f5f6fa; padding: 20px; }
+.container-box { max-width: 1400px; margin: 0 auto; }
+h2 { color: #1e3c72; font-weight: 700; }
+.card-box { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 1px 10px rgba(0,0,0,0.05); margin-bottom: 20px; }
+table { font-size: 0.85rem; }
+.badge-method { padding: 4px 10px; border-radius: 12px; font-size: 0.72rem; font-weight: 600; }
+.badge-CASH { background: #e8f5e9; color: #2e7d32; }
+.badge-BANK_TRANSFER { background: #e3f2fd; color: #1565c0; }
+.badge-CHEQUE { background: #fff3e0; color: #e65100; }
+.badge-CARD { background: #f3e5f5; color: #6a1b9a; }
+.badge-WALLET { background: #e0f7fa; color: #00695c; }
+
+.invoice-row { background: #fafbfc; border-radius: 8px; padding: 10px; margin-bottom: 8px; border: 1px solid #e5e7eb; }
+.invoice-row.paid { background: #e8f5e9; border-color: #4caf50; }
+.invoice-row.partial { background: #fff3e0; border-color: #ff9800; }
+.invoice-check { width: 20px; height: 20px; cursor: pointer; }
+
+.stats-mini { display: flex; gap: 15px; font-size: 0.8rem; color: #667085; }
+.stats-mini strong { color: #1e3c72; }
+
+.totals-badge {
+    background: #f1f5f9;
+    padding: 8px 15px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    display: inline-flex;
+    gap: 20px;
+}
+.totals-badge strong { color: #1e3c72; }
+
+.payment-details-box { 
+    background: #f8fafc; 
+    border: 1px dashed #cbd5e1; 
+    border-radius: 8px; 
+    padding: 12px; 
+    margin-top: 10px; 
+}
+
+.detail-item {
+    background: white;
+    border-radius: 6px;
+    padding: 8px 12px;
+    margin-bottom: 6px;
+    border: 1px solid #e2e8f0;
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85rem;
+}
+.detail-item .label { color: #64748b; font-weight: 600; }
+.detail-item .value { color: #1e3c72; font-weight: 700; }
+</style>
+<script src="permissions.js"></script>
+</head>
+<body>
+
+<div class="container-box">
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="bi bi-cash-stack text-success"></i> تحصيلات العملاء</h2>
+        <div>
+            <button class="btn btn-sm btn-outline-success" onclick="exportToExcel('customer_receipts')" title="تصدير Excel">
+                <i class="bi bi-file-earmark-excel"></i> Excel
+            </button>
+            <a href="customer_balances.html" class="btn btn-outline-info">
+                <i class="bi bi-people-fill"></i> أرصدة العملاء
+            </a>
+            <a href="index.html" class="btn btn-outline-secondary">
+                <i class="bi bi-house"></i> الرئيسية
+            </a>
+            <button class="btn btn-success" onclick="openAdd()">
+                <i class="bi bi-plus-circle"></i> تحصيل جديد
+            </button>
+        </div>
+    </div>
+
+    <!-- Totals -->
+    <div class="card-box">
+        <div class="d-flex justify-content-between align-items-center">
+            <div class="totals-badge">
+                <span>عدد التحصيلات: <strong id="total-count">0</strong></span>
+                <span>إجمالي المبالغ: <strong id="total-amount" class="text-success">0.00</strong> ج.م</span>
+            </div>
+            <div>
+                <input class="form-control form-control-sm" id="search" 
+                       placeholder="ابحث برقم التحصيل أو اسم العميل..." 
+                       oninput="filterTable()" style="width: 300px;">
+            </div>
+        </div>
+    </div>
+
+    <div class="card-box">
+        <table class="table table-hover">
+            <thead class="table-light">
+                <tr>
+                    <th>رقم التحصيل</th>
+                    <th>التاريخ</th>
+                    <th>العميل</th>
+                    <th>طريقة التحصيل</th>
+                    <th class="text-end">المبلغ</th>
+                    <th>المرجع</th>
+                    <th>إجراءات</th>
+                </tr>
+            </thead>
+            <tbody id="tbl">
+                <tr><td colspan="7" class="text-center text-muted">جاري التحميل...</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+<!-- Add Receipt Modal -->
+<div class="modal fade" id="rcpModal" tabindex="-1">
+<div class="modal-dialog modal-lg">
+<div class="modal-content">
+<div class="modal-header bg-success text-white">
+    <h5 class="modal-title"><i class="bi bi-cash-stack"></i> تحصيل جديد</h5>
+    <button class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+</div>
+<div class="modal-body">
+
+    <div class="row g-3 mb-3">
+        <div class="col-md-4">
+            <label class="form-label">التاريخ *</label>
+            <input type="date" class="form-control" id="f-date">
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">العميل *</label>
+            <select class="form-select" id="f-customer" onchange="onCustomerChange()"></select>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">طريقة التحصيل *</label>
+            <select class="form-select" id="f-method" onchange="onMethodChange()"></select>
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">الخزينة/البنك</label>
+            <select class="form-select" id="f-cash-box"><option value="">— بدون —</option></select>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-3">
+        <div class="col-md-4">
+            <label class="form-label">المبلغ الإجمالي *</label>
+            <input type="number" class="form-control" id="f-amount" step="0.01" min="0" oninput="recalcAllocations()">
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">المرجع</label>
+            <input class="form-control" id="f-reference">
+        </div>
+        <div class="col-md-4">
+            <label class="form-label">ملاحظات</label>
+            <input class="form-control" id="f-notes">
+        </div>
+    </div>
+
+    <!-- تفاصيل طريقة الدفع -->
+    <div class="payment-details-box" id="payment-details-box" style="display:none;">
+        <h6 class="text-success mb-3"><i class="bi bi-info-circle"></i> تفاصيل <span id="method-name">طريقة التحصيل</span></h6>
+
+        <!-- شيك -->
+        <div class="row g-3" id="cheque-fields" style="display:none;">
+            <div class="col-md-4"><label class="form-label">رقم الشيك *</label><input class="form-control" id="f-cheque-no"></div>
+            <div class="col-md-4"><label class="form-label">البنك *</label><input class="form-control" id="f-cheque-bank"></div>
+            <div class="col-md-4"><label class="form-label">تاريخ الاستحقاق *</label><input type="date" class="form-control" id="f-cheque-date"></div>
+        </div>
+
+        <!-- تحويل بنكي -->
+        <div class="row g-3" id="transfer-fields" style="display:none;">
+            <div class="col-md-6"><label class="form-label">رقم الحوالة *</label><input class="form-control" id="f-transfer-no"></div>
+            <div class="col-md-6"><label class="form-label">البنك *</label><input class="form-control" id="f-transfer-bank"></div>
+        </div>
+
+        <!-- بطاقة -->
+        <div class="row g-3" id="card-fields" style="display:none;">
+            <div class="col-md-4"><label class="form-label">رقم العملية *</label><input class="form-control" id="f-card-txn"></div>
+            <div class="col-md-4"><label class="form-label">آخر 4 أرقام *</label><input class="form-control" id="f-card-last4" maxlength="4"></div>
+            <div class="col-md-4"><label class="form-label">البنك</label><input class="form-control" id="f-card-bank"></div>
+        </div>
+
+        <!-- محفظة إلكترونية -->
+        <div class="row g-3" id="wallet-fields" style="display:none;">
+            <div class="col-md-4"><label class="form-label">اسم المحفظة *</label><input class="form-control" id="f-wallet-name"></div>
+            <div class="col-md-4"><label class="form-label">رقم العملية *</label><input class="form-control" id="f-wallet-txn"></div>
+            <div class="col-md-4"><label class="form-label">رقم الهاتف</label><input class="form-control" id="f-wallet-phone"></div>
+        </div>
+    </div>
+
+    <hr>
+
+    <h6 class="text-primary mb-3">
+        <i class="bi bi-list-check"></i> الفواتير المفتوحة للعميل
+        <span id="inv-count" class="badge bg-secondary">0</span>
+    </h6>
+
+    <div id="open-invoices" style="max-height: 350px; overflow-y: auto;">
+        <div class="text-center text-muted p-4">اختر العميل لعرض الفواتير</div>
+    </div>
+
+    <hr>
+
+    <div class="row">
+        <div class="col-md-6 offset-md-6">
+            <table class="table table-sm">
+                <tr>
+                    <td>المبلغ المُدخل:</td>
+                    <td class="text-end"><strong id="sum-input">0.00</strong></td>
+                </tr>
+                <tr>
+                    <td>المبلغ الموزّع:</td>
+                    <td class="text-end"><strong id="sum-allocated" class="text-success">0.00</strong></td>
+                </tr>
+                <tr class="table-warning">
+                    <td><strong>المتبقي غير موزّع:</strong></td>
+                    <td class="text-end"><strong id="sum-remaining">0.00</strong></td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+</div>
+<div class="modal-footer">
+    <button class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+    <button class="btn btn-success" onclick="save()">
+        <i class="bi bi-check-circle"></i> حفظ
+    </button>
+</div>
+</div>
+</div>
+</div>
+
+<!-- View Receipt Modal -->
+<div class="modal fade" id="viewModal" tabindex="-1">
+<div class="modal-dialog modal-lg">
+<div class="modal-content">
+<div class="modal-header bg-info text-white">
+    <h5 class="modal-title"><i class="bi bi-eye"></i> تفاصيل التحصيل</h5>
+    <button class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+</div>
+<div class="modal-body" id="viewBody"></div>
+</div>
+</div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+const API = '/api/v1';
+const rcpModal = new bootstrap.Modal(document.getElementById('rcpModal'));
+const viewModal = new bootstrap.Modal(document.getElementById('viewModal'));
+
+let customersList = [];
+let boxesList = [];
+let methodsList = [];
+let openInvoices = [];
+let allReceipts = [];
+
+// ============================================
+// Load References
+// ============================================
+async function loadRefs() {
+    const [c, m, b] = await Promise.all([
+        fetch(`${API}/customers/`).then(r => r.json()).catch(() => ({data: []})),
+        fetch(`${API}/payments/methods/`).then(r => r.json()).catch(() => ({data: []})),
+        fetch(`${API}/cash-boxes/all-active/`).then(r => r.json()).catch(() => ({data: []}))
+    ]);
+    customersList = c.data || [];
+    methodsList = m.data || [];
+    boxesList = b.data || [];
+    
+    // املأ قائمة الخزائن
+    const boxSel = document.getElementById('f-cash-box');
+    if (boxSel) {
+        boxSel.innerHTML = '<option value="">— بدون —</option>' +
+            boxesList.map(b => `<option value="${b.box_type}|${b.id}">[${b.box_type === 'CASH_BOX' ? 'خزينة' : b.box_type === 'BANK' ? 'بنك' : 'بطاقة'}] ${b.code} - ${b.name} (${b.balance.toFixed(2)})</option>`).join('');
+    }
+
+    document.getElementById('f-customer').innerHTML = 
+        '<option value="">— اختر عميل —</option>' +
+        customersList.map(c => `<option value="${c.id}">${c.code} - ${c.name_ar}</option>`).join('');
+
+    document.getElementById('f-method').innerHTML = 
+        '<option value="">— اختر طريقة —</option>' +
+        methodsList.map(m => `<option value="${m.code}">${m.name_ar}${m.requires_clearing ? ' (وسيط)' : ''}</option>`).join('');
+}
+
+// ============================================
+// Load List
+// ============================================
+async function load() {
+    try {
+        const r = await fetch(`${API}/payments/receipts/`).then(x => x.json());
+        allReceipts = r.data || [];
+        
+        const totalAmount = allReceipts.reduce((s, p) => s + parseFloat(p.amount || 0), 0);
+        document.getElementById('total-count').textContent = allReceipts.length;
+        document.getElementById('total-amount').textContent = totalAmount.toLocaleString('ar-EG', {maximumFractionDigits: 2});
+        
+        renderTable(allReceipts);
+    } catch(e) {
+        console.error(e);
+    }
+}
+
+function renderTable(rows) {
+    document.getElementById('tbl').innerHTML = rows.length ? rows.map(p => {
+        const method = methodsList.find(m => m.code === p.receipt_method) || {name_ar: p.receipt_method || '-'};
+        return `
+            <tr>
+                <td><code>${p.receipt_no}</code></td>
+                <td>${p.receipt_date}</td>
+                <td><strong>${p.customer_name || '-'}</strong></td>
+                <td><span class="badge-method badge-${p.receipt_method}">${method.name_ar}</span></td>
+                <td class="text-end"><strong class="text-success">${parseFloat(p.amount).toFixed(2)}</strong></td>
+                <td><small>${p.reference || '-'}</small></td>
+                <td>
+                    <button class="btn btn-sm btn-outline-info" onclick="viewReceipt(${p.id})" title="عرض">
+                        <i class="bi bi-eye"></i>
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger" onclick="del(${p.id})" title="حذف">
+                        <i class="bi bi-trash"></i>
+                    </button>
+                </td>
+            </tr>
+        `;
+    }).join('') : '<tr><td colspan="7" class="text-center text-muted py-4">لا توجد تحصيلات</td></tr>';
+}
+
+function filterTable() {
+    const q = document.getElementById('search').value.toLowerCase();
+    if (!q) return renderTable(allReceipts);
+    
+    const filtered = allReceipts.filter(p => 
+        (p.receipt_no || '').toLowerCase().includes(q) ||
+        (p.customer_name || '').toLowerCase().includes(q)
+    );
+    renderTable(filtered);
+}
+
+// ============================================
+// Open Modal
+// ============================================
+function openAdd() {
+    if (!customersList.length) { 
+        alert('أضف عميلاً أولاً'); 
+        return; 
+    }
+    if (!methodsList.length) {
+        alert('لا توجد طرق تحصيل مسجلة');
+        return;
+    }
+
+    document.getElementById('f-date').value = new Date().toISOString().split('T')[0];
+    document.getElementById('f-customer').value = '';
+    document.getElementById('f-method').value = 'CASH';
+    const cbEl = document.getElementById('f-cash-box');
+    if (cbEl) cbEl.value = '';
+    document.getElementById('f-amount').value = '';
+    document.getElementById('f-reference').value = '';
+    document.getElementById('f-notes').value = '';
+    document.getElementById('open-invoices').innerHTML = '<div class="text-center text-muted p-4">اختر العميل لعرض الفواتير</div>';
+    document.getElementById('inv-count').textContent = '0';
+    clearPaymentDetails();
+    onMethodChange();
+    recalcAllocations();
+
+    rcpModal.show();
+}
+
+function clearPaymentDetails() {
+    ['f-cheque-no','f-cheque-bank','f-cheque-date','f-transfer-no','f-transfer-bank',
+     'f-card-txn','f-card-last4','f-card-bank','f-wallet-name','f-wallet-txn','f-wallet-phone']
+    .forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = '';
+    });
+}
+
+// ============================================
+// On Customer Change
+// ============================================
+async function onCustomerChange() {
+    const customerId = document.getElementById('f-customer').value;
+    if (!customerId) {
+        document.getElementById('open-invoices').innerHTML = '<div class="text-center text-muted p-4">اختر العميل</div>';
+        document.getElementById('inv-count').textContent = '0';
+        return;
+    }
+
+    try {
+        const r = await fetch(`${API}/payments/open-invoices/customer/${customerId}`).then(x => x.json());
+        openInvoices = r.data || [];
+        
+        document.getElementById('inv-count').textContent = openInvoices.length;
+
+        if (!openInvoices.length) {
+            document.getElementById('open-invoices').innerHTML = `
+                <div class="alert alert-success text-center">
+                    <i class="bi bi-check-circle"></i> 
+                    لا توجد فواتير مفتوحة لهذا العميل
+                </div>`;
+            return;
+        }
+
+        document.getElementById('open-invoices').innerHTML = openInvoices.map(inv => `
+            <div class="invoice-row" id="inv-row-${inv.id}">
+                <div class="row align-items-center">
+                    <div class="col-md-1 text-center">
+                        <input type="checkbox" class="invoice-check" 
+                               data-invoice-id="${inv.id}" 
+                               data-remaining="${inv.remaining}"
+                               onchange="onInvoiceToggle(this)">
+                    </div>
+                    <div class="col-md-3">
+                        <code>${inv.invoice_no}</code>
+                        <div class="text-muted" style="font-size:0.72rem;">${inv.invoice_date}</div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="stats-mini">
+                            <span>الإجمالي: <strong>${parseFloat(inv.total_amount).toFixed(2)}</strong></span>
+                            <span>محصّل: <strong class="text-success">${parseFloat(inv.paid_amount).toFixed(2)}</strong></span>
+                            <span>متبقي: <strong class="text-danger">${parseFloat(inv.remaining).toFixed(2)}</strong></span>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="input-group input-group-sm">
+                            <span class="input-group-text">المبلغ</span>
+                            <input type="number" class="form-control alloc-amount" 
+                                   data-invoice-id="${inv.id}"
+                                   value="0" step="0.01" min="0" 
+                                   max="${inv.remaining}"
+                                   oninput="recalcAllocations()">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+    } catch(e) { 
+        console.error(e); 
+    }
+}
+
+// ============================================
+// On Method Change - إظهار/إخفاء الحقول
+// ============================================
+function onMethodChange() {
+    const methodCode = document.getElementById('f-method').value;
+    const method = methodsList.find(m => m.code === methodCode);
+
+    // اخفي الكل
+    document.getElementById('payment-details-box').style.display = 'none';
+    document.getElementById('cheque-fields').style.display = 'none';
+    document.getElementById('transfer-fields').style.display = 'none';
+    document.getElementById('card-fields').style.display = 'none';
+    document.getElementById('wallet-fields').style.display = 'none';
+
+    if (!method) return;
+
+    document.getElementById('method-name').textContent = method.name_ar;
+
+    // اظهر حسب الطريقة
+    if (methodCode === 'CHEQUE') {
+        document.getElementById('payment-details-box').style.display = 'block';
+        document.getElementById('cheque-fields').style.display = 'flex';
+        document.getElementById('f-reference').placeholder = 'رقم الشيك (اختياري)';
+    } else if (methodCode === 'BANK_TRANSFER') {
+        document.getElementById('payment-details-box').style.display = 'block';
+        document.getElementById('transfer-fields').style.display = 'flex';
+        document.getElementById('f-reference').placeholder = 'رقم الحوالة (اختياري)';
+    } else if (methodCode === 'CARD') {
+        document.getElementById('payment-details-box').style.display = 'block';
+        document.getElementById('card-fields').style.display = 'flex';
+        document.getElementById('f-reference').placeholder = 'رقم العملية (اختياري)';
+    } else if (methodCode === 'WALLET') {
+        document.getElementById('payment-details-box').style.display = 'block';
+        document.getElementById('wallet-fields').style.display = 'flex';
+        document.getElementById('f-reference').placeholder = 'رقم العملية (اختياري)';
+    } else {
+        document.getElementById('f-reference').placeholder = 'المرجع (اختياري)';
+    }
+}
+
+// ============================================
+// Invoice Toggle
+// ============================================
+function onInvoiceToggle(checkbox) {
+    const invoiceId = checkbox.dataset.invoiceId;
+    const amountInput = document.querySelector(`.alloc-amount[data-invoice-id="${invoiceId}"]`);
+    const remaining = parseFloat(checkbox.dataset.remaining);
+    
+    if (checkbox.checked) {
+        const totalInput = parseFloat(document.getElementById('f-amount').value) || 0;
+        const currentAllocated = getTotalAllocated() - (parseFloat(amountInput.value) || 0);
+        const available = Math.max(0, totalInput - currentAllocated);
+        const toAllocate = Math.min(remaining, available);
+        amountInput.value = toAllocate.toFixed(2);
+    } else {
+        amountInput.value = '0';
+    }
+    
+    recalcAllocations();
+}
+
+// ============================================
+// Calculate Allocations
+// ============================================
+function getTotalAllocated() {
+    let total = 0;
+    document.querySelectorAll('.alloc-amount').forEach(input => {
+        total += parseFloat(input.value) || 0;
+    });
+    return total;
+}
+
+function recalcAllocations() {
+    const input = parseFloat(document.getElementById('f-amount').value) || 0;
+    const allocated = getTotalAllocated();
+    const remaining = input - allocated;
+
+    document.getElementById('sum-input').textContent = input.toFixed(2);
+    document.getElementById('sum-allocated').textContent = allocated.toFixed(2);
+
+    const remEl = document.getElementById('sum-remaining');
+    remEl.textContent = remaining.toFixed(2);
+    
+    if (remaining < -0.01) {
+        remEl.className = 'text-danger';
+    } else if (Math.abs(remaining) < 0.01) {
+        remEl.className = 'text-success';
+    } else {
+        remEl.className = 'text-warning';
+    }
+
+    document.querySelectorAll('.invoice-row').forEach(row => {
+        const input = row.querySelector('.alloc-amount');
+        const checkbox = row.querySelector('.invoice-check');
+        const amount = parseFloat(input.value) || 0;
+        const remaining = parseFloat(checkbox.dataset.remaining);
+
+        row.classList.remove('paid', 'partial');
+        if (amount > 0) {
+            if (amount >= remaining - 0.01) {
+                row.classList.add('paid');
+            } else {
+                row.classList.add('partial');
+            }
+        }
+    });
+}
+
+// ============================================
+// Save
+// ============================================
+async function save() {
+    const customerId = document.getElementById('f-customer').value;
+    const method = document.getElementById('f-method').value;
+    const amount = parseFloat(document.getElementById('f-amount').value);
+
+    if (!customerId) { alert('اختر العميل'); return; }
+    if (!method) { alert('اختر طريقة التحصيل'); return; }
+    if (!amount || amount <= 0) { alert('أدخل مبلغاً صحيحاً'); return; }
+
+    // ✅ استخرج cash_box_id
+    const cashBoxVal = document.getElementById('f-cash-box') ? document.getElementById('f-cash-box').value : '';
+    let cashBoxId = null, cashBoxType = 'CASH_BOX';
+    if (cashBoxVal) {
+        const parts = cashBoxVal.split('|');
+        cashBoxType = parts[0];
+        cashBoxId = parseInt(parts[1]);
+    }
+
+    const allocations = [];
+    document.querySelectorAll('.alloc-amount').forEach(input => {
+        const amt = parseFloat(input.value) || 0;
+        if (amt > 0) {
+            allocations.push({
+                invoice_id: parseInt(input.dataset.invoiceId),
+                amount: amt
+            });
+        }
+    });
+
+    const data = {
+        receipt_date: document.getElementById('f-date').value,
+        customer_id: parseInt(customerId),
+        receipt_method: method,
+        amount: amount,
+        reference: document.getElementById('f-reference').value,
+        notes: document.getElementById('f-notes').value,
+        cash_box_id: cashBoxId,
+        cash_box_type: cashBoxType,
+        allocations: allocations
+    };
+
+    try {
+        const r = await fetch(`${API}/payments/receipts/`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(data)
+        }).then(x => x.json());
+
+        if (r.success) {
+            // ✅ احفظ التفاصيل
+            if (r.data && r.data.id) {
+                await fetch(`${API}/payments/details`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        payment_type: method,
+                        payment_id: r.data.id,
+                        source_type: 'CUSTOMER_RECEIPT',
+                        cheque_no: document.getElementById('f-cheque-no').value,
+                        cheque_bank: document.getElementById('f-cheque-bank').value,
+                        cheque_date: document.getElementById('f-cheque-date').value,
+                        transfer_no: document.getElementById('f-transfer-no').value,
+                        transfer_bank: document.getElementById('f-transfer-bank').value,
+                        card_txn_no: document.getElementById('f-card-txn').value,
+                        card_last4: document.getElementById('f-card-last4').value,
+                        card_bank: document.getElementById('f-card-bank').value,
+                        wallet_name: document.getElementById('f-wallet-name').value,
+                        wallet_txn_no: document.getElementById('f-wallet-txn').value,
+                        wallet_phone: document.getElementById('f-wallet-phone').value
+                    })
+                });
+            }
+            alert(`تم حفظ التحصيل: ${r.data.receipt_no}`);
+            rcpModal.hide();
+            load();
+        } else {
+            alert(r.message || 'خطأ');
+        }
+    } catch(e) {
+        alert('خطأ في الاتصال بالخادم');
+        console.error(e);
+    }
+}
+
+// ============================================
+// View Receipt - مع التفاصيل
+// ============================================
+async function viewReceipt(id) {
+    try {
+        const [r, d] = await Promise.all([
+            fetch(`${API}/payments/receipts/${id}`).then(x => x.json()),
+            fetch(`${API}/payments/details/CUSTOMER_RECEIPT/${id}`).then(x => x.json()).catch(() => ({data: null}))
+        ]);
+        
+        if (!r.success) { alert('خطأ'); return; }
+
+        const p = r.data;
+        const details = d.data;
+        const method = methodsList.find(m => m.code === p.receipt_method) || {name_ar: p.receipt_method};
+
+        let html = `
+            <div class="row mb-3">
+                <div class="col-md-6"><strong>رقم التحصيل:</strong> <code>${p.receipt_no}</code></div>
+                <div class="col-md-6"><strong>التاريخ:</strong> ${p.receipt_date}</div>
+                <div class="col-md-6"><strong>العميل:</strong> ${p.customer_name || '-'}</div>
+                <div class="col-md-6"><strong>طريقة التحصيل:</strong> ${method.name_ar}</div>
+                <div class="col-md-6"><strong>المبلغ:</strong> <strong class="text-success">${parseFloat(p.amount).toFixed(2)}</strong></div>
+                <div class="col-md-6"><strong>المرجع:</strong> ${p.reference || '-'}</div>
+                ${p.notes ? `<div class="col-md-12"><strong>ملاحظات:</strong> ${p.notes}</div>` : ''}
+            </div>
+        `;
+
+        // ✅ اعرض التفاصيل
+        if (details) {
+            html += `<h6 class="text-success mt-3"><i class="bi bi-info-circle"></i> تفاصيل ${method.name_ar}:</h6>`;
+            
+            if (p.receipt_method === 'CHEQUE') {
+                if (details.cheque_no) html += `<div class="detail-item"><span class="label">رقم الشيك:</span><span class="value">${details.cheque_no}</span></div>`;
+                if (details.cheque_bank) html += `<div class="detail-item"><span class="label">البنك:</span><span class="value">${details.cheque_bank}</span></div>`;
+                if (details.cheque_date) html += `<div class="detail-item"><span class="label">تاريخ الاستحقاق:</span><span class="value">${details.cheque_date}</span></div>`;
+                if (details.cheque_status) html += `<div class="detail-item"><span class="label">حالة الشيك:</span><span class="value">${details.cheque_status}</span></div>`;
+            } else if (p.receipt_method === 'BANK_TRANSFER') {
+                if (details.transfer_no) html += `<div class="detail-item"><span class="label">رقم الحوالة:</span><span class="value">${details.transfer_no}</span></div>`;
+                if (details.transfer_bank) html += `<div class="detail-item"><span class="label">البنك:</span><span class="value">${details.transfer_bank}</span></div>`;
+            } else if (p.receipt_method === 'CARD') {
+                if (details.card_txn_no) html += `<div class="detail-item"><span class="label">رقم العملية:</span><span class="value">${details.card_txn_no}</span></div>`;
+                if (details.card_last4) html += `<div class="detail-item"><span class="label">آخر 4 أرقام:</span><span class="value">****${details.card_last4}</span></div>`;
+                if (details.card_bank) html += `<div class="detail-item"><span class="label">البنك:</span><span class="value">${details.card_bank}</span></div>`;
+            } else if (p.receipt_method === 'WALLET') {
+                if (details.wallet_name) html += `<div class="detail-item"><span class="label">اسم المحفظة:</span><span class="value">${details.wallet_name}</span></div>`;
+                if (details.wallet_txn_no) html += `<div class="detail-item"><span class="label">رقم العملية:</span><span class="value">${details.wallet_txn_no}</span></div>`;
+                if (details.wallet_phone) html += `<div class="detail-item"><span class="label">رقم الهاتف:</span><span class="value">${details.wallet_phone}</span></div>`;
+            }
+        }
+
+        // الفواتير المسددة
+        if (p.allocations && p.allocations.length) {
+            html += `<h6 class="mt-3">الفواتير المُسدّدة:</h6>
+                <table class="table table-sm table-bordered">
+                    <thead class="table-light"><tr>
+                        <th>الفاتورة</th><th>التاريخ</th><th class="text-end">المبلغ المُسدّد</th>
+                    </tr></thead><tbody>`;
+            p.allocations.forEach(a => {
+                html += `<tr>
+                    <td><code>${a.invoice_no}</code></td>
+                    <td>${a.invoice_date || '-'}</td>
+                    <td class="text-end text-success"><strong>${parseFloat(a.amount).toFixed(2)}</strong></td>
+                </tr>`;
+            });
+            html += `</tbody></table>`;
+        } else {
+            html += `<div class="alert alert-info mt-3">لم يتم ربط هذا التحصيل بفواتير محددة</div>`;
+        }
+
+        document.getElementById('viewBody').innerHTML = html;
+        viewModal.show();
+    } catch(e) {
+        console.error(e);
+    }
+}
+
+// ============================================
+// Delete
+// ============================================
+async function del(id) {
+    if (!confirm('حذف التحصيل؟ سيُحذف القيد المحاسبي أيضاً.')) return;
+    
+    try {
+        const r = await fetch(`${API}/payments/receipts/${id}`, {method: 'DELETE'}).then(x => x.json());
+        if (r.success) {
+            alert('تم الحذف');
+            load();
+        } else {
+            alert(r.message || 'خطأ');
+        }
+    } catch(e) {
+        alert('خطأ في الاتصال');
+    }
+}
+
+// ============================================
+// Initialize
+// ============================================
+(async () => {
+    await loadRefs();
+    await load();
+})();
+</script>
+
+<script>
+// دالة تصدير Excel
+function exportToExcel(templateKey) {
+    if (!templateKey) {
+        alert('مفيش قالب تصدير');
+        return;
+    }
+    window.location.href = '/api/v1/export/excel/export/' + templateKey;
+}
+</script>
+
+</body>
+</html>

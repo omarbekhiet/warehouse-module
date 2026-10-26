@@ -1,0 +1,224 @@
+﻿<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>طرق الدفع</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/static/style.css">
+<script src="permissions.js"></script>
+</head>
+<body>
+<div class="container-box">
+    <div class="d-flex justify-content-between mb-4">
+        <h2><i class="bi bi-credit-card-2-front"></i> طرق الدفع</h2>
+        <div>
+            <button class="btn btn-sm btn-outline-success" onclick="exportToExcel('payment_methods')" title="تصدير Excel">
+                <i class="bi bi-file-earmark-excel"></i> Excel
+            </button>
+            <a href="index.html" class="btn btn-outline-secondary"><i class="bi bi-house"></i> الرئيسية</a>
+            <button class="btn btn-primary" onclick="openAdd()"><i class="bi bi-plus-circle"></i> طريقة جديدة</button>
+        </div>
+    </div>
+
+    <div class="alert alert-info">
+        <i class="bi bi-info-circle"></i> كل طريقة دفع مرتبطة بحساب من <a href="accounts.html">الدليل المحاسبي</a>.
+        عند استخدام الطريقة في فاتورة، يتم ترحيل القيد تلقائياً إلى الحساب المرتبط.
+    </div>
+
+    <div class="card-box">
+        <table class="table table-hover">
+            <thead class="table-light">
+                <tr>
+                    <th>الكود</th>
+                    <th>الاسم</th>
+                    <th>الحساب المحاسبي</th>
+                    <th>وسيط</th>
+                    <th>الحالة</th>
+                    <th>إجراءات</th>
+                </tr>
+            </thead>
+            <tbody id="tbl">
+                <tr><td colspan="6" class="text-center">جاري التحميل...</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modal -->
+<div class="modal fade" id="pmModal" tabindex="-1">
+<div class="modal-dialog">
+<div class="modal-content">
+<div class="modal-header bg-primary text-white">
+    <h5 class="modal-title" id="modal-title"><i class="bi bi-plus-circle"></i> طريقة دفع جديدة</h5>
+    <button class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+</div>
+<div class="modal-body">
+    <div class="mb-3">
+        <label class="form-label">الكود *</label>
+        <input class="form-control" id="f-code" placeholder="مثال: CASH, CHEQUE">
+    </div>
+    <div class="mb-3">
+        <label class="form-label">الاسم بالعربي *</label>
+        <input class="form-control" id="f-name_ar">
+    </div>
+    <div class="mb-3">
+        <label class="form-label">الاسم بالإنجليزي</label>
+        <input class="form-control" id="f-name_en">
+    </div>
+    <div class="mb-3">
+        <label class="form-label">الحساب المحاسبي *</label>
+        <select class="form-select" id="f-account_code"></select>
+        <small class="text-muted">اختر من الدليل المحاسبي</small>
+    </div>
+    <div class="mb-3 form-check">
+        <input type="checkbox" class="form-check-input" id="f-requires_clearing">
+        <label class="form-check-label" for="f-requires_clearing">
+            يحتاج حساب وسيط (للشيك والبطاقة)
+        </label>
+    </div>
+    <div class="mb-3">
+        <label class="form-label">الحالة</label>
+        <select class="form-select" id="f-is_active">
+            <option value="1">نشط</option>
+            <option value="0">موقوف</option>
+        </select>
+    </div>
+</div>
+<div class="modal-footer">
+    <button class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+    <button class="btn btn-primary" onclick="save()"><i class="bi bi-check-circle"></i> حفظ</button>
+</div>
+</div></div></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+const API = '/api/v1';
+const modal = new bootstrap.Modal(document.getElementById('pmModal'));
+let editId = null;
+let accountsList = [];
+
+async function loadAccounts() {
+    const r = await fetch(`${API}/accounts/leaf`).then(x => x.json());
+    accountsList = r.data || [];
+    document.getElementById('f-account_code').innerHTML = 
+        '<option value="">— اختر حساب —</option>' +
+        accountsList.map(a => `<option value="${a.code}">${a.code} - ${a.name_ar}</option>`).join('');
+}
+
+async function load() {
+    const r = await fetch(`${API}/payment-methods/all`).then(x => x.json());
+    const rows = r.data || [];
+    
+    document.getElementById('tbl').innerHTML = rows.length ? rows.map(m => `
+        <tr>
+            <td><code>${m.code}</code></td>
+            <td><strong>${m.name_ar}</strong></td>
+            <td><code>${m.account_code}</code> <small class="text-muted">${m.account_name || ''}</small></td>
+            <td>${m.requires_clearing ? '<span class="badge bg-warning">نعم</span>' : '<span class="badge bg-secondary">لا</span>'}</td>
+            <td>${m.is_active ? '<span class="badge-active">نشط</span>' : '<span class="badge-inactive">موقوف</span>'}</td>
+            <td>
+                <button class="btn btn-sm btn-outline-warning" onclick="openEdit(${m.id})"><i class="bi bi-pencil"></i></button>
+                <button class="btn btn-sm btn-outline-danger" onclick="del(${m.id})"><i class="bi bi-trash"></i></button>
+            </td>
+        </tr>
+    `).join('') : '<tr><td colspan="6" class="text-center text-muted">لا توجد طرق</td></tr>';
+}
+
+function openAdd() {
+    editId = null;
+    document.getElementById('f-code').value = '';
+    document.getElementById('f-code').disabled = false;
+    document.getElementById('f-name_ar').value = '';
+    document.getElementById('f-name_en').value = '';
+    document.getElementById('f-account_code').value = '';
+    document.getElementById('f-requires_clearing').checked = false;
+    document.getElementById('f-is_active').value = '1';
+    document.getElementById('modal-title').innerHTML = '<i class="bi bi-plus-circle"></i> طريقة دفع جديدة';
+    modal.show();
+}
+
+async function openEdit(id) {
+    editId = id;
+    const r = await fetch(`${API}/payment-methods/${id}`).then(x => x.json());
+    if (!r.success) return;
+    const m = r.data;
+    document.getElementById('f-code').value = m.code;
+    document.getElementById('f-code').disabled = true;
+    document.getElementById('f-name_ar').value = m.name_ar;
+    document.getElementById('f-name_en').value = m.name_en || '';
+    document.getElementById('f-account_code').value = m.account_code || '';
+    document.getElementById('f-requires_clearing').checked = m.requires_clearing === 1;
+    document.getElementById('f-is_active').value = m.is_active ? '1' : '0';
+    document.getElementById('modal-title').innerHTML = '<i class="bi bi-pencil"></i> تعديل الطريقة';
+    modal.show();
+}
+
+async function save() {
+    const data = {
+        name_ar: document.getElementById('f-name_ar').value.trim(),
+        name_en: document.getElementById('f-name_en').value.trim(),
+        account_code: document.getElementById('f-account_code').value,
+        requires_clearing: document.getElementById('f-requires_clearing').checked ? 1 : 0,
+        is_active: parseInt(document.getElementById('f-is_active').value)
+    };
+    
+    if (!data.name_ar) { alert('الاسم مطلوب'); return; }
+    if (!data.account_code) { alert('الحساب مطلوب'); return; }
+    
+    let res;
+    if (editId) {
+        res = await fetch(`${API}/payment-methods/${editId}`, {
+            method: 'PUT',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(data)
+        }).then(x => x.json());
+    } else {
+        data.code = document.getElementById('f-code').value.trim().toUpperCase();
+        if (!data.code) { alert('الكود مطلوب'); return; }
+        res = await fetch(`${API}/payment-methods/`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(data)
+        }).then(x => x.json());
+    }
+    
+    if (res.success) {
+        modal.hide();
+        load();
+    } else {
+        alert(res.message || 'خطأ');
+    }
+}
+
+async function del(id) {
+    if (!confirm('حذف الطريقة؟')) return;
+    const r = await fetch(`${API}/payment-methods/${id}`, {method: 'DELETE'}).then(x => x.json());
+    if (r.success) {
+        alert('تم الحذف');
+        load();
+    } else {
+        alert(r.message || 'خطأ');
+    }
+}
+
+(async () => {
+    await loadAccounts();
+    await load();
+})();
+</script>
+
+<script>
+// دالة تصدير Excel
+function exportToExcel(templateKey) {
+    if (!templateKey) {
+        alert('مفيش قالب تصدير');
+        return;
+    }
+    window.location.href = '/api/v1/export/excel/export/' + templateKey;
+}
+</script>
+
+</body>
+</html>

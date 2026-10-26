@@ -1,11 +1,26 @@
-﻿from flask import Flask, jsonify
+from flask import Flask, jsonify, request, g
 from flask_cors import CORS
+
 
 def create_app():
     app = Flask(__name__, static_folder='static', static_url_path='')
     app.config['SECRET_KEY'] = 'dev-secret-key'
     CORS(app)
 
+    # ============================================================
+    # Middleware: حفظ user_id من الـ header في g
+    # ============================================================
+    @app.before_request
+    def set_current_user():
+        try:
+            uid = request.headers.get('X-User-Id')
+            g.user_id = int(uid) if uid else 1
+        except Exception:
+            g.user_id = 1
+
+    # ============================================================
+    # Import Blueprints
+    # ============================================================
     from app.routes.warehouse_routes import warehouse_bp
     from app.routes.item_routes import item_bp
     from app.routes.receipt_routes import receipt_bp
@@ -27,6 +42,11 @@ def create_app():
     from app.routes.purchase_return_routes import pr_bp
     from app.routes.sales_return_routes import sr_bp
     from app.routes.payment_routes import pay_bp
+    from app.routes.cash_box_routes import cb_bp    
+    from app.routes.customer_balance_routes import cust_balance_bp
+    from app.routes.supplier_balance_routes import supp_balance_bp
+    from app.routes.payment_method_routes import pm_bp
+    from app.routes.settlement_routes import settle_bp
     from app.routes.financial_report_routes import fin_bp
     from app.routes.auth_routes import auth_bp
     from app.routes.export_routes import export_bp
@@ -34,7 +54,14 @@ def create_app():
     from app.routes.purchase_order_routes import po_bp
     from app.routes.material_request_routes import mr_bp
     from app.routes.requisition_routes import req_bp
+    from app.routes.settings_routes import settings_bp
+    #from app.routes.ai_routes import ai_bp
+    from app.routes.expense_routes import exp_bp
+    
 
+    # ============================================================
+    # Register Blueprints
+    # ============================================================
     app.register_blueprint(warehouse_bp, url_prefix='/api/v1/warehouses')
     app.register_blueprint(item_bp, url_prefix='/api/v1/items')
     app.register_blueprint(receipt_bp, url_prefix='/api/v1/receipts')
@@ -56,6 +83,11 @@ def create_app():
     app.register_blueprint(pr_bp, url_prefix='/api/v1/purchase-returns')
     app.register_blueprint(sr_bp, url_prefix='/api/v1/sales-returns')
     app.register_blueprint(pay_bp, url_prefix='/api/v1/payments')
+    app.register_blueprint(cb_bp, url_prefix='/api/v1/cash-boxes')
+    app.register_blueprint(cust_balance_bp, url_prefix='/api/v1/customers')
+    app.register_blueprint(supp_balance_bp, url_prefix='/api/v1/suppliers')
+    app.register_blueprint(pm_bp, url_prefix='/api/v1/payment-methods')
+    app.register_blueprint(settle_bp, url_prefix='/api/v1/settlements')
     app.register_blueprint(fin_bp, url_prefix='/api/v1/financial-reports')
     app.register_blueprint(auth_bp, url_prefix='/api/v1/auth')
     app.register_blueprint(export_bp, url_prefix='/api/v1/export')
@@ -63,7 +95,14 @@ def create_app():
     app.register_blueprint(po_bp, url_prefix='/api/v1/purchase-orders')
     app.register_blueprint(mr_bp, url_prefix='/api/v1/material-requests')
     app.register_blueprint(req_bp, url_prefix='/api/v1/requisitions')
+    app.register_blueprint(settings_bp, url_prefix='/api/v1/settings')
+    #app.register_blueprint(ai_bp, url_prefix='/api/v1/ai')
+    app.register_blueprint(exp_bp, url_prefix='/api/v1/expenses')
+    
 
+    # ============================================================
+    # Routes
+    # ============================================================
     @app.route('/health')
     def health():
         return {'status': 'OK'}

@@ -1,0 +1,497 @@
+﻿<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>تقارير الدفعات والصلاحية</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+* { font-family: 'Cairo','Segoe UI',Tahoma,sans-serif; box-sizing: border-box; }
+body { background: #f5f6fa; padding: 12px; font-size: 13px; color: #1e293b; line-height: 1.5; }
+.container-box { max-width: 1400px; margin: 0 auto; }
+
+.page-head {
+    background: white; border-radius: 10px; padding: 14px 18px;
+    margin-bottom: 14px; box-shadow: 0 1px 6px rgba(0,0,0,0.05);
+    display: flex; justify-content: space-between; align-items: center;
+    flex-wrap: wrap; gap: 10px;
+}
+.page-head h2 {
+    margin: 0; font-size: 1.15rem; font-weight: 700; color: #1e3c72;
+    display: flex; align-items: center; gap: 8px;
+}
+.page-head h2 i { color: #a18cd1; }
+.page-head .btn { font-size: 0.82rem; padding: 6px 14px; border-radius: 7px; }
+
+.filters-box {
+    background: white; border-radius: 10px; padding: 14px 18px;
+    margin-bottom: 14px; box-shadow: 0 1px 6px rgba(0,0,0,0.05);
+}
+.filters-box .form-label { font-size: 0.75rem; font-weight: 600; color: #64748b; margin-bottom: 4px; }
+.filters-box .form-control, .filters-box .form-select { font-size: 0.85rem; padding: 6px 10px; border-radius: 6px; }
+
+.kpi-inline { display: flex; flex-wrap: nowrap; gap: 12px; margin-bottom: 14px; overflow-x: auto; }
+.kpi-item {
+    flex: 1 1 0; min-width: 220px; display: flex; align-items: center; gap: 14px;
+    padding: 16px 18px; border-radius: 12px; color: white;
+    position: relative; overflow: hidden; box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+    min-height: 90px;
+}
+.kpi-item .kpi-icon {
+    width: 50px; height: 50px; border-radius: 12px;
+    background: rgba(255,255,255,0.25);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.5rem; flex-shrink: 0;
+}
+.kpi-item .kpi-body { flex: 1; min-width: 0; }
+.kpi-item .kpi-label { font-size: 0.78rem; opacity: 0.92; margin-bottom: 2px; font-weight: 500; }
+.kpi-item .kpi-value { font-size: 1.5rem; font-weight: 700; line-height: 1.1; }
+.kpi-item .kpi-sub { font-size: 0.7rem; opacity: 0.85; margin-top: 2px; }
+.kpi-item .icon-bg { position: absolute; left: -15px; bottom: -25px; font-size: 5rem; opacity: 0.13; }
+
+.tabs-nav {
+    background: white; border-radius: 10px 10px 0 0;
+    padding: 8px 14px 0; margin-bottom: 0;
+    display: flex; gap: 4px; flex-wrap: wrap;
+    border-bottom: 1.5px solid #f1f5f9;
+}
+.tab-btn {
+    padding: 8px 16px;
+    border: none;
+    background: transparent;
+    color: #64748b;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    transition: all 0.15s;
+    border-radius: 8px 8px 0 0;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+.tab-btn:hover { color: #a18cd1; background: #f5f3ff; }
+.tab-btn.active {
+    color: #1e3c72;
+    border-bottom-color: #a18cd1;
+    background: #f5f3ff;
+}
+
+.table-card {
+    background: white; border-radius: 0 0 10px 10px;
+    padding: 20px; box-shadow: 0 1px 6px rgba(0,0,0,0.05);
+    margin-bottom: 14px;
+}
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+table { width: 100%; border-collapse: collapse; font-size: 0.82rem; margin: 0; }
+table thead th {
+    background: #f8fafc; color: #475569; font-weight: 600;
+    padding: 9px 10px; text-align: right; font-size: 0.76rem;
+    border-bottom: 1.5px solid #e2e8f0; white-space: nowrap;
+}
+table tbody td {
+    padding: 9px 10px; border-bottom: 1px solid #f1f5f9; vertical-align: middle;
+}
+table tbody tr:last-child td { border-bottom: none; }
+table tbody tr:hover { background: #fafbfc; }
+table code {
+    background: #f1f5f9; padding: 2px 6px; border-radius: 4px;
+    font-size: 0.76rem; color: #475569;
+}
+
+.badge-expiry {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 10px;
+    border-radius: 6px;
+    font-size: 0.72rem;
+    font-weight: 700;
+}
+.expiry-safe { background: #dcfce7; color: #15803d; }
+.expiry-warning { background: #fef3c7; color: #92400e; }
+.expiry-danger { background: #fee2e2; color: #991b1b; }
+.expiry-expired { background: #7f1d1d; color: white; }
+.expiry-none { background: #f1f5f9; color: #64748b; }
+
+.table-empty { text-align: center; padding: 40px 20px; color: #94a3b8; }
+.table-empty i { font-size: 3rem; opacity: 0.35; display: block; margin-bottom: 10px; }
+
+@media print {
+    .no-print { display: none !important; }
+    body { background: white; padding: 0; }
+    .kpi-item { border: 1px solid #cbd5e1; }
+    .tabs-nav { display: none; }
+    .tab-panel { display: block !important; }
+    .tab-panel:not(.active) { display: none !important; }
+}
+@media (max-width: 900px) {
+    .kpi-inline { overflow-x: auto; }
+    .kpi-item { min-width: 220px; }
+}
+</style>
+<script src="permissions.js"></script>
+</head>
+<body>
+
+<div class="container-box">
+
+    <!-- Page Header -->
+    <div class="page-head no-print">
+        <h2><i class="bi bi-calendar-check-fill"></i> تقارير الدفعات والصلاحية</h2>
+        <div class="d-flex gap-2">
+            <button class="btn btn-sm btn-outline-success" onclick="exportToExcel('batches_report')" title="تصدير Excel">
+                <i class="bi bi-file-earmark-excel"></i> Excel
+            </button>
+            <a href="index.html" class="btn btn-outline-secondary">
+                <i class="bi bi-house-fill"></i> الرئيسية
+            </a>
+            <a href="reports.html" class="btn btn-outline-info">
+                <i class="bi bi-file-earmark-bar-graph"></i> التقارير
+            </a>
+            <button class="btn btn-outline-primary" onclick="window.print()">
+                <i class="bi bi-printer-fill"></i> طباعة
+            </button>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="filters-box no-print">
+        <div class="row g-2 align-items-end">
+            <div class="col-md-3">
+                <label class="form-label">المستودع</label>
+                <select class="form-select" id="flt-warehouse" onchange="loadAll()">
+                    <option value="">— كل المستودعات —</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">الصنف</label>
+                <select class="form-select" id="flt-item" onchange="loadAll()">
+                    <option value="">— كل الأصناف —</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label class="form-label">فترة الانتهاء (يوم)</label>
+                <select class="form-select" id="flt-days" onchange="loadExpiring()">
+                    <option value="7">أسبوع</option>
+                    <option value="30" selected>شهر</option>
+                    <option value="60">شهرين</option>
+                    <option value="90">3 شهور</option>
+                    <option value="180">6 شهور</option>
+                    <option value="365">سنة</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <button class="btn btn-primary w-100" onclick="loadAll()">
+                    <i class="bi bi-arrow-clockwise"></i> تحديث
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- KPIs -->
+    <div class="kpi-inline">
+        <div class="kpi-item" style="background: linear-gradient(135deg, #4facfe, #00f2fe);">
+            <i class="bi bi-boxes icon-bg"></i>
+            <div class="kpi-icon"><i class="bi bi-boxes"></i></div>
+            <div class="kpi-body">
+                <div class="kpi-label">إجمالي الدفعات</div>
+                <div class="kpi-value" id="kpi-total">—</div>
+                <div class="kpi-sub">دفعة نشطة</div>
+            </div>
+        </div>
+        <div class="kpi-item" style="background: linear-gradient(135deg, #fa709a, #fee140);">
+            <i class="bi bi-exclamation-triangle icon-bg"></i>
+            <div class="kpi-icon"><i class="bi bi-exclamation-triangle-fill"></i></div>
+            <div class="kpi-body">
+                <div class="kpi-label">قريبة من الانتهاء</div>
+                <div class="kpi-value" id="kpi-expiring">—</div>
+                <div class="kpi-sub">خلال الفترة المحددة</div>
+            </div>
+        </div>
+        <div class="kpi-item" style="background: linear-gradient(135deg, #f5576c, #f093fb);">
+            <i class="bi bi-x-octagon icon-bg"></i>
+            <div class="kpi-icon"><i class="bi bi-x-octagon-fill"></i></div>
+            <div class="kpi-body">
+                <div class="kpi-label">منتهية</div>
+                <div class="kpi-value" id="kpi-expired">—</div>
+                <div class="kpi-sub">تحتاج إجراء</div>
+            </div>
+        </div>
+        <div class="kpi-item" style="background: linear-gradient(135deg, #43e97b, #38f9d7);">
+            <i class="bi bi-cash-stack icon-bg"></i>
+            <div class="kpi-icon"><i class="bi bi-cash-stack"></i></div>
+            <div class="kpi-body">
+                <div class="kpi-label">قيمة المعرضة للخطر</div>
+                <div class="kpi-value" id="kpi-risk">—</div>
+                <div class="kpi-sub">ج.م</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs-nav no-print">
+        <button class="tab-btn active" onclick="switchTab('all')">
+            <i class="bi bi-box-seam"></i> كل الدفعات
+        </button>
+        <button class="tab-btn" onclick="switchTab('expiring')">
+            <i class="bi bi-clock-history"></i> قريبة من الانتهاء
+        </button>
+        <button class="tab-btn" onclick="switchTab('expired')">
+            <i class="bi bi-x-octagon"></i> منتهية
+        </button>
+    </div>
+
+    <div class="table-card">
+
+        <!-- All Batches -->
+        <div class="tab-panel active" data-panel="all">
+            <table>
+                <thead>
+                    <tr>
+                        <th>الدفعة</th>
+                        <th>الصنف</th>
+                        <th>المستودع</th>
+                        <th class="text-end">الكمية</th>
+                        <th class="text-end">القيمة</th>
+                        <th>تاريخ الانتهاء</th>
+                        <th>الحالة</th>
+                    </tr>
+                </thead>
+                <tbody id="tbl-all"></tbody>
+            </table>
+        </div>
+
+        <!-- Expiring -->
+        <div class="tab-panel" data-panel="expiring">
+            <table>
+                <thead>
+                    <tr>
+                        <th>الدفعة</th>
+                        <th>الصنف</th>
+                        <th>المستودع</th>
+                        <th class="text-end">الكمية</th>
+                        <th class="text-end">القيمة</th>
+                        <th>تاريخ الانتهاء</th>
+                        <th>الأيام المتبقية</th>
+                    </tr>
+                </thead>
+                <tbody id="tbl-expiring"></tbody>
+            </table>
+        </div>
+
+        <!-- Expired -->
+        <div class="tab-panel" data-panel="expired">
+            <table>
+                <thead>
+                    <tr>
+                        <th>الدفعة</th>
+                        <th>الصنف</th>
+                        <th>المستودع</th>
+                        <th class="text-end">الكمية</th>
+                        <th class="text-end">القيمة</th>
+                        <th>تاريخ الانتهاء</th>
+                        <th>الأيام منذ الانتهاء</th>
+                    </tr>
+                </thead>
+                <tbody id="tbl-expired"></tbody>
+            </table>
+        </div>
+
+    </div>
+
+</div>
+
+<script>
+const API = 'http://localhost:5000/api/v1';
+let currentTab = 'all';
+
+
+async function loadLists() {
+    try {
+        const [wR, iR] = await Promise.all([
+            fetch(`${API}/warehouses/`).then(x => x.json()),
+            fetch(`${API}/items/`).then(x => x.json())
+        ]);
+
+        const warehouses = wR.data || [];
+        const items = iR.data || [];
+
+        document.getElementById('flt-warehouse').innerHTML =
+            '<option value="">— كل المستودعات —</option>' +
+            warehouses.map(w => `<option value="${w.id}">${w.code} - ${w.name_ar}</option>`).join('');
+
+        document.getElementById('flt-item').innerHTML =
+            '<option value="">— كل الأصناف —</option>' +
+            items.map(i => `<option value="${i.id}">${i.code} - ${i.name_ar}</option>`).join('');
+    } catch (e) {
+        console.error(e);
+    }
+}
+
+
+async function loadAll() {
+    await Promise.all([loadBatches(), loadExpiring(), loadExpired()]);
+}
+
+
+async function loadBatches() {
+    const wh = document.getElementById('flt-warehouse').value;
+    const item = document.getElementById('flt-item').value;
+
+    let url = `${API}/reports/batches?`;
+    if (wh) url += `warehouse_id=${wh}&`;
+    if (item) url += `item_id=${item}&`;
+
+    try {
+        const r = await fetch(url).then(x => x.json());
+        const rows = r.data || [];
+
+        document.getElementById('kpi-total').textContent = rows.length;
+
+        renderTable('tbl-all', rows, 'batch');
+
+        // قيمة معرضة للخطر = مجموع (expiring + expired)
+        const riskValue = rows
+            .filter(x => x.days_to_expiry !== null && x.days_to_expiry <= 30)
+            .reduce((s, x) => s + parseFloat(x.total_value || 0), 0);
+        document.getElementById('kpi-risk').textContent = fmtNum(riskValue);
+    } catch (e) {
+        console.error(e);
+    }
+}
+
+
+async function loadExpiring() {
+    const wh = document.getElementById('flt-warehouse').value;
+    const days = document.getElementById('flt-days').value;
+
+    let url = `${API}/reports/expiring?days=${days}`;
+    if (wh) url += `&warehouse_id=${wh}`;
+
+    try {
+        const r = await fetch(url).then(x => x.json());
+        const rows = r.data || [];
+
+        document.getElementById('kpi-expiring').textContent = rows.length;
+        renderTable('tbl-expiring', rows, 'expiring');
+    } catch (e) {
+        console.error(e);
+    }
+}
+
+
+async function loadExpired() {
+    const wh = document.getElementById('flt-warehouse').value;
+
+    let url = `${API}/reports/expired?`;
+    if (wh) url += `warehouse_id=${wh}`;
+
+    try {
+        const r = await fetch(url).then(x => x.json());
+        const rows = r.data || [];
+
+        document.getElementById('kpi-expired').textContent = rows.length;
+        renderTable('tbl-expired', rows, 'expired');
+    } catch (e) {
+        console.error(e);
+    }
+}
+
+
+function renderTable(tbodyId, rows, type) {
+    const tbody = document.getElementById(tbodyId);
+
+    if (!rows.length) {
+        tbody.innerHTML = `
+            <tr><td colspan="7">
+                <div class="table-empty">
+                    <i class="bi bi-inbox"></i>
+                    لا توجد بيانات
+                </div>
+            </td></tr>`;
+        return;
+    }
+
+    tbody.innerHTML = rows.map(x => {
+        const days = x.days_to_expiry;
+        let badge = '';
+
+        if (type === 'expired') {
+            badge = `<span class="badge-expiry expiry-expired"><i class="bi bi-x-octagon-fill"></i> منتهية (${x.days_expired || 0} يوم)</span>`;
+        } else if (type === 'expiring') {
+            badge = `<span class="badge-expiry expiry-warning"><i class="bi bi-clock-history"></i> ${days} يوم</span>`;
+        } else {
+            // all
+            if (days === null) {
+                badge = `<span class="badge-expiry expiry-none">—</span>`;
+            } else if (days < 0) {
+                badge = `<span class="badge-expiry expiry-expired">منتهية</span>`;
+            } else if (days <= 30) {
+                badge = `<span class="badge-expiry expiry-danger">${days} يوم</span>`;
+            } else if (days <= 90) {
+                badge = `<span class="badge-expiry expiry-warning">${days} يوم</span>`;
+            } else {
+                badge = `<span class="badge-expiry expiry-safe">${days} يوم</span>`;
+            }
+        }
+
+        return `
+            <tr>
+                <td><code>${x.batch_no}</code></td>
+                <td>
+                    <code>${x.item_code}</code>
+                    ${x.item_name}
+                </td>
+                <td>${x.warehouse_name}</td>
+                <td class="text-end">${fmtNum(x.quantity, 2)}</td>
+                <td class="text-end">${fmtNum(x.total_value)}</td>
+                <td>${x.expiry_date || '—'}</td>
+                <td>${badge}</td>
+            </tr>`;
+    }).join('');
+}
+
+
+function switchTab(tab) {
+    currentTab = tab;
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.getAttribute('onclick').includes(`'${tab}'`));
+    });
+    document.querySelectorAll('.tab-panel').forEach(p => {
+        p.classList.toggle('active', p.dataset.panel === tab);
+    });
+}
+
+
+function fmtNum(n, decimals = 2) {
+    return parseFloat(n || 0).toLocaleString('ar-EG', {
+        minimumFractionDigits: decimals,
+        maximumFractionDigits: decimals
+    });
+}
+
+
+(async () => {
+    await loadLists();
+    await loadAll();
+})();
+</script>
+
+<script>
+// دالة تصدير Excel
+function exportToExcel(templateKey) {
+    if (!templateKey) {
+        alert('مفيش قالب تصدير');
+        return;
+    }
+    window.location.href = '/api/v1/export/excel/export/' + templateKey;
+}
+</script>
+
+</body>
+</html>

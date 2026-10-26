@@ -1,0 +1,311 @@
+﻿<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>طباعة كشف حساب</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="print_common.css" rel="stylesheet">
+<style>
+.report-filters-box {
+    background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px;
+    padding: 10px 14px; margin-bottom: 12px; font-size: 0.82rem;
+}
+.report-filters-box .filter-label { color: #64748b; font-weight: 600; margin-left: 4px; }
+.report-filters-box .filter-value { color: #1e3c72; font-weight: 700; }
+.report-summary {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 12px;
+}
+.summary-card {
+    background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px;
+    padding: 12px; text-align: center;
+}
+.summary-card .label { font-size: 0.75rem; color: #1e40af; font-weight: 600; margin-bottom: 5px; }
+.summary-card .value { font-size: 1.2rem; font-weight: 800; color: #1e3c72; }
+.summary-card.danger { background: #fee2e2; border-color: #fecaca; }
+.summary-card.danger .label { color: #991b1b; }
+.summary-card.success { background: #dcfce7; border-color: #bbf7d0; }
+.summary-card.success .label { color: #15803d; }
+.summary-card.warning { background: #fef3c7; border-color: #fcd34d; }
+.summary-card.warning .label { color: #92400e; }
+.badge-type {
+    display: inline-block; padding: 2px 8px; border-radius: 4px;
+    font-size: 0.7rem; font-weight: 700;
+}
+.badge-INVOICE { background: #e0f2fe; color: #0369a1; }
+.badge-RECEIPT { background: #dcfce7; color: #15803d; }
+.badge-PAYMENT { background: #dcfce7; color: #15803d; }
+.badge-OPEN { background: #fef3c7; color: #92400e; }
+.section-title {
+    background: #1e3c72; color: white; padding: 8px 14px; border-radius: 6px;
+    font-size: 0.9rem; font-weight: 700; margin: 14px 0 8px;
+    display: flex; justify-content: space-between;
+}
+@media print {
+    .report-filters-box, .report-summary, .section-title { page-break-inside: avoid; }
+}
+</style>
+<script src="permissions.js"></script>
+</head>
+<body>
+
+<div id="toolbar"></div>
+<div id="content"></div>
+
+<script src="company_config.js"></script>
+<script src="print_common.js"></script>
+<script>
+
+async function load() {
+    const type = getQueryParam('type');
+    const id = getQueryParam('id');
+
+    if (!type || !id) {
+        document.getElementById('content').innerHTML = renderError('يجب تحديد type و id في الرابط');
+        return;
+    }
+    if (type !== 'customer' && type !== 'supplier') {
+        document.getElementById('content').innerHTML = renderError('type يجب أن يكون customer أو supplier');
+        return;
+    }
+
+    document.getElementById('content').innerHTML = renderLoading('جاري تحميل كشف الحساب...');
+
+    const from = getQueryParam('date_from') || '';
+    const to = getQueryParam('date_to') || '';
+
+    const endpoint = type === 'customer'
+        ? `/customers/statement/${id}`
+        : `/suppliers/statement/${id}`;
+
+    let url = `${PRINT_API}${endpoint}?`;
+    if (from) url += `date_from=${from}&`;
+    if (to) url += `date_to=${to}&`;
+
+    try {
+        const r = await fetch(url).then(x => x.json());
+        if (!r.success) {
+            document.getElementById('content').innerHTML = renderError(r.message || 'خطأ');
+            return;
+        }
+        render(r.data, type, from, to);
+    } catch (e) {
+        console.error(e);
+        document.getElementById('content').innerHTML = renderError('خطأ في الاتصال');
+    }
+}
+
+function render(data, type, from, to) {
+    const isCustomer = type === 'customer';
+    const party = isCustomer ? (data.customer || {}) : (data.supplier || {});
+    const invoices = data.invoices || [];
+    const movements = isCustomer ? (data.receipts || []) : (data.payments || []);
+    const openInv = data.open_invoices || [];
+    const totals = data.totals || {};
+
+    const title = isCustomer ? 'كشف حساب عميل' : 'كشف حساب مورد';
+    const partyLabel = isCustomer ? 'بيانات العميل' : 'بيانات المورد';
+    const partyIcon = isCustomer ? 'bi-person-fill' : 'bi-truck';
+    const movLabel = isCustomer ? 'تحصيل' : 'دفعة';
+    const movLabelPlural = isCustomer ? 'التحصيلات' : 'الدفعات';
+
+    document.getElementById('toolbar').innerHTML = renderToolbar(title + ' - ' + (party.name_ar || ''));
+
+    // ============ دمج الحركات ============
+    const transactions = [
+        ...invoices.map(i => ({
+            type: 'INVOICE',
+            date: i.invoice_date,
+            ref: i.invoice_no,
+            desc: isCustomer ? 'فاتورة بيع' : 'فاتورة شراء',
+            debit: parseFloat(i.total_amount || 0),
+            credit: 0
+        })),
+        ...movements.map(m => ({
+            type: isCustomer ? 'RECEIPT' : 'PAYMENT',
+            date: m.receipt_date || m.payment_date || '',
+            ref: m.receipt_no || m.payment_no || '',
+            desc: movLabel,
+            debit: 0,
+            credit: parseFloat(m.amount || 0)
+        }))
+    ].sort((a, b) => new Date(a.date) - new Date(b.date));
+
+    let running = 0;
+    transactions.forEach(tx => {
+        running += tx.debit - tx.credit;
+        tx.balance = running;
+    });
+
+    let linesHtml = '';
+    if (!transactions.length) {
+        linesHtml = '<tr><td colspan="6" style="text-align:center; padding:20px; color:#94a3b8;">لا توجد حركات في هذه الفترة</td></tr>';
+    } else {
+        transactions.forEach((tx, idx) => {
+            const badgeClass = 'badge-' + tx.type;
+            const badgeText = tx.type === 'INVOICE' ? 'فاتورة' : movLabel;
+            const balColor = tx.balance > 0 ? '#dc2626' : (tx.balance < 0 ? '#16a34a' : '#1e3c72');
+            linesHtml += `
+                <tr>
+                    <td>${idx + 1}</td>
+                    <td>${tx.date}</td>
+                    <td><code>${tx.ref}</code></td>
+                    <td><span class="badge-type ${badgeClass}">${badgeText}</span> ${tx.desc}</td>
+                    <td style="color:#dc2626;">${tx.debit > 0 ? fmtNum(tx.debit) : '—'}</td>
+                    <td style="color:#16a34a;">${tx.credit > 0 ? fmtNum(tx.credit) : '—'}</td>
+                    <td style="color:${balColor}; font-weight:700;">${fmtNum(tx.balance)}</td>
+                </tr>`;
+        });
+    }
+
+    // ============ الفواتير المفتوحة ============
+    let openInvHtml = '';
+    if (openInv.length) {
+        openInvHtml = `
+        <div class="section-title">
+            <span><i class="bi bi-exclamation-triangle-fill"></i> الفواتير المفتوحة (غير مسددة)</span>
+            <span>${openInv.length} فاتورة</span>
+        </div>
+        <table class="items-table">
+            <thead>
+                <tr>
+                    <th>رقم الفاتورة</th>
+                    <th>التاريخ</th>
+                    <th style="width:120px;">الإجمالي</th>
+                    <th style="width:120px;">المسدّد</th>
+                    <th style="width:120px;">المتبقي</th>
+                </tr>
+            </thead>
+            <tbody>`;
+
+        let openTotal = 0;
+        openInv.forEach(x => {
+            const tot = parseFloat(x.total_amount || 0);
+            const paid = parseFloat(x.paid_amount || 0);
+            const rem = parseFloat(x.remaining || 0);
+            openTotal += rem;
+            openInvHtml += `
+                <tr>
+                    <td><code>${x.invoice_no}</code></td>
+                    <td>${x.invoice_date}</td>
+                    <td>${fmtNum(tot)}</td>
+                    <td style="color:#16a34a;">${fmtNum(paid)}</td>
+                    <td style="color:#dc2626; font-weight:700;">${fmtNum(rem)}</td>
+                </tr>`;
+        });
+
+        openInvHtml += `
+                <tr style="background:#fef3c7; font-weight:700;">
+                    <td colspan="4" class="text-right">إجمالي المتبقي:</td>
+                    <td style="color:#dc2626;">${fmtNum(openTotal)}</td>
+                </tr>
+            </tbody>
+        </table>`;
+    }
+
+    document.getElementById('content').innerHTML = `
+    <div class="a4-page">
+        <div class="doc-header">
+            ${renderCompanyHeader()}
+            <div class="doc-title-box">
+                <div class="doc-title"><i class="bi ${partyIcon}"></i> ${title}</div>
+                <div class="doc-no-box"><strong>${party.code || ''}</strong> - ${party.name_ar || ''}</div>
+            </div>
+        </div>
+
+        <div class="report-filters-box">
+            <span class="filter-label">الفترة:</span>
+            <span class="filter-value">${from || 'من البداية'} → ${to || 'حتى اليوم'}</span>
+            <span style="margin:0 10px;">|</span>
+            <span class="filter-label">طُبع في:</span>
+            <span class="filter-value">${new Date().toLocaleDateString('ar-EG')}</span>
+        </div>
+
+        <div class="info-grid">
+            <div class="info-box">
+                <div class="info-box-title"><i class="bi ${partyIcon}"></i> ${partyLabel}</div>
+                <div class="info-box-body">
+                    <div class="info-row">
+                        <span class="label">الاسم:</span>
+                        <span class="value">${party.name_ar || '—'}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="label">الكود:</span>
+                        <span class="value">${party.code || '—'}</span>
+                    </div>
+                    ${party.phone ? `<div class="info-row"><span class="label">الهاتف:</span><span class="value">${party.phone}</span></div>` : ''}
+                    ${party.email ? `<div class="info-row"><span class="label">البريد:</span><span class="value">${party.email}</span></div>` : ''}
+                    ${party.tax_number ? `<div class="info-row"><span class="label">الرقم الضريبي:</span><span class="value">${party.tax_number}</span></div>` : ''}
+                </div>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title"><i class="bi bi-info-circle"></i> ملخص الحساب</div>
+                <div class="info-box-body">
+                    <div class="info-row">
+                        <span class="label">إجمالي الفواتير:</span>
+                        <span class="value" style="color:#dc2626;">${fmtNum(totals.total_invoiced || 0)} ج.م</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="label">إجمالي ${movLabelPlural}:</span>
+                        <span class="value" style="color:#16a34a;">${fmtNum(totals.total_paid || 0)} ج.م</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="label">الرصيد الحالي:</span>
+                        <span class="value" style="color:${parseFloat(totals.balance || 0) > 0 ? '#dc2626' : '#16a34a'}; font-size:1rem; font-weight:800;">
+                            ${fmtNum(totals.balance || 0)} ج.م
+                        </span>
+                    </div>
+                    <div class="info-row">
+                        <span class="label">عدد الفواتير المفتوحة:</span>
+                        <span class="value">${openInv.length}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section-title">
+            <span><i class="bi bi-list-ul"></i> حركات الحساب</span>
+            <span>${transactions.length} حركة</span>
+        </div>
+
+        <table class="items-table">
+            <thead>
+                <tr>
+                    <th style="width:35px;">#</th>
+                    <th style="width:85px;">التاريخ</th>
+                    <th style="width:130px;">المرجع</th>
+                    <th>البيان</th>
+                    <th style="width:100px;">مدين</th>
+                    <th style="width:100px;">دائن</th>
+                    <th style="width:110px;">الرصيد</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${linesHtml}
+                <tr style="background:#f0f9ff; font-weight:700; border-top:2px solid #4facfe;">
+                    <td colspan="4" class="text-right"><i class="bi bi-calculator-fill"></i> الإجمالي:</td>
+                    <td style="color:#dc2626;">${fmtNum(totals.total_invoiced || 0)}</td>
+                    <td style="color:#16a34a;">${fmtNum(totals.total_paid || 0)}</td>
+                    <td style="color:#1e3c72;">${fmtNum(totals.balance || 0)}</td>
+                </tr>
+            </tbody>
+        </table>
+
+        ${openInvHtml}
+
+        <div class="totals-wrap" style="margin-top:16px;">
+            <div class="tafqeet-box">
+                <div class="label"><i class="bi bi-volume-up-fill"></i> الرصيد الحالي كتابةً:</div>
+                <div class="text">${tafqeet(totals.balance || 0)}</div>
+            </div>
+        </div>
+
+        ${renderPageFooter()}
+    </div>`;
+}
+
+loadCompanyInfo().then(() => load());
+</script>
+</body>
+</html>

@@ -1,5 +1,6 @@
-﻿from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify
 from app.database import db
+from app.services.settings_service import get_accounting, get_suppliers
 from app.utils import json_safe, to_decimal, round_decimal
 from datetime import datetime
 
@@ -100,7 +101,7 @@ def create_po():
                VALUES (?, ?, ?, ?, ?, ?, 'DRAFT', ?, 1)""",
             (no, d.get('po_date', datetime.now().strftime('%Y-%m-%d')),
              d['supplier_id'], d['warehouse_id'], d.get('expected_date'),
-             d.get('tax_rate', 14), d.get('notes'))
+             d.get('tax_rate', get_accounting().get('default_vat_rate', 14)), d.get('notes'))
         )
         po_id = cur.lastrowid
 
@@ -156,7 +157,7 @@ def update_po(po_id):
                    tax_rate=?, notes=?
                WHERE id=?""",
             (d.get('po_date'), d['supplier_id'], d['warehouse_id'],
-             d.get('expected_date'), d.get('tax_rate', 14), d.get('notes'), po_id)
+             d.get('expected_date'), d.get('tax_rate', get_accounting().get('default_vat_rate', 14)), d.get('notes'), po_id)
         )
 
         if d.get('lines'):

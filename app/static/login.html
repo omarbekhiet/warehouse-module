@@ -88,18 +88,47 @@ async function login(e) {
         }).then(x => x.json());
 
         if (r.success) {
-            localStorage.setItem('user', JSON.stringify(r.data.user));
+            var user = r.data.user;
+
+            // حفظ بيانات المستخدم
+            localStorage.setItem('user', JSON.stringify(user));
             localStorage.setItem('token', r.data.token);
+
+            // ✅ حفظ user_id
+            localStorage.setItem('user_id', user.id);
+
+            // ✅ حفظ الدور والاسم
+            localStorage.setItem('user_role', user.role || 'VIEWER');
+            localStorage.setItem('user_name', user.full_name || user.username || 'مستخدم');
+
+            // ✅ حفظ الصلاحيات (الفردية → وإلا صلاحيات الدور)
+            if (user.permissions && Array.isArray(user.permissions) && user.permissions.length > 0) {
+                localStorage.setItem('user_permissions', JSON.stringify(user.permissions));
+                console.log('✅ حفظ صلاحيات فردية:', user.permissions.length);
+            } else if (user.role_permissions && Array.isArray(user.role_permissions) && user.role_permissions.length > 0) {
+                localStorage.setItem('user_permissions', JSON.stringify(user.role_permissions));
+                console.log('✅ حفظ صلاحيات الدور:', user.role_permissions.length);
+            } else {
+                localStorage.removeItem('user_permissions');
+                console.log('⚠️ مفيش صلاحيات — هيستخدم الأدوار الافتراضية');
+            }
+
+            // ✅ حفظ الفروع
+            if (user.branch_ids && Array.isArray(user.branch_ids)) {
+                localStorage.setItem('user_branches', JSON.stringify(user.branch_ids));
+            } else {
+                localStorage.removeItem('user_branches');
+            }
+
             window.location.href = 'index.html';
         } else {
             err.textContent = r.message || 'خطأ في تسجيل الدخول';
             err.style.display = 'block';
         }
     } catch (e) {
+        console.error(e);
         err.textContent = 'خطأ في الاتصال بالخادم';
         err.style.display = 'block';
     }
 }
 </script>
-</body>
-</html>

@@ -1,0 +1,536 @@
+﻿<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>طباعة التقرير المالي</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="print_common.css" rel="stylesheet">
+<style>
+.report-filters-box {
+    background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px;
+    padding: 10px 14px; margin-bottom: 12px; font-size: 0.82rem;
+}
+.report-filters-box .filter-label { color: #64748b; font-weight: 600; margin-left: 4px; }
+.report-filters-box .filter-value { color: #1e3c72; font-weight: 700; }
+.report-summary {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 12px;
+}
+.summary-card {
+    background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px;
+    padding: 10px 12px; text-align: center;
+}
+.summary-card .label { font-size: 0.72rem; color: #1e40af; font-weight: 600; margin-bottom: 4px; }
+.summary-card .value { font-size: 1rem; font-weight: 800; color: #1e3c72; }
+.summary-card.warning { background: #fef3c7; border-color: #fcd34d; }
+.summary-card.warning .label { color: #92400e; }
+.summary-card.danger { background: #fee2e2; border-color: #fecaca; }
+.summary-card.danger .label { color: #991b1b; }
+.summary-card.success { background: #dcfce7; border-color: #bbf7d0; }
+.summary-card.success .label { color: #15803d; }
+.section-title {
+    background: #1e3c72; color: white; padding: 8px 14px; border-radius: 6px;
+    font-size: 0.9rem; font-weight: 700; margin: 14px 0 8px;
+    display: flex; justify-content: space-between;
+}
+.section-title.assets { background: #1e40af; }
+.section-title.liabilities { background: #991b1b; }
+.section-title.equity { background: #15803d; }
+.section-title.revenue { background: #16a34a; }
+.section-title.cogs { background: #dc2626; }
+.section-title.expenses { background: #ea580c; }
+.total-box {
+    background: #f0f9ff; border: 2px solid #4facfe; border-radius: 8px;
+    padding: 12px 16px; margin: 12px 0;
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px;
+}
+.total-box .item { text-align: center; }
+.total-box .item .lbl { font-size: 0.72rem; color: #475569; font-weight: 600; }
+.total-box .item .val { font-size: 1.1rem; font-weight: 800; color: #1e3c72; }
+.bucket-grid {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 14px 0;
+}
+.bucket-card {
+    background: #fef3c7; border: 1px solid #fcd34d; border-radius: 8px;
+    padding: 12px; text-align: center;
+}
+.bucket-card.overdue { background: #fee2e2; border-color: #fecaca; }
+.bucket-card .lbl { font-size: 0.75rem; color: #92400e; font-weight: 700; margin-bottom: 4px; }
+.bucket-card .val { font-size: 1.1rem; font-weight: 800; color: #78350f; }
+.bucket-card.overdue .lbl, .bucket-card.overdue .val { color: #991b1b; }
+@media print {
+    .report-filters-box, .report-summary, .section-title,
+    .total-box, .bucket-grid { page-break-inside: avoid; }
+}
+</style>
+<script src="permissions.js"></script>
+</head>
+<body>
+
+<div id="toolbar"></div>
+<div id="content"></div>
+
+<script src="company_config.js"></script>
+<script src="print_common.js"></script>
+<script>
+
+// ==========================================
+// 1. ميزان المراجعة
+// ==========================================
+async function loadTrialBalance() {
+    const from = getQueryParam('date_from') || '';
+    const to = getQueryParam('date_to') || '';
+
+    let url = `${PRINT_API}/financial-reports/trial-balance?`;
+    if (from) url += `date_from=${from}&`;
+    if (to) url += `date_to=${to}&`;
+
+    const r = await fetch(url).then(x => x.json());
+    if (!r.success) { showError('خطأ'); return; }
+
+    const rows = r.data || [];
+    const totals = r.totals || {};
+    document.getElementById('toolbar').innerHTML = renderToolbar('ميزان المراجعة');
+
+    let totalD = 0, totalC = 0;
+    let linesHtml = '';
+    rows.forEach((x, idx) => {
+        const d = parseFloat(x.debit_balance || 0);
+        const c = parseFloat(x.credit_balance || 0);
+        totalD += d;
+        totalC += c;
+        linesHtml += `
+            <tr>
+                <td>${idx + 1}</td>
+                <td><code>${x.code || '—'}</code></td>
+                <td class="text-right">${x.name_ar || '—'}</td>
+                <td>${x.level || '—'}</td>
+                <td>${x.nature === 'D' ? 'مدين' : 'دائن'}</td>
+                <td style="color:#dc2626;">${d > 0 ? fmtNum(d) : '—'}</td>
+                <td style="color:#16a34a;">${c > 0 ? fmtNum(c) : '—'}</td>
+            </tr>`;
+    });
+
+    const balanced = totals.balanced ? 'متوازن ✓' : 'غير متوازن ⚠';
+    const balancedColor = totals.balanced ? '#16a34a' : '#dc2626';
+
+    document.getElementById('content').innerHTML = `
+    <div class="a4-page">
+        <div class="doc-header">
+            ${renderCompanyHeader()}
+            <div class="doc-title-box">
+                <div class="doc-title"><i class="bi bi-list-check"></i> ميزان المراجعة</div>
+                <div class="doc-no-box">عدد الحسابات: <strong>${rows.length}</strong></div>
+            </div>
+        </div>
+        <div class="report-filters-box">
+            <span class="filter-label">الفترة:</span>
+            <span class="filter-value">${from || 'من البداية'} → ${to || 'حتى اليوم'}</span>
+        </div>
+        <div class="report-summary">
+            <div class="summary-card"><div class="label">عدد الحسابات</div><div class="value">${rows.length}</div></div>
+            <div class="summary-card danger"><div class="label">إجمالي المدين</div><div class="value">${fmtNum(totalD)}</div></div>
+            <div class="summary-card success"><div class="label">إجمالي الدائن</div><div class="value">${fmtNum(totalC)}</div></div>
+            <div class="summary-card"><div class="label">الحالة</div><div class="value" style="color:${balancedColor}; font-size:0.85rem;">${balanced}</div></div>
+        </div>
+        <table class="items-table">
+            <thead>
+                <tr>
+                    <th style="width:35px;">#</th>
+                    <th style="width:100px;">الكود</th>
+                    <th>اسم الحساب</th>
+                    <th style="width:60px;">المستوى</th>
+                    <th style="width:70px;">الطبيعة</th>
+                    <th style="width:100px;">رصيد مدين</th>
+                    <th style="width:100px;">رصيد دائن</th>
+                </tr>
+            </thead>
+            <tbody>${linesHtml}</tbody>
+        </table>
+        <div class="total-box">
+            <div class="item"><div class="lbl">إجمالي المدين</div><div class="val" style="color:#dc2626;">${fmtNum(totalD)}</div></div>
+            <div class="item"><div class="lbl">إجمالي الدائن</div><div class="val" style="color:#16a34a;">${fmtNum(totalC)}</div></div>
+            <div class="item"><div class="lbl">الفرق</div><div class="val" style="color:${balancedColor};">${fmtNum(Math.abs(totalD - totalC))}</div></div>
+        </div>
+        ${renderPageFooter()}
+    </div>`;
+}
+
+// ==========================================
+// 2. قائمة الدخل
+// ==========================================
+async function loadIncomeStatement() {
+    const from = getQueryParam('date_from') || '';
+    const to = getQueryParam('date_to') || '';
+
+    let url = `${PRINT_API}/financial-reports/income-statement?`;
+    if (from) url += `date_from=${from}&`;
+    if (to) url += `date_to=${to}&`;
+
+    const r = await fetch(url).then(x => x.json());
+    if (!r.success) { showError('خطأ'); return; }
+
+    const d = r.data || {};
+    const totals = d.totals || {};
+    document.getElementById('toolbar').innerHTML = renderToolbar('قائمة الدخل');
+
+    function renderSection(title, cls, items, sign = 1) {
+        if (!items || !items.length) return '';
+        let sum = 0;
+        let rowsHtml = items.map(it => {
+            const amt = parseFloat(it.amount || 0);
+            sum += amt;
+            return `<tr>
+                <td style="width:80px;"><code>${it.code || ''}</code></td>
+                <td class="text-right">${it.name_ar || ''}</td>
+                <td style="width:120px;">${fmtNum(amt)}</td>
+            </tr>`;
+        }).join('');
+        rowsHtml += `<tr style="background:#f0f9ff; font-weight:700;">
+            <td colspan="2" class="text-right">إجمالي ${title}:</td>
+            <td>${fmtNum(sum)}</td>
+        </tr>`;
+        return `
+            <div class="section-title ${cls}"><span>${title}</span><span>${fmtNum(sum)} ج.م</span></div>
+            <table class="items-table"><tbody>${rowsHtml}</tbody></table>`;
+    }
+
+    document.getElementById('content').innerHTML = `
+    <div class="a4-page">
+        <div class="doc-header">
+            ${renderCompanyHeader()}
+            <div class="doc-title-box">
+                <div class="doc-title"><i class="bi bi-graph-up-arrow"></i> قائمة الدخل</div>
+                <div class="doc-no-box">للفترة المنتهية في: <strong>${to || new Date().toLocaleDateString('ar-EG')}</strong></div>
+            </div>
+        </div>
+        <div class="report-filters-box">
+            <span class="filter-label">الفترة:</span>
+            <span class="filter-value">${from || 'من البداية'} → ${to || 'حتى اليوم'}</span>
+        </div>
+
+        ${renderSection('الإيرادات', 'revenue', d.revenue)}
+        ${renderSection('تكلفة النشاط (COGS)', 'cogs', d.cogs)}
+        ${renderSection('المصروفات', 'expenses', d.expenses)}
+        ${renderSection('إيرادات أخرى', 'equity', d.other_income)}
+        ${renderSection('تكاليف مالية', 'liabilities', d.finance_costs)}
+        ${renderSection('ضرائب', 'cogs', d.taxes)}
+
+        <div class="total-box">
+            <div class="item"><div class="lbl">إجمالي الإيرادات</div><div class="val" style="color:#16a34a;">${fmtNum(totals.total_revenue || 0)}</div></div>
+            <div class="item"><div class="lbl">إجمالي التكاليف</div><div class="val" style="color:#dc2626;">${fmtNum(totals.total_cogs || 0)}</div></div>
+            <div class="item"><div class="lbl">الربح الإجمالي</div><div class="val">${fmtNum(totals.gross_profit || 0)}</div></div>
+        </div>
+        <div class="total-box">
+            <div class="item"><div class="lbl">الربح التشغيلي</div><div class="val">${fmtNum(totals.operating_profit || 0)}</div></div>
+            <div class="item"><div class="lbl">الربح قبل الضريبة</div><div class="val">${fmtNum(totals.profit_before_tax || 0)}</div></div>
+            <div class="item" style="border-right:3px solid #4facfe; padding-right:8px;">
+                <div class="lbl">صافي الربح</div>
+                <div class="val" style="color:${parseFloat(totals.net_profit || 0) >= 0 ? '#16a34a' : '#dc2626'}; font-size:1.3rem;">${fmtNum(totals.net_profit || 0)}</div>
+            </div>
+        </div>
+        <div class="totals-wrap">
+            <div class="tafqeet-box">
+                <div class="label"><i class="bi bi-volume-up-fill"></i> صافي الربح كتابةً:</div>
+                <div class="text">${tafqeet(totals.net_profit || 0)}</div>
+            </div>
+        </div>
+        ${renderPageFooter()}
+    </div>`;
+}
+
+// ==========================================
+// 3. المركز المالي
+// ==========================================
+async function loadBalanceSheet() {
+    const asOf = getQueryParam('as_of') || '';
+
+    let url = `${PRINT_API}/financial-reports/balance-sheet?`;
+    if (asOf) url += `as_of=${asOf}&`;
+
+    const r = await fetch(url).then(x => x.json());
+    if (!r.success) { showError('خطأ'); return; }
+
+    const d = r.data || {};
+    const totals = d.totals || {};
+    document.getElementById('toolbar').innerHTML = renderToolbar('المركز المالي');
+
+    function renderSection(title, cls, items) {
+        if (!items || !items.length) {
+            return `<div class="section-title ${cls}"><span>${title}</span><span>0.00 ج.م</span></div>
+                    <p style="text-align:center; padding:12px; color:#94a3b8;">لا توجد بنود</p>`;
+        }
+        let sum = 0;
+        let rowsHtml = items.map(it => {
+            const amt = parseFloat(it.balance || 0);
+            sum += amt;
+            return `<tr>
+                <td style="width:100px;"><code>${it.code || ''}</code></td>
+                <td class="text-right">${it.name_ar || ''}</td>
+                <td style="width:120px;">${fmtNum(amt)}</td>
+            </tr>`;
+        }).join('');
+        rowsHtml += `<tr style="background:#f0f9ff; font-weight:700;">
+            <td colspan="2" class="text-right">إجمالي ${title}:</td>
+            <td>${fmtNum(sum)}</td>
+        </tr>`;
+        return `<div class="section-title ${cls}"><span>${title}</span><span>${fmtNum(sum)} ج.م</span></div>
+                <table class="items-table"><tbody>${rowsHtml}</tbody></table>`;
+    }
+
+    document.getElementById('content').innerHTML = `
+    <div class="a4-page">
+        <div class="doc-header">
+            ${renderCompanyHeader()}
+            <div class="doc-title-box">
+                <div class="doc-title"><i class="bi bi-clipboard-data"></i> المركز المالي</div>
+                <div class="doc-no-box">كما في: <strong>${asOf || new Date().toLocaleDateString('ar-EG')}</strong></div>
+            </div>
+        </div>
+
+        ${renderSection('الأصول', 'assets', d.assets)}
+        ${renderSection('الخصوم', 'liabilities', d.liabilities)}
+        ${renderSection('حقوق الملكية', 'equity', d.equity)}
+
+        <div class="total-box">
+            <div class="item"><div class="lbl">إجمالي الأصول</div><div class="val" style="color:#1e40af;">${fmtNum(totals.total_assets || 0)}</div></div>
+            <div class="item"><div class="lbl">إجمالي الخصوم + حقوق</div><div class="val" style="color:#991b1b;">${fmtNum((totals.total_liabilities || 0) + (totals.total_equity || 0))}</div></div>
+            <div class="item"><div class="lbl">الفرق</div><div class="val" style="color:${Math.abs((totals.total_assets||0) - (totals.total_liabilities||0) - (totals.total_equity||0)) < 0.01 ? '#16a34a' : '#dc2626'};">${fmtNum(Math.abs((totals.total_assets||0) - (totals.total_liabilities||0) - (totals.total_equity||0)))}</div></div>
+        </div>
+        ${renderPageFooter()}
+    </div>`;
+}
+
+// ==========================================
+// 4. أعمار ذمم العملاء
+// ==========================================
+async function loadAgingAR() {
+    const r = await fetch(`${PRINT_API}/financial-reports/aging/ar`).then(x => x.json());
+    if (!r.success) { showError('خطأ'); return; }
+    renderAging(r, 'أعمار ذمم العملاء', 'customer_name', 'العملاء');
+}
+
+// ==========================================
+// 5. أعمار ذمم الموردين
+// ==========================================
+async function loadAgingAP() {
+    const r = await fetch(`${PRINT_API}/financial-reports/aging/ap`).then(x => x.json());
+    if (!r.success) { showError('خطأ'); return; }
+    renderAging(r, 'أعمار ذمم الموردين', 'supplier_name', 'الموردين');
+}
+
+// ==========================================
+// دالة مشتركة لأعمار الذمم
+// ==========================================
+function renderAging(r, title, nameField, whoLabel) {
+    const rows = r.data || [];
+    const buckets = r.buckets || {};
+    document.getElementById('toolbar').innerHTML = renderToolbar(title);
+
+    const totalAmount = parseFloat(buckets['0-30'] || 0) + parseFloat(buckets['31-60'] || 0) + parseFloat(buckets['61-90'] || 0) + parseFloat(buckets['90+'] || 0);
+
+    let linesHtml = '';
+    rows.forEach((x, idx) => {
+        const days = parseInt(x.days_old || 0);
+        const daysColor = days > 90 ? '#dc2626' : days > 60 ? '#ea580c' : days > 30 ? '#f59e0b' : '#16a34a';
+        linesHtml += `
+            <tr>
+                <td>${idx + 1}</td>
+                <td><code>${x.invoice_no || '—'}</code></td>
+                <td>${x.invoice_date || '—'}</td>
+                <td class="text-right">${x[nameField] || '—'}</td>
+                <td style="color:${daysColor}; font-weight:700;">${days} يوم</td>
+                <td>${x.bucket || '—'}</td>
+                <td><strong>${fmtNum(x.amount)}</strong></td>
+            </tr>`;
+    });
+
+    document.getElementById('content').innerHTML = `
+    <div class="a4-page">
+        <div class="doc-header">
+            ${renderCompanyHeader()}
+            <div class="doc-title-box">
+                <div class="doc-title"><i class="bi bi-hourglass-split"></i> ${title}</div>
+                <div class="doc-no-box">عدد الفواتير: <strong>${rows.length}</strong></div>
+            </div>
+        </div>
+        <div class="report-filters-box">
+            <span class="filter-label">التاريخ:</span>
+            <span class="filter-value">${new Date().toLocaleDateString('ar-EG')}</span>
+        </div>
+
+        <div class="bucket-grid">
+            <div class="bucket-card">
+                <div class="lbl">0 - 30 يوم</div>
+                <div class="val">${fmtNum(buckets['0-30'] || 0)}</div>
+            </div>
+            <div class="bucket-card">
+                <div class="lbl">31 - 60 يوم</div>
+                <div class="val">${fmtNum(buckets['31-60'] || 0)}</div>
+            </div>
+            <div class="bucket-card">
+                <div class="lbl">61 - 90 يوم</div>
+                <div class="val">${fmtNum(buckets['61-90'] || 0)}</div>
+            </div>
+            <div class="bucket-card overdue">
+                <div class="lbl">+90 يوم</div>
+                <div class="val">${fmtNum(buckets['90+'] || 0)}</div>
+            </div>
+        </div>
+
+        <table class="items-table">
+            <thead>
+                <tr>
+                    <th style="width:35px;">#</th>
+                    <th style="width:120px;">رقم الفاتورة</th>
+                    <th style="width:90px;">التاريخ</th>
+                    <th>${whoLabel}</th>
+                    <th style="width:80px;">العمر</th>
+                    <th style="width:80px;">الفئة</th>
+                    <th style="width:110px;">المبلغ</th>
+                </tr>
+            </thead>
+            <tbody>${linesHtml}</tbody>
+        </table>
+
+        <div class="totals-wrap">
+            <div class="tafqeet-box">
+                <div class="label"><i class="bi bi-volume-up-fill"></i> الإجمالي كتابةً:</div>
+                <div class="text">${tafqeet(totalAmount)}</div>
+            </div>
+            <table class="totals-table">
+                <tr class="grand-total"><td>إجمالي المستحقات:</td><td>${fmtNum(totalAmount)} ج.م</td></tr>
+            </table>
+        </div>
+        ${renderPageFooter()}
+    </div>`;
+}
+
+// ==========================================
+// 6. دفتر الأستاذ
+// ==========================================
+async function loadAccountLedger() {
+    const code = getQueryParam('account_code');
+    if (!code) { showError('account_code مطلوب في الرابط'); return; }
+
+    const from = getQueryParam('date_from') || '';
+    const to = getQueryParam('date_to') || '';
+
+    let url = `${PRINT_API}/financial-reports/account-ledger/${code}?`;
+    if (from) url += `date_from=${from}&`;
+    if (to) url += `date_to=${to}&`;
+
+    const r = await fetch(url).then(x => x.json());
+    if (!r.success) { showError(r.message || 'خطأ'); return; }
+
+    const account = r.account || {};
+    const rows = r.data || [];
+    const totals = r.totals || {};
+    document.getElementById('toolbar').innerHTML = renderToolbar('دفتر الأستاذ - ' + (account.name_ar || code));
+
+    let running = parseFloat(totals.opening_balance || 0);
+    let totalD = 0, totalC = 0;
+    let linesHtml = '';
+
+    if (totals.opening_balance !== undefined) {
+        linesHtml += `<tr style="background:#fef9c3; font-weight:700;">
+            <td colspan="5" class="text-right">رصيد افتتاحي:</td>
+            <td>${fmtNum(running)}</td>
+        </tr>`;
+    }
+
+    rows.forEach((x, idx) => {
+        const d = parseFloat(x.debit_amount || 0);
+        const c = parseFloat(x.credit_amount || 0);
+        totalD += d;
+        totalC += c;
+        running += (d - c);
+        linesHtml += `
+            <tr>
+                <td>${idx + 1}</td>
+                <td>${x.entry_date || '—'}</td>
+                <td><code>${x.entry_no || '—'}</code></td>
+                <td class="text-right">${x.description || '—'}</td>
+                <td style="color:#dc2626;">${d > 0 ? fmtNum(d) : '—'}</td>
+                <td style="color:#16a34a;">${c > 0 ? fmtNum(c) : '—'}</td>
+                <td><strong>${fmtNum(running)}</strong></td>
+            </tr>`;
+    });
+
+    document.getElementById('content').innerHTML = `
+    <div class="a4-page">
+        <div class="doc-header">
+            ${renderCompanyHeader()}
+            <div class="doc-title-box">
+                <div class="doc-title"><i class="bi bi-journal-text"></i> دفتر الأستاذ</div>
+                <div class="doc-no-box">
+                    <strong>${account.code || code}</strong> - ${account.name_ar || ''}
+                </div>
+            </div>
+        </div>
+        <div class="report-filters-box">
+            <span class="filter-label">الفترة:</span>
+            <span class="filter-value">${from || 'من البداية'} → ${to || 'حتى اليوم'}</span>
+        </div>
+        <div class="report-summary">
+            <div class="summary-card"><div class="label">عدد الحركات</div><div class="value">${rows.length}</div></div>
+            <div class="summary-card danger"><div class="label">إجمالي المدين</div><div class="value">${fmtNum(totalD)}</div></div>
+            <div class="summary-card success"><div class="label">إجمالي الدائن</div><div class="value">${fmtNum(totalC)}</div></div>
+            <div class="summary-card warning"><div class="label">الرصيد النهائي</div><div class="value">${fmtNum(running)}</div></div>
+        </div>
+        <table class="items-table">
+            <thead>
+                <tr>
+                    <th style="width:35px;">#</th>
+                    <th style="width:85px;">التاريخ</th>
+                    <th style="width:120px;">رقم القيد</th>
+                    <th>البيان</th>
+                    <th style="width:90px;">مدين</th>
+                    <th style="width:90px;">دائن</th>
+                    <th style="width:100px;">الرصيد</th>
+                </tr>
+            </thead>
+            <tbody>${linesHtml}</tbody>
+        </table>
+        ${renderPageFooter()}
+    </div>`;
+}
+
+// ==========================================
+// Router
+// ==========================================
+function showError(msg) {
+    document.getElementById('content').innerHTML = renderError(msg);
+}
+
+async function load() {
+    const type = getQueryParam('type');
+    if (!type) { showError('نوع التقرير غير محدد. استخدم ?type='); return; }
+
+    document.getElementById('content').innerHTML = renderLoading('جاري تحميل التقرير...');
+
+    const handlers = {
+        'trial_balance': loadTrialBalance,
+        'income_statement': loadIncomeStatement,
+        'balance_sheet': loadBalanceSheet,
+        'aging_ar': loadAgingAR,
+        'aging_ap': loadAgingAP,
+        'account_ledger': loadAccountLedger
+    };
+
+    const handler = handlers[type];
+    if (!handler) { showError('نوع التقرير غير مدعوم: ' + type); return; }
+
+    try {
+        await handler();
+    } catch (e) {
+        console.error(e);
+        showError('خطأ في التحميل: ' + e.message);
+    }
+}
+
+loadCompanyInfo().then(() => load());
+</script>
+</body>
+</html>

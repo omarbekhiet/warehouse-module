@@ -1,0 +1,525 @@
+﻿<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>طباعة فاتورة شراء</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+* { font-family: 'Cairo','Segoe UI',Tahoma,sans-serif; box-sizing: border-box; }
+body { background: #f0f0f0; padding: 20px; font-size: 13px; color: #1e293b; }
+
+/* A4 */
+.invoice {
+    width: 210mm;
+    min-height: 297mm;
+    padding: 15mm;
+    margin: 0 auto 20px;
+    background: white;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    position: relative;
+}
+
+/* Toolbar */
+.toolbar {
+    max-width: 210mm;
+    margin: 0 auto 15px;
+    background: white;
+    padding: 12px 18px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+.toolbar h3 { margin: 0; font-size: 1.05rem; font-weight: 700; color: #1e3c72; }
+.toolbar .btn { font-size: 0.82rem; padding: 7px 14px; border-radius: 6px; }
+
+/* Header */
+.inv-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding-bottom: 12px;
+    border-bottom: 2.5px solid #1e3c72;
+    margin-bottom: 15px;
+}
+.company-info { display: flex; gap: 12px; align-items: center; }
+.company-logo {
+    width: 70px;
+    height: 70px;
+    border-radius: 8px;
+    background: #f1f5f9;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.6rem;
+    color: #1e3c72;
+    flex-shrink: 0;
+    overflow: hidden;
+}
+.company-logo img { max-width: 100%; max-height: 100%; object-fit: contain; }
+.company-name {
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: #1e3c72;
+    margin-bottom: 3px;
+}
+.company-meta {
+    font-size: 0.78rem;
+    color: #64748b;
+    line-height: 1.6;
+}
+
+.inv-title-box {
+    text-align: left;
+    min-width: 180px;
+}
+.inv-title {
+    font-size: 1.15rem;
+    font-weight: 800;
+    color: #1e3c72;
+    margin-bottom: 4px;
+    padding: 6px 12px;
+    background: #eff6ff;
+    border-radius: 6px;
+    display: inline-block;
+}
+.inv-no-box {
+    font-size: 0.85rem;
+    color: #475569;
+    margin-top: 6px;
+}
+.inv-no-box strong { color: #dc2626; font-size: 1rem; }
+
+/* Info grid */
+.info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 15px;
+}
+.info-box {
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    overflow: hidden;
+}
+.info-box-title {
+    background: #f8fafc;
+    padding: 6px 12px;
+    font-weight: 700;
+    font-size: 0.78rem;
+    color: #1e3c72;
+    border-bottom: 1px solid #e2e8f0;
+}
+.info-box-body {
+    padding: 10px 12px;
+    font-size: 0.82rem;
+    line-height: 1.8;
+}
+.info-row { display: flex; justify-content: space-between; }
+.info-row .label { color: #64748b; font-weight: 500; }
+.info-row .value { font-weight: 600; color: #1e293b; }
+
+/* Table */
+.items-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.82rem;
+    margin-bottom: 12px;
+}
+.items-table thead th {
+    background: #1e3c72;
+    color: white;
+    font-weight: 700;
+    padding: 8px 6px;
+    text-align: center;
+    font-size: 0.78rem;
+    border: 1px solid #1e3c72;
+}
+.items-table tbody td {
+    padding: 7px 6px;
+    border: 1px solid #e2e8f0;
+    text-align: center;
+    vertical-align: middle;
+}
+.items-table tbody tr:nth-child(even) { background: #f8fafc; }
+.items-table tbody td.text-right { text-align: right; }
+.items-table tbody td.text-left { text-align: left; }
+
+/* Totals */
+.totals-wrap {
+    display: flex;
+    justify-content: space-between;
+    gap: 15px;
+    margin-bottom: 12px;
+}
+.tafqeet-box {
+    flex: 1;
+    background: #fffbeb;
+    border: 1px solid #fcd34d;
+    border-radius: 8px;
+    padding: 10px 14px;
+}
+.tafqeet-box .label {
+    font-size: 0.72rem;
+    color: #92400e;
+    font-weight: 700;
+    margin-bottom: 4px;
+}
+.tafqeet-box .text {
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: #78350f;
+    line-height: 1.6;
+}
+
+.totals-table {
+    width: 260px;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+}
+.totals-table td {
+    padding: 6px 10px;
+    border-bottom: 1px solid #e2e8f0;
+}
+.totals-table td:first-child {
+    color: #64748b;
+    font-weight: 600;
+}
+.totals-table td:last-child {
+    text-align: left;
+    font-weight: 700;
+    color: #1e293b;
+}
+.totals-table tr.grand-total {
+    background: #1e3c72;
+    color: white;
+    border: none;
+}
+.totals-table tr.grand-total td {
+    color: white;
+    font-size: 1rem;
+    font-weight: 800;
+    padding: 9px 10px;
+    border: none;
+}
+
+/* Notes */
+.notes-box {
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin-bottom: 12px;
+    font-size: 0.8rem;
+}
+.notes-box .label {
+    font-size: 0.72rem;
+    color: #64748b;
+    font-weight: 700;
+    margin-bottom: 4px;
+}
+
+/* Footer / Signatures */
+.signatures {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+    margin-top: 30px;
+    padding-top: 12px;
+}
+.sign-box {
+    text-align: center;
+    font-size: 0.8rem;
+    color: #64748b;
+}
+.sign-line {
+    border-top: 1.5px solid #64748b;
+    padding-top: 6px;
+    margin-top: 40px;
+    font-weight: 600;
+    color: #1e293b;
+}
+
+/* Page footer */
+.page-footer {
+    position: absolute;
+    bottom: 10mm;
+    left: 15mm;
+    right: 15mm;
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.7rem;
+    color: #94a3b8;
+    border-top: 1px solid #e2e8f0;
+    padding-top: 6px;
+}
+
+/* Loading */
+.loading-state {
+    text-align: center;
+    padding: 80px 20px;
+    color: #64748b;
+}
+.loading-state .spinner-border { color: #1e3c72; }
+
+/* Print */
+@media print {
+    body { background: white; padding: 0; }
+    .toolbar { display: none !important; }
+    .invoice {
+        box-shadow: none;
+        margin: 0;
+        width: 100%;
+        padding: 10mm;
+        min-height: auto;
+    }
+    .page-footer {
+        position: fixed;
+        bottom: 5mm;
+        left: 10mm;
+        right: 10mm;
+    }
+    @page {
+        size: A4;
+        margin: 0;
+    }
+}
+</style>
+<script src="permissions.js"></script>
+</head>
+<body>
+
+<!-- Toolbar -->
+<div class="toolbar no-print">
+    <h3><i class="bi bi-receipt"></i> معاينة طباعة - فاتورة شراء</h3>
+    <div class="d-flex gap-2">
+        <button class="btn btn-primary" onclick="printPage()">
+            <i class="bi bi-printer-fill"></i> طباعة
+        </button>
+        <button class="btn btn-success" onclick="savePDF()">
+            <i class="bi bi-file-pdf"></i> حفظ PDF
+        </button>
+        <button class="btn btn-outline-secondary" onclick="closePage()">
+            <i class="bi bi-x-circle"></i> إغلاق
+        </button>
+    </div>
+</div>
+
+<div id="content">
+    <div class="invoice">
+        <div class="loading-state">
+            <div class="spinner-border" role="status"></div>
+            <div class="mt-3">جاري تحميل الفاتورة...</div>
+        </div>
+    </div>
+</div>
+
+<script src="company_config.js"></script>
+<script src="print_helpers.js"></script>
+<script>
+async function loadInvoice() {
+    const invId = getQueryParam('id');
+    if (!invId) {
+        document.getElementById('content').innerHTML = '<div class="invoice"><div class="alert alert-danger">رقم الفاتورة غير محدد</div></div>';
+        return;
+    }
+
+    try {
+        const r = await fetch(`${PRINT_API}/purchase-invoices/${invId}`).then(x => x.json());
+        if (!r.success) {
+            document.getElementById('content').innerHTML = `<div class="invoice"><div class="alert alert-danger">${r.message || 'خطأ'}</div></div>`;
+            return;
+        }
+        renderInvoice(r.data);
+    } catch (e) {
+        console.error(e);
+        document.getElementById('content').innerHTML = '<div class="invoice"><div class="alert alert-danger">خطأ في الاتصال بالسيرفر</div></div>';
+    }
+}
+
+function renderInvoice(data) {
+    const inv = data.invoice || data;
+    const lines = data.lines || [];
+
+    // حساب الإجماليات
+    let subtotal = 0;
+    lines.forEach(l => {
+        subtotal += parseFloat(l.total_cost || 0);
+    });
+
+    const taxRate = parseFloat(inv.tax_rate || 0);
+    const taxAmount = subtotal * (taxRate / 100);
+    const grandTotal = subtotal + taxAmount;
+
+    // شعار الشركة
+    const logoHtml = COMPANY_INFO.logo_url
+        ? `<img src="${COMPANY_INFO.logo_url}" alt="logo">`
+        : `<i class="bi bi-box-seam"></i>`;
+
+    let html = `
+    <div class="invoice">
+
+        <!-- Header -->
+        <div class="inv-header">
+            <div class="company-info">
+                <div class="company-logo">${logoHtml}</div>
+                <div>
+                    <div class="company-name">${COMPANY_INFO.name}</div>
+                    <div class="company-meta">
+                        ${COMPANY_INFO.address}<br>
+                        ت: ${COMPANY_INFO.phone} | ${COMPANY_INFO.email}<br>
+                        الرقم الضريبي: ${COMPANY_INFO.tax_number}
+                    </div>
+                </div>
+            </div>
+            <div class="inv-title-box">
+                <div class="inv-title"><i class="bi bi-receipt"></i> فاتورة شراء</div>
+                <div class="inv-no-box">
+                    رقم الفاتورة: <strong>${inv.invoice_no || '—'}</strong>
+                </div>
+            </div>
+        </div>
+
+        <!-- Info Grid -->
+        <div class="info-grid">
+            <div class="info-box">
+                <div class="info-box-title"><i class="bi bi-truck"></i> بيانات المورد</div>
+                <div class="info-box-body">
+                    <div class="info-row">
+                        <span class="label">الاسم:</span>
+                        <span class="value">${inv.supplier_name || '—'}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="label">الكود:</span>
+                        <span class="value">${inv.supplier_code || '—'}</span>
+                    </div>
+                    ${inv.supplier_invoice_no ? `
+                    <div class="info-row">
+                        <span class="label">رقم فاتورة المورد:</span>
+                        <span class="value">${inv.supplier_invoice_no}</span>
+                    </div>` : ''}
+                </div>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title"><i class="bi bi-info-circle"></i> بيانات الفاتورة</div>
+                <div class="info-box-body">
+                    <div class="info-row">
+                        <span class="label">التاريخ:</span>
+                        <span class="value">${fmtDate(inv.invoice_date)}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="label">المستودع:</span>
+                        <span class="value">${inv.warehouse_name || '—'}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="label">الحالة:</span>
+                        <span class="value">${statusAr(inv.status)}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Items Table -->
+        <table class="items-table">
+            <thead>
+                <tr>
+                    <th style="width:40px;">#</th>
+                    <th style="width:90px;">الكود</th>
+                    <th>الصنف</th>
+                    <th style="width:70px;">الوحدة</th>
+                    <th style="width:80px;">الكمية</th>
+                    <th style="width:90px;">سعر الوحدة</th>
+                    <th style="width:100px;">الإجمالي</th>
+                </tr>
+            </thead>
+            <tbody>`;
+
+    if (lines.length === 0) {
+        html += `<tr><td colspan="7" style="text-align:center; padding:20px; color:#94a3b8;">لا توجد بنود</td></tr>`;
+    } else {
+        lines.forEach((l, idx) => {
+            html += `
+                <tr>
+                    <td>${idx + 1}</td>
+                    <td><strong>${l.item_code || '—'}</strong></td>
+                    <td class="text-right">${l.item_name || '—'}</td>
+                    <td>${l.uom_name || l.uom_code || '—'}</td>
+                    <td>${fmtNum(l.quantity)}</td>
+                    <td>${fmtNum(l.unit_cost)}</td>
+                    <td><strong>${fmtNum(l.total_cost)}</strong></td>
+                </tr>`;
+        });
+    }
+
+    html += `
+            </tbody>
+        </table>
+
+        <!-- Totals -->
+        <div class="totals-wrap">
+            <div class="tafqeet-box">
+                <div class="label"><i class="bi bi-volume-up-fill"></i> المبلغ كتابةً:</div>
+                <div class="text">${tafqeet(grandTotal)}</div>
+            </div>
+            <table class="totals-table">
+                <tr>
+                    <td>المجموع الفرعي:</td>
+                    <td>${fmtNum(subtotal)} ج.م</td>
+                </tr>
+                ${taxRate > 0 ? `
+                <tr>
+                    <td>الضريبة (${taxRate}%):</td>
+                    <td>${fmtNum(taxAmount)} ج.م</td>
+                </tr>` : ''}
+                <tr class="grand-total">
+                    <td>الإجمالي النهائي:</td>
+                    <td>${fmtNum(grandTotal)} ج.م</td>
+                </tr>
+            </table>
+        </div>
+
+        ${inv.notes ? `
+        <div class="notes-box">
+            <div class="label"><i class="bi bi-sticky"></i> ملاحظات:</div>
+            <div>${inv.notes}</div>
+        </div>` : ''}
+
+        <!-- Signatures -->
+        <div class="signatures">
+            <div class="sign-box">
+                <div class="sign-line">توقيع المستلم</div>
+            </div>
+            <div class="sign-box">
+                <div class="sign-line">توقيع المورد</div>
+            </div>
+        </div>
+
+        <!-- Page Footer -->
+        <div class="page-footer">
+            <div>${COMPANY_INFO.name} - ${COMPANY_INFO.phone}</div>
+            <div>طُبعت في: ${new Date().toLocaleDateString('ar-EG')}</div>
+        </div>
+
+    </div>`;
+
+    document.getElementById('content').innerHTML = html;
+}
+
+function statusAr(s) {
+    const map = {
+        'DRAFT': 'مسودة',
+        'POSTED': 'مرحّلة',
+        'REJECTED': 'مرفوضة'
+    };
+    return map[s] || s || '—';
+}
+
+// تشغيل
+loadInvoice();
+</script>
+</body>
+</html>

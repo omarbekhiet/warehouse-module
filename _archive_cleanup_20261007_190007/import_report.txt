@@ -1,0 +1,20 @@
+تقرير مراجعة قوالب الاستيراد
+============================================================
+
+إجمالي: 11
+✅ سليم: 11
+⚠️  تحذير: 0
+❌ فشل: 0
+
+التفاصيل:
+  [OK] accounts: all good
+  [OK] customers: all good
+  [OK] suppliers: all good
+  [OK] items: all good
+  [OK] warehouses: all good
+  [OK] item_groups: all good
+  [OK] uom: all good
+  [OK] branches: all good
+  [OK] expense_categories: all good
+  [OK] cash_boxes: all good
+  [OK] banks: all good

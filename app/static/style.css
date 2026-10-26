@@ -1,16 +1,916 @@
-body { font-family: 'Segoe UI', Tahoma, sans-serif; background: #f5f7fa; }
-.sidebar { min-height: 100vh; background: linear-gradient(180deg, #2c3e50 0%, #34495e 100%); color: white; }
-.sidebar a { color: #ecf0f1; padding: 12px 20px; display: block; text-decoration: none; border-right: 3px solid transparent; transition: all 0.2s; }
-.sidebar a:hover, .sidebar a.active { background: #1abc9c; border-right-color: #16a085; }
-.sidebar .brand { padding: 20px; border-bottom: 1px solid #34495e; text-align: center; }
-.stat-card { border-radius: 12px; border: none; box-shadow: 0 2px 10px rgba(0,0,0,0.05); transition: transform 0.2s; }
-.stat-card:hover { transform: translateY(-3px); }
-.stat-card .icon { font-size: 2.5rem; opacity: 0.3; }
-.stat-card .value { font-size: 1.8rem; font-weight: 700; }
-.stat-card .label { color: #7f8c8d; font-size: 0.9rem; }
-.card { border-radius: 12px; border: none; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
-.btn { border-radius: 8px; }
-.table thead { background: #ecf0f1; }
-.badge-status { padding: 5px 10px; border-radius: 20px; font-weight: 500; }
+/* ============================================================
+   Warehouse Module - Unified Stylesheet
+   Version: 2.0
+   ============================================================ */
+
+/* ============================================================
+   1. CSS Variables
+   ============================================================ */
+:root {
+    --primary: #4facfe;
+    --primary-dark: #1e3c72;
+    --success: #10b981;
+    --warning: #f59e0b;
+    --danger: #ef4444;
+    --info: #06b6d4;
+
+    --text: #1e293b;
+    --text-2: #475569;
+    --text-3: #64748b;
+    --text-4: #94a3b8;
+
+    --border: #e2e8f0;
+    --border-2: #cbd5e1;
+    --bg: #f5f6fa;
+    --bg-2: #f8fafc;
+
+    --shadow: 0 1px 6px rgba(0,0,0,0.05);
+    --shadow-md: 0 2px 10px rgba(0,0,0,0.06);
+    --shadow-lg: 0 8px 20px rgba(0,0,0,0.1);
+
+    --radius: 10px;
+    --radius-lg: 12px;
+}
+
+/* ============================================================
+   2. Base
+   ============================================================ */
+* {
+    font-family: 'Cairo', 'Segoe UI', Tahoma, sans-serif;
+    box-sizing: border-box;
+}
+
+body {
+    background: var(--bg);
+    margin: 0;
+    padding: 14px 18px;
+    font-size: 14px;
+    color: var(--text);
+    line-height: 1.5;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-weight: 700;
+    line-height: 1.3;
+    color: var(--primary-dark);
+    margin-top: 0;
+}
+
+h1 { font-size: 1.55rem; }
+h2 { font-size: 1.3rem; }
+h3 { font-size: 1.15rem; }
+h4 { font-size: 1.05rem; }
+h5 { font-size: 0.98rem; }
+h6 { font-size: 0.9rem; }
+
+a { color: var(--primary); text-decoration: none; }
+a:hover { color: var(--primary-dark); }
+
+/* ============================================================
+   3. Layout
+   ============================================================ */
+.container-box {
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.container-fluid { padding: 0; }
+
+/* Sidebar (hidden) */
+.sidebar { display: none !important; }
+
+/* ============================================================
+   4. Page Header
+   ============================================================ */
+.page-head,
+.d-flex.justify-content-between.mb-4 {
+    background: white;
+    border-radius: var(--radius);
+    padding: 14px 18px;
+    margin-bottom: 14px;
+    box-shadow: var(--shadow);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.page-head h2 {
+    margin: 0;
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--primary-dark);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.page-head h2 i { color: var(--primary); }
+
+.page-head .btn,
+.d-flex.justify-content-between.mb-4 .btn {
+    font-size: 0.82rem;
+    padding: 6px 14px;
+    border-radius: 7px;
+}
+
+/* ============================================================
+   5. Info Banner
+   ============================================================ */
+.info-banner {
+    background: linear-gradient(135deg, #eff6ff, #dbeafe);
+    border: 1px solid #bfdbfe;
+    border-radius: var(--radius);
+    padding: 14px 18px;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.info-banner i { font-size: 1.5rem; color: #1e40af; }
+.info-banner .text { color: #1e40af; }
+.info-banner .title { font-weight: 700; font-size: 0.95rem; margin-bottom: 2px; }
+.info-banner .sub { font-size: 0.82rem; opacity: 0.85; }
+
+/* ============================================================
+   6. Cards
+   ============================================================ */
+.card,
+.card-box,
+.table-card,
+.filters-box,
+.chart-card,
+.settings-card {
+    background: white;
+    border-radius: var(--radius);
+    padding: 14px 16px;
+    box-shadow: var(--shadow);
+    margin-bottom: 14px;
+    border: none;
+}
+
+.card-body { padding: 0; }
+
+.card h5,
+.card h6 {
+    margin: 0 0 12px;
+    font-size: 0.95rem;
+    font-weight: 700;
+    color: var(--primary-dark);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding-bottom: 10px;
+    border-bottom: 1.5px solid #f1f5f9;
+}
+
+/* ============================================================
+   7. Buttons
+   ============================================================ */
+.btn {
+    border-radius: 7px;
+    font-weight: 600;
+    font-size: 0.82rem;
+    padding: 6px 14px;
+    transition: all 0.15s;
+}
+
+.btn-sm {
+    font-size: 0.75rem;
+    padding: 4px 10px;
+}
+
+.btn-primary { background: var(--primary); border-color: var(--primary); }
+.btn-primary:hover { background: #3b8fd9; border-color: #3b8fd9; }
+
+.btn-success { background: var(--success); border-color: var(--success); }
+.btn-warning { background: var(--warning); border-color: var(--warning); }
+.btn-danger { background: var(--danger); border-color: var(--danger); }
+.btn-info { background: var(--info); border-color: var(--info); }
+
+/* ============================================================
+   8. Forms
+   ============================================================ */
+.form-label {
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--text-3);
+    margin-bottom: 4px;
+}
+
+.form-control,
+.form-select {
+    font-size: 0.85rem;
+    padding: 6px 10px;
+    border-radius: 7px;
+    border: 1px solid var(--border);
+}
+
+.form-control:focus,
+.form-select:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(79,172,254,0.1);
+}
+
+/* ============================================================
+   9. Tables
+   ============================================================ */
+table,
+.table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+    margin: 0;
+}
+
+table thead th,
+.table thead th {
+    background: #f8fafc;
+    color: var(--text-2);
+    font-weight: 600;
+    padding: 9px 10px;
+    text-align: right;
+    font-size: 0.78rem;
+    border-bottom: 1.5px solid var(--border);
+    white-space: nowrap;
+}
+
+table tbody td,
+.table tbody td {
+    padding: 9px 10px;
+    border-bottom: 1px solid #f1f5f9;
+    vertical-align: middle;
+}
+
+table tbody tr:last-child td { border-bottom: none; }
+table tbody tr:hover { background: #fafbfc; }
+
+table code {
+    background: #f1f5f9;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.78rem;
+    color: var(--text-2);
+}
+
+.total-row {
+    background: #f0f9ff !important;
+    font-weight: 700;
+    border-top: 2px solid var(--primary);
+}
+
+.total-row td { padding: 10px !important; }
+
+.header-row {
+    background: #f8f9fa;
+    font-weight: 600;
+}
+
+/* Group Row */
+.table tbody tr.group-row,
+.table tbody tr.group-row td {
+    border-bottom: 2px solid var(--success) !important;
+    font-weight: 700;
+    background: #f0fdfa;
+}
+
+.table tbody tr.sub-row td {
+    padding-right: 28px;
+    font-weight: 500;
+    color: var(--text-2);
+}
+
+/* ============================================================
+   10. Stats Cards
+   ============================================================ */
+.stat-card {
+    border-radius: var(--radius);
+    border: none;
+    box-shadow: var(--shadow);
+    transition: transform 0.2s;
+    padding: 14px 16px;
+    background: white;
+}
+
+.stat-card:hover { transform: translateY(-2px); }
+
+.stat-card .icon { font-size: 2rem; opacity: 0.3; }
+.stat-card .value { font-size: 1.5rem; font-weight: 700; color: var(--primary); }
+.stat-card .label { color: var(--text-3); font-size: 0.82rem; font-weight: 600; }
+
+/* ============================================================
+   11. KPI Items (Inline Row)
+   ============================================================ */
+.kpi-inline {
+    display: flex;
+    gap: 12px;
+    margin-bottom: 14px;
+    overflow-x: auto;
+}
+
+.kpi-item {
+    flex: 1 1 0;
+    min-width: 200px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 16px;
+    border-radius: var(--radius);
+    color: white;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+    min-height: 80px;
+}
+
+.kpi-item .kpi-icon {
+    width: 46px;
+    height: 46px;
+    border-radius: 10px;
+    background: rgba(255,255,255,0.25);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.35rem;
+    flex-shrink: 0;
+}
+
+.kpi-item .kpi-body { flex: 1; min-width: 0; }
+.kpi-item .kpi-label { font-size: 0.78rem; opacity: 0.92; margin-bottom: 2px; font-weight: 500; }
+.kpi-item .kpi-value { font-size: 1.5rem; font-weight: 700; line-height: 1.1; }
+.kpi-item .kpi-sub { font-size: 0.7rem; opacity: 0.85; margin-top: 2px; }
+.kpi-item .icon-bg {
+    position: absolute;
+    left: -15px;
+    bottom: -25px;
+    font-size: 5rem;
+    opacity: 0.13;
+}
+
+/* ============================================================
+   12. Badges
+   ============================================================ */
+.badge {
+    font-weight: 600;
+    font-size: 0.72rem;
+    padding: 4px 9px;
+    border-radius: 12px;
+}
+
+.badge-status {
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 0.72rem;
+}
+
 .badge-POSTED { background: #d4edda; color: #155724; }
 .badge-DRAFT { background: #fff3cd; color: #856404; }
+.badge-OPERATING { background: #d1fae5; color: #065f46; }
+.badge-NON_OPERATING { background: #fef3c7; color: #92400e; }
+.badge-CAPITAL { background: #dbeafe; color: #1e40af; }
+
+.badge-op {
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 0.72rem;
+    font-weight: 600;
+}
+
+.badge-type {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    padding: 3px 9px;
+    border-radius: 4px;
+    font-size: 0.72rem;
+    font-weight: 600;
+}
+.badge-SHORTAGE { background: #fee2e2; color: #dc2626; }
+.badge-SURPLUS { background: #dcfce7; color: #15803d; }
+.badge-INVOICE { background: #e0f2fe; color: #0369a1; }
+.badge-RECEIPT { background: #dcfce7; color: #15803d; }
+
+.badge-method {
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 0.72rem;
+    font-weight: 600;
+}
+.badge-CASH { background: #e8f5e9; color: #2e7d32; }
+.badge-BANK_TRANSFER { background: #e3f2fd; color: #1565c0; }
+.badge-CHEQUE { background: #fff3e0; color: #e65100; }
+.badge-CARD { background: #f3e5f5; color: #6a1b9a; }
+.badge-WALLET { background: #e0f7fa; color: #00695c; }
+
+/* ============================================================
+   13. Tree (Accounts)
+   ============================================================ */
+.tree-node {
+    padding: 8px 12px;
+    border-bottom: 1px solid #eee;
+}
+.tree-node:hover { background: #f8f9fa; }
+.level-L1 { font-weight: 700; background: #e8f5e9; }
+.level-L2 { padding-right: 30px; }
+.level-L3 { padding-right: 60px; }
+.level-L4 { padding-right: 90px; }
+
+.badge-nature-D { background: #d4edda; color: #155724; }
+.badge-nature-C { background: #f8d7da; color: #721c24; }
+.badge-nature-CC { background: #fff3cd; color: #856404; }
+
+/* ============================================================
+   14. Amounts
+   ============================================================ */
+.amount-debit,
+.amount-shortage { color: #dc2626; font-weight: 600; }
+.amount-credit,
+.amount-surplus { color: #16a34a; font-weight: 600; }
+.amount-balance { color: var(--primary-dark); font-weight: 700; }
+
+.balance-positive { color: #c62828; font-weight: 700; }
+.balance-zero { color: #2e7d32; font-weight: 700; }
+
+/* ============================================================
+   15. Empty State
+   ============================================================ */
+.empty-state,
+.table-empty {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--text-4);
+}
+
+.empty-state i,
+.table-empty i {
+    font-size: 3rem;
+    opacity: 0.35;
+    display: block;
+    margin-bottom: 10px;
+}
+
+/* ============================================================
+   16. Responsive
+   ============================================================ */
+@media (max-width: 768px) {
+    body { padding: 10px 12px; }
+    .page-head { padding: 10px 12px; }
+    .kpi-item { min-width: 100%; }
+    .container-box { padding: 0 6px; }
+}
+
+/* ============================================================
+   17. Print
+   ============================================================ */
+@media print {
+    .no-print { display: none !important; }
+    body { background: white; padding: 0; }
+    .card, .card-box, .table-card { box-shadow: none; border: 1px solid var(--border); }
+    .kpi-item { border: 1px solid var(--border-2); }
+}
+
+/* ============================================================
+   18. PROFESSIONAL TYPOGRAPHY & SPACING
+   Applied as an override layer to preserve all existing components
+   ============================================================ */
+
+/* ---------- Base Arabic readability ---------- */
+html {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+}
+
+body {
+    font-size: 14px;
+    line-height: 1.68;
+    letter-spacing: 0;
+}
+
+/* ---------- Heading hierarchy ---------- */
+h1, h2, h3, h4, h5, h6 {
+    line-height: 1.35;
+    margin-top: 0;
+    margin-bottom: 0.65rem;
+    letter-spacing: 0;
+}
+
+h1 { font-size: 1.65rem; font-weight: 800; }
+h2 { font-size: 1.35rem; font-weight: 800; }
+h3 { font-size: 1.18rem; font-weight: 700; }
+h4 { font-size: 1.08rem; font-weight: 700; }
+h5 { font-size: 1.00rem; font-weight: 700; }
+h6 { font-size: 0.92rem; font-weight: 700; }
+
+/* Main page heading */
+.page-head h2 {
+    font-size: 1.25rem;
+    line-height: 1.45;
+    margin-bottom: 0;
+}
+
+/* ---------- Normal text ---------- */
+p {
+    line-height: 1.70;
+    margin-top: 0;
+    margin-bottom: 0.65rem;
+}
+
+small,
+.small {
+    font-size: 0.80rem;
+    line-height: 1.55;
+}
+
+.text-muted {
+    line-height: 1.60;
+}
+
+/* ---------- Cards / sections ---------- */
+.card,
+.card-box,
+.table-card,
+.filters-box,
+.chart-card,
+.settings-card {
+    padding: 16px 18px;
+    margin-bottom: 16px;
+}
+
+.card h5,
+.card h6 {
+    font-size: 0.98rem;
+    line-height: 1.45;
+    margin-bottom: 13px;
+    padding-bottom: 11px;
+}
+
+/* ---------- Info banner ---------- */
+.info-banner {
+    padding: 15px 18px;
+    margin-bottom: 16px;
+}
+
+.info-banner .title {
+    font-size: 0.98rem;
+    line-height: 1.50;
+}
+
+.info-banner .sub {
+    font-size: 0.82rem;
+    line-height: 1.60;
+}
+
+/* ---------- Forms ---------- */
+.form-label {
+    font-size: 0.82rem;
+    line-height: 1.45;
+    margin-bottom: 6px;
+}
+
+.form-control,
+.form-select {
+    font-size: 0.88rem;
+    line-height: 1.50;
+    min-height: 38px;
+    padding: 7px 11px;
+}
+
+.form-text,
+.invalid-feedback,
+.valid-feedback {
+    font-size: 0.78rem;
+    line-height: 1.50;
+    margin-top: 5px;
+}
+
+/* ---------- Buttons ---------- */
+.btn {
+    font-size: 0.84rem;
+    line-height: 1.45;
+    padding: 7px 14px;
+}
+
+.btn-sm {
+    font-size: 0.78rem;
+    padding: 5px 10px;
+}
+
+/* ---------- Tables: readability + density ---------- */
+table,
+.table {
+    font-size: 0.86rem;
+    line-height: 1.55;
+}
+
+table thead th,
+.table thead th {
+    font-size: 0.80rem;
+    line-height: 1.45;
+    padding: 10px 11px;
+    font-weight: 700;
+}
+
+table tbody td,
+.table tbody td {
+    font-size: 0.86rem;
+    line-height: 1.55;
+    padding: 10px 11px;
+    vertical-align: middle;
+}
+
+table code {
+    font-size: 0.78rem;
+    line-height: 1.4;
+}
+
+.total-row td {
+    padding: 11px !important;
+    line-height: 1.50;
+}
+
+/* Keep long Arabic text readable without forcing ugly breaks */
+table td,
+table th,
+.table td,
+.table th {
+    word-break: normal;
+    overflow-wrap: break-word;
+}
+
+/* ---------- Stats ---------- */
+.stat-card {
+    padding: 16px 18px;
+}
+
+.stat-card .value {
+    font-size: 1.55rem;
+    line-height: 1.25;
+}
+
+.stat-card .label {
+    font-size: 0.84rem;
+    line-height: 1.50;
+}
+
+/* ---------- KPI ---------- */
+.kpi-inline {
+    gap: 14px;
+    margin-bottom: 16px;
+}
+
+.kpi-item {
+    padding: 15px 17px;
+    min-height: 84px;
+    gap: 14px;
+}
+
+.kpi-item .kpi-label {
+    font-size: 0.80rem;
+    line-height: 1.45;
+    margin-bottom: 3px;
+}
+
+.kpi-item .kpi-value {
+    font-size: 1.55rem;
+    line-height: 1.20;
+}
+
+.kpi-item .kpi-sub {
+    font-size: 0.72rem;
+    line-height: 1.45;
+    margin-top: 3px;
+}
+
+/* ---------- Badges ---------- */
+.badge,
+.badge-status,
+.badge-op,
+.badge-method {
+    font-size: 0.75rem;
+    line-height: 1.35;
+    padding-top: 4px;
+    padding-bottom: 4px;
+}
+
+.badge-type {
+    font-size: 0.74rem;
+    line-height: 1.35;
+}
+
+/* ---------- Tree ---------- */
+.tree-node {
+    padding: 9px 12px;
+    line-height: 1.55;
+}
+
+/* ---------- Empty states ---------- */
+.empty-state,
+.table-empty {
+    line-height: 1.65;
+}
+
+/* ============================================================
+   19. RESPONSIVE PROFESSIONAL LAYOUT
+   ============================================================ */
+
+@media (max-width: 992px) {
+    body {
+        font-size: 14px;
+        line-height: 1.65;
+        padding: 12px 14px;
+    }
+
+    .page-head,
+    .d-flex.justify-content-between.mb-4 {
+        padding: 13px 15px;
+        margin-bottom: 14px;
+    }
+
+    .card,
+    .card-box,
+    .table-card,
+    .filters-box,
+    .chart-card,
+    .settings-card {
+        padding: 15px;
+    }
+
+    .kpi-inline {
+        flex-wrap: wrap;
+        overflow-x: visible;
+    }
+
+    .kpi-item {
+        flex: 1 1 calc(50% - 7px);
+        min-width: 260px;
+    }
+}
+
+@media (max-width: 768px) {
+    body {
+        font-size: 13.5px;
+        line-height: 1.65;
+        padding: 10px 12px;
+    }
+
+    h1 { font-size: 1.40rem; }
+    h2 { font-size: 1.22rem; }
+    h3 { font-size: 1.10rem; }
+    h4 { font-size: 1.02rem; }
+
+    .page-head,
+    .d-flex.justify-content-between.mb-4 {
+        padding: 12px 13px;
+        gap: 9px;
+        margin-bottom: 13px;
+    }
+
+    .page-head h2 {
+        font-size: 1.10rem;
+        line-height: 1.45;
+    }
+
+    .page-head .btn,
+    .d-flex.justify-content-between.mb-4 .btn {
+        font-size: 0.80rem;
+        padding: 6px 11px;
+    }
+
+    .card,
+    .card-box,
+    .table-card,
+    .filters-box,
+    .chart-card,
+    .settings-card {
+        padding: 14px;
+        margin-bottom: 13px;
+    }
+
+    .form-label {
+        font-size: 0.80rem;
+    }
+
+    .form-control,
+    .form-select {
+        font-size: 0.86rem;
+        min-height: 38px;
+    }
+
+    .kpi-inline {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 10px;
+    }
+
+    .kpi-item {
+        width: 100%;
+        min-width: 0;
+        min-height: 78px;
+        padding: 13px 14px;
+    }
+
+    .kpi-item .kpi-value {
+        font-size: 1.42rem;
+    }
+
+    table,
+    .table {
+        font-size: 0.82rem;
+    }
+
+    table thead th,
+    .table thead th {
+        font-size: 0.76rem;
+        padding: 9px 9px;
+    }
+
+    table tbody td,
+    .table tbody td {
+        font-size: 0.82rem;
+        padding: 9px;
+        line-height: 1.50;
+    }
+
+    .stat-card .value {
+        font-size: 1.40rem;
+    }
+}
+
+@media (max-width: 480px) {
+    body {
+        padding: 8px 9px;
+        font-size: 13px;
+    }
+
+    .page-head,
+    .d-flex.justify-content-between.mb-4 {
+        padding: 11px 12px;
+    }
+
+    .page-head h2 {
+        font-size: 1.02rem;
+    }
+
+    .card,
+    .card-box,
+    .table-card,
+    .filters-box,
+    .chart-card,
+    .settings-card {
+        padding: 12px;
+    }
+
+    .btn {
+        font-size: 0.80rem;
+        padding: 6px 10px;
+    }
+
+    table thead th,
+    .table thead th {
+        font-size: 0.73rem;
+        padding: 8px;
+    }
+
+    table tbody td,
+    .table tbody td {
+        font-size: 0.78rem;
+        padding: 8px;
+    }
+
+    .kpi-item .kpi-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 1.15rem;
+    }
+
+    .kpi-item .kpi-label {
+        font-size: 0.74rem;
+    }
+
+    .kpi-item .kpi-value {
+        font-size: 1.30rem;
+    }
+}
+
+/* ---------- Accessibility / focus ---------- */
+.btn:focus-visible,
+.form-control:focus-visible,
+.form-select:focus-visible,
+a:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
+}
+
+/* ---------- Respect reduced motion ---------- */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        transition: none !important;
+        animation: none !important;
+    }
+}

@@ -1,4 +1,4 @@
-﻿import sqlite3
+import sqlite3
 conn = sqlite3.connect('database/warehouse.db')
 
 # ============ جدول فواتير الشراء ============
@@ -44,6 +44,8 @@ CREATE TABLE IF NOT EXISTS purchase_invoice_lines (
     line_subtotal REAL DEFAULT 0,
     line_tax REAL DEFAULT 0,
     line_total REAL DEFAULT 0,
+    batch_no TEXT,
+    expiry_date TEXT,
     notes TEXT,
     FOREIGN KEY (invoice_id) REFERENCES purchase_invoices(id) ON DELETE CASCADE,
     FOREIGN KEY (item_id) REFERENCES items(id)
@@ -62,6 +64,23 @@ if 'invoice_id' not in cols:
 if 'invoice_type' not in cols:
     conn.execute("ALTER TABLE stock_transactions ADD COLUMN invoice_type TEXT")
     print("OK: Added invoice_type to stock_transactions")
+
+
+
+# ============ إضافة أعمدة batch_no + expiry_date (للـ DBs القديمة) ============
+for table in ['purchase_invoice_lines', 'sales_invoice_lines']:
+    try:
+        cur = conn.execute(f"PRAGMA table_info({table})")
+        cols = [r[1] for r in cur.fetchall()]
+        if 'batch_no' not in cols:
+            conn.execute(f"ALTER TABLE {table} ADD COLUMN batch_no TEXT")
+            print(f"OK: Added batch_no to {table}")
+        if 'expiry_date' not in cols:
+            conn.execute(f"ALTER TABLE {table} ADD COLUMN expiry_date TEXT")
+            print(f"OK: Added expiry_date to {table}")
+    except Exception as e:
+        print(f"WARN: {table} - {e}")
+
 
 conn.commit()
 conn.close()

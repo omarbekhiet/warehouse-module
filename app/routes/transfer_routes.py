@@ -1,5 +1,7 @@
-﻿from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify
 from app.database import db
+from app.services.valuation_service import valuation_service
+from app.services.settings_service import get_inventory, get_accounting, check_period, get_cost_method
 from app.utils import json_safe, to_decimal, round_decimal
 
 transfer_bp = Blueprint('transfers', __name__)
@@ -27,6 +29,82 @@ def list_transfers():
     return jsonify({'success': True, 'data': json_safe(rows)})
 
 
+
+
+# ==========================================
+# دوال التحقق من سياسات المخازن
+# ==========================================
+
+def _validate_transfer_policies(from_warehouse_id, lines):
+    """
+    التحقق من سياسات المخازن قبل إنشاء تحويل
+    - allow_negative_stock: منع التحويل بأكثر من المخزون
+    """
+    inv_settings = get_inventory()
+
+    if not inv_settings.get('allow_negative_stock'):
+        for line in lines:
+            item_id = line.get('item_id')
+            qty = float(line.get('quantity', 0))
+
+            factor, base_qty = _get_base_quantity_ro(item_id, line.get('uom_id'), qty)
+            if base_qty is None:
+                continue
+
+            row = db.query(
+                """SELECT COALESCE(SUM(quantity), 0) AS q
+                   FROM stock_balances
+                   WHERE warehouse_id=? AND item_id=?""",
+                (from_warehouse_id, item_id), one=True
+            )
+            available = float(row['q'] or 0)
+
+            if float(base_qty) > available:
+                item = db.query(
+                    "SELECT code, name_ar FROM items WHERE id=?",
+                    (item_id,), one=True
+                )
+                item_label = f"{item['code']} - {item['name_ar']}" if item else f"#{item_id}"
+                return {
+                    'ok': False,
+                    'message': f"المخزون غير كافي للتحويل - الصنف: {item_label} | المطلوب: {base_qty} | المتاح: {available}",
+                    'code': 400
+                }
+
+    return {'ok': True}
+
+
+def _get_base_quantity_ro(item_id, uom_id, quantity):
+    """نسخة read-only للحصول على الكمية الأساسية"""
+    try:
+        if not uom_id:
+            return 1, float(quantity)
+
+        row = db.query(
+            "SELECT base_uom_id, medium_uom_id, medium_to_minor_factor, major_uom_id, major_to_medium_factor FROM items WHERE id=?",
+            (item_id,), one=True
+        )
+        if not row:
+            return 1, float(quantity)
+
+        base_uom_id = row['base_uom_id']
+        if int(uom_id) == int(base_uom_id):
+            return 1, float(quantity)
+
+        if row['medium_uom_id'] and int(uom_id) == int(row['medium_uom_id']):
+            factor = float(row['medium_to_minor_factor'] or 1)
+            return factor, float(quantity) * factor
+
+        if row['major_uom_id'] and int(uom_id) == int(row['major_uom_id']):
+            factor = float(row['major_to_medium_factor'] or 1) * float(row['medium_to_minor_factor'] or 1)
+            return factor, float(quantity) * factor
+
+        return 1, float(quantity)
+    except Exception:
+        return 1, float(quantity)
+
+
+
 @transfer_bp.route('/', methods=['POST'])
 def create_transfer():
     d = request.get_json() or {}
@@ -34,6 +112,18 @@ def create_transfer():
         return jsonify({'success': False, 'message': 'بيانات ناقصة'}), 400
     if d['from_warehouse_id'] == d['to_warehouse_id']:
         return jsonify({'success': False, 'message': 'لا يمكن التحويل لنفس المستودع'}), 400
+
+    # فحص سياسات المخازن
+    v = _validate_transfer_policies(d['from_warehouse_id'], d['lines'])
+    if not v['ok']:
+        return jsonify({'success': False, 'message': v['message']}), v.get('code', 400)
+
+    # فحص الفترة المالية
+    from datetime import datetime
+    _date = d.get('transaction_date', '2026-01-01')
+    _period_check = check_period(_date)
+    if not _period_check['ok']:
+        return jsonify({'success': False, 'message': _period_check['message']}), _period_check.get('code', 400)
 
     with db.transaction() as conn:
         txn_no = _next_txn_no(conn)
@@ -168,6 +258,33 @@ def post_transfer(tid):
                     (txn['to_warehouse_id'], line['item_id'],
                      line['quantity'], unit_cost, float(total_cost))
                 )
+
+            # خصم + إضافة cost_layers للـ FIFO
+            try:
+                cost_method = get_cost_method(line['item_id'])
+                if cost_method == 'FIFO':
+                    base_qty = float(line['quantity'])
+
+                    # 1. خصم من cost_layers في المستودع المصدر
+                    result = valuation_service.calculate(
+                        conn, txn['from_warehouse_id'], line['item_id'], base_qty, 'FIFO'
+                    )
+                    valuation_service.consume_layers(conn, result.get('consumed_layers', []))
+
+                    # 2. إضافة cost_layer في المستودع الهدف
+                    conn.execute("""
+                        INSERT INTO cost_layers
+                        (warehouse_id, item_id, batch_no, receipt_date,
+                         original_qty, remaining_qty, unit_cost)
+                        VALUES (?, ?, '', ?, ?, ?, ?)
+                    """, (
+                        txn['to_warehouse_id'], line['item_id'],
+                        txn['transaction_date'],
+                        base_qty, base_qty,
+                        float(unit_cost)
+                    ))
+            except Exception as e:
+                print(f"WARN: transfer layers failed for item {line['item_id']}: {e}")
 
             # Update line costs
             conn.execute(

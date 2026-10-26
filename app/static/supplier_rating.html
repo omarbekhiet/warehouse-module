@@ -1,0 +1,417 @@
+﻿<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>تقييم الموردين</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+* { font-family: 'Cairo','Segoe UI',Tahoma,sans-serif; box-sizing: border-box; }
+body { background: #f5f6fa; padding: 12px; font-size: 13px; color: #1e293b; line-height: 1.5; }
+.container-box { max-width: 1400px; margin: 0 auto; }
+
+.page-head {
+    background: white; border-radius: 10px; padding: 14px 18px;
+    margin-bottom: 14px; box-shadow: 0 1px 6px rgba(0,0,0,0.05);
+    display: flex; justify-content: space-between; align-items: center;
+    flex-wrap: wrap; gap: 10px;
+}
+.page-head h2 {
+    margin: 0; font-size: 1.15rem; font-weight: 700; color: #1e3c72;
+    display: flex; align-items: center; gap: 8px;
+}
+.page-head h2 i { color: #f59e0b; }
+.page-head .btn { font-size: 0.82rem; padding: 6px 14px; border-radius: 7px; }
+
+.kpi-inline { display: flex; flex-wrap: nowrap; gap: 12px; margin-bottom: 14px; overflow-x: auto; }
+.kpi-item {
+    flex: 1 1 0; min-width: 220px; display: flex; align-items: center; gap: 14px;
+    padding: 16px 18px; border-radius: 12px; color: white;
+    position: relative; overflow: hidden; box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+    min-height: 90px;
+}
+.kpi-item .kpi-icon {
+    width: 50px; height: 50px; border-radius: 12px;
+    background: rgba(255,255,255,0.25);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.5rem; flex-shrink: 0;
+}
+.kpi-item .kpi-body { flex: 1; min-width: 0; }
+.kpi-item .kpi-label { font-size: 0.78rem; opacity: 0.92; margin-bottom: 2px; font-weight: 500; }
+.kpi-item .kpi-value { font-size: 1.5rem; font-weight: 700; line-height: 1.1; }
+.kpi-item .kpi-sub { font-size: 0.7rem; opacity: 0.85; margin-top: 2px; }
+.kpi-item .icon-bg { position: absolute; left: -15px; bottom: -25px; font-size: 5rem; opacity: 0.13; }
+
+.rating-card {
+    background: white; border-radius: 12px; padding: 16px 18px;
+    box-shadow: 0 1px 6px rgba(0,0,0,0.05); margin-bottom: 14px;
+    display: grid; grid-template-columns: 60px 1fr 200px 140px;
+    gap: 16px; align-items: center;
+    transition: transform 0.15s, box-shadow 0.15s;
+    border-right: 5px solid #cbd5e1;
+}
+.rating-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.1);
+}
+.rating-card.grade-Aplus { border-right-color: #16a34a; }
+.rating-card.grade-A { border-right-color: #22c55e; }
+.rating-card.grade-B { border-right-color: #eab308; }
+.rating-card.grade-C { border-right-color: #f59e0b; }
+.rating-card.grade-D { border-right-color: #dc2626; }
+
+.rank-box {
+    width: 50px; height: 50px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.3rem; font-weight: 800; color: white;
+    background: linear-gradient(135deg, #4facfe, #00f2fe);
+}
+.rank-box.rank-1 { background: linear-gradient(135deg, #fbbf24, #f59e0b); }
+.rank-box.rank-2 { background: linear-gradient(135deg, #94a3b8, #64748b); }
+.rank-box.rank-3 { background: linear-gradient(135deg, #d97706, #92400e); }
+
+.supplier-info .name {
+    font-weight: 700; font-size: 1rem; color: #1e3c72;
+    display: flex; align-items: center; gap: 8px;
+}
+.supplier-info .code {
+    font-size: 0.75rem; color: #64748b;
+    margin-top: 2px;
+}
+.supplier-info .meta {
+    display: flex; gap: 12px; margin-top: 6px;
+    font-size: 0.75rem; color: #64748b;
+}
+.supplier-info .meta span { display: flex; align-items: center; gap: 4px; }
+
+.score-box {
+    text-align: center;
+}
+.score-box .score-value {
+    font-size: 2rem; font-weight: 800; line-height: 1;
+}
+.score-box .score-label {
+    font-size: 0.7rem; color: #64748b; margin-top: 4px;
+}
+.score-box .score-bar {
+    height: 8px; background: #e2e8f0; border-radius: 4px;
+    margin-top: 8px; overflow: hidden;
+}
+.score-box .score-bar-fill {
+    height: 100%; border-radius: 4px;
+    background: linear-gradient(90deg, #4facfe, #00f2fe);
+    transition: width 0.5s;
+}
+
+.grade-box {
+    text-align: center;
+}
+.grade-box .grade-badge {
+    display: inline-block;
+    padding: 6px 16px;
+    border-radius: 8px;
+    font-size: 1.3rem;
+    font-weight: 800;
+    color: white;
+    min-width: 70px;
+}
+.grade-box .stars {
+    margin-top: 6px;
+    font-size: 0.8rem;
+    color: #f59e0b;
+}
+
+.criteria-details {
+    grid-column: 1 / -1;
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px solid #f1f5f9;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 10px;
+}
+.criterion {
+    background: #f8fafc;
+    border-radius: 6px;
+    padding: 8px 10px;
+    text-align: center;
+}
+.criterion .crit-label {
+    font-size: 0.7rem;
+    color: #64748b;
+    margin-bottom: 4px;
+    font-weight: 600;
+}
+.criterion .crit-value {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #1e3c72;
+}
+.criterion .crit-bar {
+    height: 4px;
+    background: #e2e8f0;
+    border-radius: 2px;
+    margin-top: 4px;
+    overflow: hidden;
+}
+.criterion .crit-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #43e97b, #38f9d7);
+    border-radius: 2px;
+}
+
+.badge-return {
+    background: #fee2e2; color: #991b1b;
+    padding: 2px 8px; border-radius: 4px;
+    font-size: 0.7rem; font-weight: 700;
+}
+.badge-no-return {
+    background: #dcfce7; color: #15803d;
+    padding: 2px 8px; border-radius: 4px;
+    font-size: 0.7rem; font-weight: 700;
+}
+
+.table-empty { text-align: center; padding: 40px 20px; color: #94a3b8; }
+.table-empty i { font-size: 3rem; opacity: 0.35; display: block; margin-bottom: 10px; }
+
+@media print {
+    .no-print { display: none !important; }
+    body { background: white; padding: 0; }
+    .kpi-item { border: 1px solid #cbd5e1; }
+    .rating-card { page-break-inside: avoid; }
+}
+@media (max-width: 900px) {
+    .kpi-inline { overflow-x: auto; }
+    .kpi-item { min-width: 220px; }
+    .rating-card { grid-template-columns: 1fr; }
+    .criteria-details { grid-template-columns: repeat(2, 1fr); }
+}
+</style>
+<script src="permissions.js"></script>
+</head>
+<body>
+
+<div class="container-box">
+
+    <!-- Page Header -->
+    <div class="page-head no-print">
+        <h2><i class="bi bi-star-fill"></i> تقييم الموردين</h2>
+        <div class="d-flex gap-2">
+            <a href="reports.html" class="btn btn-outline-info">
+                <i class="bi bi-arrow-right"></i> التقارير
+            </a>
+            <button class="btn btn-sm btn-outline-success" onclick="exportToExcel('supplier_rating')" title="تصدير Excel">
+                <i class="bi bi-file-earmark-excel"></i> Excel
+            </button>
+            <a href="index.html" class="btn btn-outline-secondary">
+                <i class="bi bi-house-fill"></i> الرئيسية
+            </a>
+            <button class="btn btn-outline-primary" onclick="window.print()">
+                <i class="bi bi-printer-fill"></i> طباعة
+            </button>
+        </div>
+    </div>
+
+    <!-- KPIs -->
+    <div class="kpi-inline">
+        <div class="kpi-item" style="background: linear-gradient(135deg, #4facfe, #00f2fe);">
+            <i class="bi bi-people icon-bg"></i>
+            <div class="kpi-icon"><i class="bi bi-people-fill"></i></div>
+            <div class="kpi-body">
+                <div class="kpi-label">عدد الموردين</div>
+                <div class="kpi-value" id="s-total">—</div>
+                <div class="kpi-sub">موردين نشطين</div>
+            </div>
+        </div>
+        <div class="kpi-item" style="background: linear-gradient(135deg, #43e97b, #38f9d7);">
+            <i class="bi bi-trophy icon-bg"></i>
+            <div class="kpi-icon"><i class="bi bi-trophy-fill"></i></div>
+            <div class="kpi-body">
+                <div class="kpi-label">أفضل مورد</div>
+                <div class="kpi-value" id="s-best" style="font-size:1rem;">—</div>
+                <div class="kpi-sub">أعلى تقييم</div>
+            </div>
+        </div>
+        <div class="kpi-item" style="background: linear-gradient(135deg, #a18cd1, #fbc2eb);">
+            <i class="bi bi-graph-up icon-bg"></i>
+            <div class="kpi-icon"><i class="bi bi-graph-up-arrow"></i></div>
+            <div class="kpi-body">
+                <div class="kpi-label">متوسط التقييم</div>
+                <div class="kpi-value" id="s-avg">—</div>
+                <div class="kpi-sub">من 100</div>
+            </div>
+        </div>
+        <div class="kpi-item" style="background: linear-gradient(135deg, #f59e0b, #fbbf24);">
+            <i class="bi bi-star icon-bg"></i>
+            <div class="kpi-icon"><i class="bi bi-star-fill"></i></div>
+            <div class="kpi-body">
+                <div class="kpi-label">موردين ممتازين (A+)</div>
+                <div class="kpi-value" id="s-excellent">—</div>
+                <div class="kpi-sub">تقييم 80+</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Results -->
+    <div id="content">
+        <div class="rating-card">
+            <div class="table-empty" style="grid-column: 1 / -1;">
+                <i class="bi bi-hourglass-split"></i>
+                جاري التحميل...
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+const API = 'http://localhost:5000/api/v1';
+
+
+async function load() {
+    try {
+        const r = await fetch(`${API}/reports/supplier-rating`).then(x => x.json());
+        if (!r.success) {
+            document.getElementById('content').innerHTML = `
+                <div class="rating-card">
+                    <div class="table-empty" style="grid-column: 1/-1;">
+                        <i class="bi bi-exclamation-triangle"></i>
+                        ${r.message || 'خطأ في التحميل'}
+                    </div>
+                </div>`;
+            return;
+        }
+        render(r.data);
+    } catch (e) {
+        console.error(e);
+    }
+}
+
+
+function render(data) {
+    const items = data || [];
+
+    // KPIs
+    document.getElementById('s-total').textContent = items.length;
+
+    const best = items[0];
+    document.getElementById('s-best').textContent = best ? best.name : '—';
+
+    const avg = items.length
+        ? (items.reduce((s, x) => s + x.total_score, 0) / items.length).toFixed(1)
+        : 0;
+    document.getElementById('s-avg').textContent = avg;
+
+    const excellent = items.filter(x => x.total_score >= 80).length;
+    document.getElementById('s-excellent').textContent = excellent;
+
+    if (!items.length) {
+        document.getElementById('content').innerHTML = `
+            <div class="rating-card">
+                <div class="table-empty" style="grid-column: 1/-1;">
+                    <i class="bi bi-inbox"></i>
+                    لا يوجد موردين
+                </div>
+            </div>`;
+        return;
+    }
+
+    let html = '';
+
+    items.forEach((s, idx) => {
+        const rank = idx + 1;
+        const rankClass = rank <= 3 ? `rank-${rank}` : '';
+        const gradeClass = 'grade-' + s.grade.replace('+', 'plus');
+
+        // النجوم
+        const starsCount = Math.round(s.total_score / 20); // 0-5
+        const stars = '★'.repeat(starsCount) + '☆'.repeat(5 - starsCount);
+
+        // المرتجعات
+        const returnBadge = s.return_count > 0
+            ? `<span class="badge-return"><i class="bi bi-arrow-return-left"></i> ${s.return_count} مرتجع</span>`
+            : `<span class="badge-no-return"><i class="bi bi-check-circle"></i> بدون مرتجعات</span>`;
+
+        html += `
+        <div class="rating-card ${gradeClass}">
+            <div class="rank-box ${rankClass}">${rank}</div>
+
+            <div class="supplier-info">
+                <div class="name">
+                    <i class="bi bi-truck"></i>
+                    ${s.name}
+                </div>
+                <div class="code">${s.code}</div>
+                <div class="meta">
+                    <span><i class="bi bi-receipt"></i> ${s.invoice_count} فاتورة</span>
+                    <span><i class="bi bi-cash"></i> ${fmtNum(s.total_value)}</span>
+                    ${s.phone ? `<span><i class="bi bi-telephone"></i> ${s.phone}</span>` : ''}
+                    ${returnBadge}
+                </div>
+            </div>
+
+            <div class="score-box">
+                <div class="score-value" style="color:${s.grade_color};">${s.total_score}</div>
+                <div class="score-label">من 100</div>
+                <div class="score-bar">
+                    <div class="score-bar-fill" style="width: ${s.total_score}%;"></div>
+                </div>
+            </div>
+
+            <div class="grade-box">
+                <div class="grade-badge" style="background:${s.grade_color};">${s.grade}</div>
+                <div class="stars">${stars}</div>
+            </div>
+
+            <div class="criteria-details">
+                ${renderCriterion('السعر', s.price_score, '30%')}
+                ${renderCriterion('الالتزام', s.commitment_score, '25%')}
+                ${renderCriterion('الفواتير', s.invoice_score, '20%')}
+                ${renderCriterion('المرتجعات', s.return_score, '15%')}
+                ${renderCriterion('الاستمرارية', s.continuity_score, '10%')}
+            </div>
+        </div>`;
+    });
+
+    document.getElementById('content').innerHTML = html;
+}
+
+
+function renderCriterion(label, value, weight) {
+    return `
+        <div class="criterion">
+            <div class="crit-label">${label} <small>(${weight})</small></div>
+            <div class="crit-value">${value}</div>
+            <div class="crit-bar">
+                <div class="crit-bar-fill" style="width: ${value}%;"></div>
+            </div>
+        </div>`;
+}
+
+
+function fmtNum(n) {
+    return parseFloat(n || 0).toLocaleString('ar-EG', {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: 0
+    });
+}
+
+
+load();
+</script>
+
+<script>
+// دالة تصدير Excel
+function exportToExcel(templateKey) {
+    if (!templateKey) {
+        alert('مفيش قالب تصدير');
+        return;
+    }
+    window.location.href = '/api/v1/export/excel/export/' + templateKey;
+}
+</script>
+
+</body>
+</html>

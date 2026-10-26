@@ -1,4 +1,4 @@
-﻿from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify
 from app.database import db
 from app.utils import json_safe
 

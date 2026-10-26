@@ -1,143 +1,471 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ar" dir="rtl">
-<head><meta charset="UTF-8"><title>مدفوعات الموردين</title>
+<head>
+<meta charset="UTF-8">
+<title>مدفوعات الموردين</title>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
-<link href="style.css" rel="stylesheet"></head>
-<body><div class="container-fluid"><div class="row">
-<div class="col-md-2 sidebar p-0">
-<div class="brand"><i class="bi bi-box-seam" style="font-size:2rem;"></i><h5 class="mt-2 mb-0">موديول المخازن</h5></div>
-<nav class="mt-3">
-<a href="index.html"><i class="bi bi-speedometer2"></i> لوحة التحكم</a>
-<a href="notifications.html"><i class="bi bi-bell"></i> الإشعارات</a>
-<a href="accounts.html"><i class="bi bi-book"></i> الدليل المحاسبي</a>
-<a href="warehouses.html"><i class="bi bi-building"></i> المستودعات</a>
-<a href="item_groups.html"><i class="bi bi-diagram-3"></i> مجموعات الأصناف</a>
-<a href="items.html"><i class="bi bi-box"></i> الأصناف</a>
-<a href="uom.html"><i class="bi bi-rulers"></i> وحدات القياس</a>
-<a href="suppliers.html"><i class="bi bi-truck"></i> الموردون</a>
-<a href="customers.html"><i class="bi bi-people"></i> العملاء</a>
-<a href="requisitions.html"><i class="bi bi-clipboard-check"></i> طلبات الاحتياج</a>
-<a href="purchase_orders.html"><i class="bi bi-file-earmark-text"></i> أوامر الشراء</a>
-<a href="purchase_invoices.html"><i class="bi bi-receipt"></i> فواتير الشراء</a>
-<a href="sales_invoices.html"><i class="bi bi-cart-check"></i> فواتير البيع</a>
-<a href="purchase_returns.html"><i class="bi bi-arrow-return-left"></i> مرتجع شراء</a>
-<a href="sales_returns.html"><i class="bi bi-arrow-return-right"></i> مرتجع بيع</a>
-<a href="payments.html" class="active"><i class="bi bi-cash-coin"></i> مدفوعات الموردين</a>
-<a href="customer_receipts.html"><i class="bi bi-cash-stack"></i> تحصيلات العملاء</a>
-<a href="receipts.html"><i class="bi bi-arrow-down-circle"></i> الاستلام</a>
-<a href="material_requests.html"><i class="bi bi-clipboard-plus"></i> طلبات الصرف</a>
-<a href="issues.html"><i class="bi bi-arrow-up-circle"></i> الصرف</a>
-<a href="transfers.html"><i class="bi bi-arrow-left-right"></i> التحويلات</a>
-<a href="counts.html"><i class="bi bi-clipboard-check"></i> الجرد</a>
-<a href="clearing.html"><i class="bi bi-shuffle"></i> الحسابات الوسيطة</a>
-<a href="financial_reports.html"><i class="bi bi-graph-up"></i> التقارير المالية</a>
-<a href="reports.html"><i class="bi bi-file-earmark-bar-graph"></i> التقارير</a>
-<a href="journal.html"><i class="bi bi-journal-text"></i> القيود</a>
-</nav></div>
-<div class="col-md-10 p-4">
-<div class="d-flex justify-content-between mb-4">
-<h2><i class="bi bi-cash-coin text-danger"></i> مدفوعات الموردين</h2>
-<button class="btn btn-danger" onclick="openAdd()"><i class="bi bi-plus-circle"></i> دفعة جديدة</button>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+body { font-family: 'Cairo','Segoe UI',Tahoma,sans-serif; background: #f5f6fa; padding: 20px; }
+.container-box { max-width: 1400px; margin: 0 auto; }
+h2 { color: #1e3c72; font-weight: 700; }
+.card-box { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 1px 10px rgba(0,0,0,0.05); margin-bottom: 20px; }
+table { font-size: 0.85rem; }
+.badge-method { padding: 4px 10px; border-radius: 12px; font-size: 0.72rem; font-weight: 600; }
+.badge-CASH { background: #e8f5e9; color: #2e7d32; }
+.badge-BANK_TRANSFER { background: #e3f2fd; color: #1565c0; }
+.badge-CHEQUE { background: #fff3e0; color: #e65100; }
+.badge-CARD { background: #f3e5f5; color: #6a1b9a; }
+.badge-WALLET { background: #e0f7fa; color: #00695c; }
+.invoice-row { background: #fafbfc; border-radius: 8px; padding: 10px; margin-bottom: 8px; border: 1px solid #e5e7eb; }
+.invoice-row.paid { background: #e8f5e9; border-color: #4caf50; }
+.invoice-row.partial { background: #fff3e0; border-color: #ff9800; }
+.invoice-check { width: 20px; height: 20px; cursor: pointer; }
+.stats-mini { display: flex; gap: 15px; font-size: 0.8rem; color: #667085; }
+.stats-mini strong { color: #1e3c72; }
+.payment-details-box { background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 8px; padding: 12px; margin-top: 10px; }
+</style>
+<script src="permissions.js"></script>
+</head>
+<body>
+<div class="container-box">
+    <div class="d-flex justify-content-between mb-4">
+        <h2><i class="bi bi-cash-coin text-danger"></i> مدفوعات الموردين</h2>
+        <div>
+            <button class="btn btn-sm btn-outline-success" onclick="exportToExcel('supplier_payments')" title="تصدير Excel">
+                <i class="bi bi-file-earmark-excel"></i> Excel
+            </button>
+            <a href="index.html" class="btn btn-outline-secondary"><i class="bi bi-house"></i> الرئيسية</a>
+            <button class="btn btn-danger" onclick="openAdd()"><i class="bi bi-plus-circle"></i> دفعة جديدة</button>
+        </div>
+    </div>
+    <div class="alert alert-warning">
+        <i class="bi bi-info-circle"></i> الدفعة تُسجّل مدين 2211 (ذمم موردين) / دائن حساب طريقة السداد
+    </div>
+    <div class="card-box">
+        <table class="table table-hover">
+            <thead class="table-light">
+                <tr>
+                    <th>رقم الدفعة</th><th>التاريخ</th><th>المورد</th>
+                    <th>طريقة السداد</th><th class="text-end">المبلغ</th>
+                    <th>المرجع</th><th>إجراءات</th>
+                </tr>
+            </thead>
+            <tbody id="tbl"><tr><td colspan="7" class="text-center">جاري التحميل...</td></tr></tbody>
+        </table>
+    </div>
 </div>
-
-<div class="alert alert-warning">
-<i class="bi bi-info-circle"></i> سداد مورد مقابل فواتير الشراء. القيد: <b>مدين 2211 ذمم الموردين</b> / <b>دائن 1211/1212 النقدية</b>.
-</div>
-
-<div class="card p-3">
-<table class="table table-hover">
-<thead><tr>
-<th>رقم الدفعة</th><th>التاريخ</th><th>المورد</th><th>طريقة الدفع</th>
-<th>المبلغ</th><th>المرجع</th><th>إجراءات</th>
-</tr></thead>
-<tbody id="tbl"><tr><td colspan="7" class="text-center">جاري التحميل...</td></tr></tbody>
-</table></div></div></div></div>
 
 <div class="modal fade" id="payModal" tabindex="-1">
-<div class="modal-dialog">
+<div class="modal-dialog modal-lg">
 <div class="modal-content">
-<div class="modal-header bg-danger text-white"><h5 class="modal-title"><i class="bi bi-cash-coin"></i> دفعة جديدة</h5><button class="btn-close btn-close-white" data-bs-dismiss="modal"></button></div>
+<div class="modal-header bg-danger text-white">
+    <h5 class="modal-title"><i class="bi bi-cash-coin"></i> دفعة جديدة</h5>
+    <button class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+</div>
 <div class="modal-body">
-<div class="mb-3"><label class="form-label">التاريخ *</label><input type="date" class="form-control" id="f-date"></div>
-<div class="mb-3"><label class="form-label">المورد *</label><select class="form-select" id="f-supplier"></select></div>
-<div class="mb-3"><label class="form-label">المبلغ *</label><input type="number" class="form-control" id="f-amount" step="0.01" min="0.01"></div>
-<div class="mb-3"><label class="form-label">طريقة الدفع</label>
-<select class="form-select" id="f-method">
-<option value="CASH">نقدي</option>
-<option value="BANK">تحويل بنكي</option>
-</select></div>
-<div class="mb-3"><label class="form-label">المرجع</label><input class="form-control" id="f-reference" placeholder="رقم شيك / حوالة"></div>
-<div class="mb-3"><label class="form-label">ملاحظات</label><input class="form-control" id="f-notes"></div>
+    <div class="row g-3 mb-3">
+        <div class="col-md-4"><label class="form-label">التاريخ *</label><input type="date" class="form-control" id="f-date"></div>
+        <div class="col-md-4"><label class="form-label">المورد *</label><select class="form-select" id="f-supplier" onchange="onSupplierChange()"></select></div>
+        <div class="col-md-4"><label class="form-label">طريقة السداد *</label><select class="form-select" id="f-method" onchange="onMethodChange()"></select></div>
+        <div class="col-md-4"><label class="form-label">الخزينة/البنك</label><select class="form-select" id="f-cash-box"><option value="">— بدون —</option></select></div>
+    </div>
+    <div class="row g-3 mb-3">
+        <div class="col-md-4"><label class="form-label">المبلغ الإجمالي *</label><input type="number" class="form-control" id="f-amount" step="0.01" min="0" oninput="recalcAllocations()"></div>
+        <div class="col-md-4"><label class="form-label">المرجع</label><input class="form-control" id="f-reference"></div>
+        <div class="col-md-4"><label class="form-label">ملاحظات</label><input class="form-control" id="f-notes"></div>
+    </div>
+
+    <!-- 🆕 السطور المتعددة (خصومات + ضرائب) -->
+    <div class="card mb-3" style="border: 2px dashed #6366f1;">
+        <div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h6 class="mb-0 text-primary"><i class="bi bi-list-ul"></i> خصومات وضرائب إضافية</h6>
+                <button type="button" class="btn btn-sm btn-outline-primary" onclick="addCustomLine()">
+                    <i class="bi bi-plus-circle"></i> إضافة سطر
+                </button>
+            </div>
+            
+            <div id="quick-lines">
+                <div class="row g-2">
+                    <div class="col-md-6">
+                        <label class="form-label small">ضريبة</label>
+                        <select class="form-select form-select-sm" id="f-tax-select" onchange="addTaxLine()">
+                            <option value="">— بدون ضريبة —</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label small">خصم</label>
+                        <select class="form-select form-select-sm" id="f-discount-select" onchange="addDiscountLine()">
+                            <option value="">— بدون خصم —</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="custom-lines" class="mt-3"></div>
+            
+            <div class="alert alert-info mt-2 mb-0 py-2" id="lines-summary" style="display:none;">
+                <div class="d-flex justify-content-between">
+                    <span>الإجمالي الأصلي:</span>
+                    <strong id="s-original">0.00</strong>
+                </div>
+                <div class="d-flex justify-content-between text-success">
+                    <span>الخصومات:</span>
+                    <strong id="s-discount">0.00</strong>
+                </div>
+                <div class="d-flex justify-content-between text-danger">
+                    <span>الضرائب:</span>
+                    <strong id="s-tax">0.00</strong>
+                </div>
+                <hr class="my-1">
+                <div class="d-flex justify-content-between">
+                    <span><strong>الصافي:</strong></span>
+                    <strong id="s-net">0.00</strong>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <!-- تفاصيل طريقة الدفع -->
+    <div class="payment-details-box" id="payment-details-box" style="display:none;">
+        <h6 class="text-primary mb-3"><i class="bi bi-info-circle"></i> تفاصيل <span id="method-name">طريقة الدفع</span></h6>
+
+        <!-- شيك -->
+        <div class="row g-3" id="cheque-fields" style="display:none;">
+            <div class="col-md-4"><label class="form-label">رقم الشيك *</label><input class="form-control" id="f-cheque-no"></div>
+            <div class="col-md-4"><label class="form-label">البنك *</label><input class="form-control" id="f-cheque-bank"></div>
+            <div class="col-md-4"><label class="form-label">تاريخ الاستحقاق *</label><input type="date" class="form-control" id="f-cheque-date"></div>
+        </div>
+
+        <!-- تحويل بنكي -->
+        <div class="row g-3" id="transfer-fields" style="display:none;">
+            <div class="col-md-6"><label class="form-label">رقم الحوالة *</label><input class="form-control" id="f-transfer-no"></div>
+            <div class="col-md-6"><label class="form-label">البنك *</label><input class="form-control" id="f-transfer-bank"></div>
+        </div>
+
+        <!-- بطاقة -->
+        <div class="row g-3" id="card-fields" style="display:none;">
+            <div class="col-md-4"><label class="form-label">رقم العملية *</label><input class="form-control" id="f-card-txn"></div>
+            <div class="col-md-4"><label class="form-label">آخر 4 أرقام *</label><input class="form-control" id="f-card-last4" maxlength="4"></div>
+            <div class="col-md-4"><label class="form-label">البنك</label><input class="form-control" id="f-card-bank"></div>
+        </div>
+
+        <!-- محفظة إلكترونية -->
+        <div class="row g-3" id="wallet-fields" style="display:none;">
+            <div class="col-md-4"><label class="form-label">اسم المحفظة *</label><input class="form-control" id="f-wallet-name"></div>
+            <div class="col-md-4"><label class="form-label">رقم العملية *</label><input class="form-control" id="f-wallet-txn"></div>
+            <div class="col-md-4"><label class="form-label">رقم الهاتف</label><input class="form-control" id="f-wallet-phone"></div>
+        </div>
+    </div>
+
+    <hr>
+    <h6 class="text-primary mb-3"><i class="bi bi-list-check"></i> الفواتير المفتوحة <span id="inv-count" class="badge bg-secondary">0</span></h6>
+    <div id="open-invoices" style="max-height: 350px; overflow-y: auto;">
+        <div class="text-center text-muted p-4">اختر المورد لعرض الفواتير</div>
+    </div>
+    <hr>
+    <div class="row"><div class="col-md-6 offset-md-6"><table class="table table-sm">
+        <tr><td>المبلغ المُدخل:</td><td class="text-end"><strong id="sum-input">0.00</strong></td></tr>
+        <tr><td>المبلغ الموزّع:</td><td class="text-end"><strong id="sum-allocated" class="text-success">0.00</strong></td></tr>
+        <tr class="table-warning"><td><strong>المتبقي:</strong></td><td class="text-end"><strong id="sum-remaining">0.00</strong></td></tr>
+    </table></div></div>
 </div>
 <div class="modal-footer">
-<button class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
-<button class="btn btn-danger" onclick="save()"><i class="bi bi-check-circle"></i> حفظ</button>
+    <button class="btn btn-secondary" data-bs-dismiss="modal">إلغاء</button>
+    <button class="btn btn-danger" onclick="save()"><i class="bi bi-check-circle"></i> حفظ</button>
 </div>
 </div></div></div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script>
-const API='http://localhost:5000/api/v1';
-const modal = new bootstrap.Modal(document.getElementById('payModal'));
-let suppliersList=[];
+const API = '/api/v1';
+const payModal = new bootstrap.Modal(document.getElementById('payModal'));
+let suppliersList = [];
+let methodsList = [];
+let boxesList = [];
+let openInvoices = [];
 
-async function loadSuppliers(){
- const r = await fetch(`${API}/suppliers/`).then(x=>x.json());
- suppliersList = r.data||[];
- document.getElementById('f-supplier').innerHTML = suppliersList.length 
-  ? suppliersList.map(s=>`<option value="${s.id}">${s.code} - ${s.name_ar}</option>`).join('')
-  : '<option value="">— لا يوجد موردون —</option>';
+
+let taxSettings = [];
+let discountSettings = [];
+let customLines = [];
+
+
+async function loadRefs() {
+    const [s, m, b] = await Promise.all([
+        fetch(`${API}/suppliers/`).then(r => r.json()).catch(() => ({data: []})),
+        fetch(`${API}/payments/methods/`).then(r => r.json()).catch(() => ({data: []})),
+        fetch(`${API}/cash-boxes/all-active/`).then(r => r.json()).catch(() => ({data: []})),
+        fetch(`${API}/cash-boxes/tax-settings/`).then(r => r.json()).catch(() => ({data: []})),
+        fetch(`${API}/cash-boxes/discount-settings/`).then(r => r.json()).catch(() => ({data: []}))
+
+
+    ]);
+    suppliersList = s.data || [];
+    methodsList = m.data || [];
+    boxesList = b.data || [];
+    
+    const boxSelect = document.getElementById('f-cash-box');
+    if (boxSelect) {
+        boxSelect.innerHTML = '<option value="">— بدون —</option>' +
+            boxesList.map(b => `<option value="${b.box_type}|${b.id}">[${b.box_type === 'CASH_BOX' ? 'خزينة' : b.box_type === 'BANK' ? 'بنك' : 'بطاقة'}] ${b.code} - ${b.name} (${b.balance.toFixed(2)})</option>`).join('');
+    }
+    document.getElementById('f-supplier').innerHTML = '<option value="">— اختر مورد —</option>' + suppliersList.map(s => `<option value="${s.id}">${s.code} - ${s.name_ar}</option>`).join('');
+    document.getElementById('f-method').innerHTML = '<option value="">— اختر طريقة —</option>' + methodsList.map(m => `<option value="${m.code}">${m.name_ar}${m.requires_clearing ? ' (وسيط)' : ''}</option>`).join('');
 }
 
-async function load(){
- const r = await fetch(`${API}/payments/payments/`).then(x=>x.json());
- const rows = r.data||[];
- document.getElementById('tbl').innerHTML = rows.length ? rows.map(p=>`
-  <tr>
-   <td><code>${p.payment_no}</code></td>
-   <td>${p.payment_date}</td>
-   <td>${p.supplier_name||'-'}</td>
-   <td>${p.payment_method==='CASH' ? 'نقدي' : 'بنكي'}</td>
-   <td><strong class="text-danger">${parseFloat(p.amount).toFixed(2)}</strong></td>
-   <td><small>${p.reference||'-'}</small></td>
-   <td>
-    <button class="btn btn-sm btn-outline-danger" onclick="del(${p.id})"><i class="bi bi-trash"></i></button>
-   </td></tr>`).join('') : '<tr><td colspan="7" class="text-center text-muted">لا توجد مدفوعات</td></tr>';
+async function load() {
+    try {
+        const r = await fetch(`${API}/payments/payments/`).then(x => x.json());
+        const rows = r.data || [];
+        document.getElementById('tbl').innerHTML = rows.length ? rows.map(p => {
+            const method = methodsList.find(m => m.code === p.payment_method) || {name_ar: p.payment_method};
+            return `<tr>
+                <td><code>${p.payment_no}</code></td>
+                <td>${p.payment_date}</td>
+                <td>${p.supplier_name || '-'}</td>
+                <td><span class="badge-method badge-${p.payment_method}">${method.name_ar}</span></td>
+                <td class="text-end"><strong class="text-danger">${parseFloat(p.amount).toFixed(2)}</strong></td>
+                <td><small>${p.reference || '-'}</small></td>
+                <td><button class="btn btn-sm btn-outline-danger" onclick="del(${p.id})"><i class="bi bi-trash"></i></button></td>
+            </tr>`;
+        }).join('') : '<tr><td colspan="7" class="text-center text-muted">لا توجد مدفوعات</td></tr>';
+    } catch(e) { console.error(e); }
 }
 
-function openAdd(){
- if (!suppliersList.length) { alert('أضف مورداً أولاً'); return; }
- document.getElementById('f-date').value = new Date().toISOString().split('T')[0];
- document.getElementById('f-amount').value = '';
- document.getElementById('f-reference').value = '';
- document.getElementById('f-notes').value = '';
- document.getElementById('f-method').value = 'CASH';
- modal.show();
+function openAdd() {
+    if (!suppliersList.length) { alert('أضف مورداً أولاً'); return; }
+    document.getElementById('f-date').value = new Date().toISOString().split('T')[0];
+    document.getElementById('f-supplier').value = '';
+    document.getElementById('f-method').value = 'CASH';
+    const cbEl = document.getElementById('f-cash-box');
+    if (cbEl) cbEl.value = '';
+    document.getElementById('f-amount').value = '';
+    document.getElementById('f-reference').value = '';
+    document.getElementById('f-notes').value = '';
+    document.getElementById('open-invoices').innerHTML = '<div class="text-center text-muted p-4">اختر المورد لعرض الفواتير</div>';
+    document.getElementById('inv-count').textContent = '0';
+    clearPaymentDetails();
+    onMethodChange();
+    recalcAllocations();
+    payModal.show();
 }
 
-async function save(){
- const data = {
-  payment_date: document.getElementById('f-date').value,
-  supplier_id: parseInt(document.getElementById('f-supplier').value),
-  amount: parseFloat(document.getElementById('f-amount').value),
-  payment_method: document.getElementById('f-method').value,
-  reference: document.getElementById('f-reference').value,
-  notes: document.getElementById('f-notes').value
- };
- if (!data.amount || data.amount <= 0) { alert('أدخل مبلغ صحيح'); return; }
- 
- const r = await fetch(`${API}/payments/payments/`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(data)}).then(x=>x.json());
- if (r.success) { modal.hide(); load(); alert('تمت إضافة الدفعة + قيد محاسبي'); }
- else alert(r.message||'خطأ');
+function clearPaymentDetails() {
+    ['f-cheque-no','f-cheque-bank','f-cheque-date','f-transfer-no','f-transfer-bank','f-card-txn','f-card-last4','f-card-bank','f-wallet-name','f-wallet-txn','f-wallet-phone'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = '';
+    });
 }
 
-async function del(id){
- if (!confirm('حذف الدفعة؟ سيُحذف القيد المحاسبي أيضاً.')) return;
- const r = await fetch(`${API}/payments/payments/${id}`,{method:'DELETE'}).then(x=>x.json());
- if (r.success) { alert('تم الحذف'); load(); }
- else alert(r.message||'خطأ');
+async function onSupplierChange() {
+    const supplierId = document.getElementById('f-supplier').value;
+    if (!supplierId) {
+        document.getElementById('open-invoices').innerHTML = '<div class="text-center text-muted p-4">اختر المورد</div>';
+        return;
+    }
+    try {
+        const r = await fetch(`${API}/payments/open-invoices/supplier/${supplierId}`).then(x => x.json());
+        openInvoices = r.data || [];
+        document.getElementById('inv-count').textContent = openInvoices.length;
+        if (!openInvoices.length) {
+            document.getElementById('open-invoices').innerHTML = '<div class="alert alert-success text-center"><i class="bi bi-check-circle"></i> لا توجد فواتير مفتوحة لهذا المورد</div>';
+            return;
+        }
+        document.getElementById('open-invoices').innerHTML = openInvoices.map(inv => `
+            <div class="invoice-row" id="inv-row-${inv.id}">
+                <div class="row align-items-center">
+                    <div class="col-md-1 text-center"><input type="checkbox" class="invoice-check" data-invoice-id="${inv.id}" data-remaining="${inv.remaining}" onchange="onInvoiceToggle(this)"></div>
+                    <div class="col-md-3"><code>${inv.invoice_no}</code><div class="text-muted" style="font-size:0.72rem;">${inv.invoice_date}</div></div>
+                    <div class="col-md-4"><div class="stats-mini">
+                        <span>الإجمالي: <strong>${parseFloat(inv.total_amount).toFixed(2)}</strong></span>
+                        <span>مدفوع: <strong class="text-success">${parseFloat(inv.paid_amount).toFixed(2)}</strong></span>
+                        <span>متبقي: <strong class="text-danger">${parseFloat(inv.remaining).toFixed(2)}</strong></span>
+                    </div></div>
+                    <div class="col-md-4"><div class="input-group input-group-sm">
+                        <span class="input-group-text">المبلغ</span>
+                        <input type="number" class="form-control alloc-amount" data-invoice-id="${inv.id}" value="0" step="0.01" min="0" max="${inv.remaining}" oninput="recalcAllocations()">
+                    </div></div>
+                </div>
+            </div>
+        `).join('');
+    } catch(e) { console.error(e); }
 }
 
-(async()=>{ await loadSuppliers(); await load(); })();
-</script></body></html>
+function onMethodChange() {
+    const methodCode = document.getElementById('f-method').value;
+    const method = methodsList.find(m => m.code === methodCode);
+
+    // اخفي كل الحقول
+    document.getElementById('payment-details-box').style.display = 'none';
+    document.getElementById('cheque-fields').style.display = 'none';
+    document.getElementById('transfer-fields').style.display = 'none';
+    document.getElementById('card-fields').style.display = 'none';
+    document.getElementById('wallet-fields').style.display = 'none';
+
+    if (!method) return;
+
+    document.getElementById('method-name').textContent = method.name_ar;
+
+    // اظهر الحقول المناسبة
+    if (methodCode === 'CHEQUE') {
+        document.getElementById('payment-details-box').style.display = 'block';
+        document.getElementById('cheque-fields').style.display = 'flex';
+        document.getElementById('f-reference').placeholder = 'رقم الشيك (اختياري)';
+    } else if (methodCode === 'BANK_TRANSFER') {
+        document.getElementById('payment-details-box').style.display = 'block';
+        document.getElementById('transfer-fields').style.display = 'flex';
+        document.getElementById('f-reference').placeholder = 'رقم الحوالة (اختياري)';
+    } else if (methodCode === 'CARD') {
+        document.getElementById('payment-details-box').style.display = 'block';
+        document.getElementById('card-fields').style.display = 'flex';
+        document.getElementById('f-reference').placeholder = 'رقم العملية (اختياري)';
+    } else if (methodCode === 'WALLET') {
+        document.getElementById('payment-details-box').style.display = 'block';
+        document.getElementById('wallet-fields').style.display = 'flex';
+        document.getElementById('f-reference').placeholder = 'رقم العملية (اختياري)';
+    } else {
+        document.getElementById('f-reference').placeholder = 'المرجع (اختياري)';
+    }
+}
+
+function onInvoiceToggle(checkbox) {
+    const invoiceId = checkbox.dataset.invoiceId;
+    const amountInput = document.querySelector(`.alloc-amount[data-invoice-id="${invoiceId}"]`);
+    const remaining = parseFloat(checkbox.dataset.remaining);
+    if (checkbox.checked) {
+        const totalInput = parseFloat(document.getElementById('f-amount').value) || 0;
+        const currentAllocated = getTotalAllocated() - (parseFloat(amountInput.value) || 0);
+        const available = Math.max(0, totalInput - currentAllocated);
+        amountInput.value = Math.min(remaining, available).toFixed(2);
+    } else {
+        amountInput.value = '0';
+    }
+    recalcAllocations();
+}
+
+function getTotalAllocated() {
+    let total = 0;
+    document.querySelectorAll('.alloc-amount').forEach(input => total += parseFloat(input.value) || 0);
+    return total;
+}
+
+function recalcAllocations() {
+    const input = parseFloat(document.getElementById('f-amount').value) || 0;
+    const allocated = getTotalAllocated();
+    const remaining = input - allocated;
+    document.getElementById('sum-input').textContent = input.toFixed(2);
+    document.getElementById('sum-allocated').textContent = allocated.toFixed(2);
+    const remEl = document.getElementById('sum-remaining');
+    remEl.textContent = remaining.toFixed(2);
+    remEl.className = remaining < -0.01 ? 'text-danger' : (Math.abs(remaining) < 0.01 ? 'text-success' : 'text-warning');
+    document.querySelectorAll('.invoice-row').forEach(row => {
+        const input = row.querySelector('.alloc-amount');
+        const checkbox = row.querySelector('.invoice-check');
+        const amount = parseFloat(input.value) || 0;
+        const remaining = parseFloat(checkbox.dataset.remaining);
+        row.classList.remove('paid', 'partial');
+        if (amount > 0) row.classList.add(amount >= remaining - 0.01 ? 'paid' : 'partial');
+    });
+}
+
+async function save() {
+    const supplierId = document.getElementById('f-supplier').value;
+    const method = document.getElementById('f-method').value;
+    const amount = parseFloat(document.getElementById('f-amount').value);
+    if (!supplierId) { alert('اختر المورد'); return; }
+    if (!method) { alert('اختر طريقة السداد'); return; }
+    if (!amount || amount <= 0) { alert('أدخل مبلغاً صحيحاً'); return; }
+
+    // ✅ استخرج cash_box_id
+    const cashBoxVal = document.getElementById('f-cash-box') ? document.getElementById('f-cash-box').value : '';
+    let cashBoxId = null, cashBoxType = 'CASH_BOX';
+    if (cashBoxVal) {
+        const parts = cashBoxVal.split('|');
+        cashBoxType = parts[0];
+        cashBoxId = parseInt(parts[1]);
+    }
+
+    const allocations = [];
+    document.querySelectorAll('.alloc-amount').forEach(input => {
+        const amt = parseFloat(input.value) || 0;
+        if (amt > 0) allocations.push({invoice_id: parseInt(input.dataset.invoiceId), amount: amt});
+    });
+
+    const data = {
+        payment_date: document.getElementById('f-date').value,
+        supplier_id: parseInt(supplierId),
+        payment_method: method,
+        amount: amount,
+        reference: document.getElementById('f-reference').value,
+        notes: document.getElementById('f-notes').value,
+        cash_box_id: cashBoxId,
+        cash_box_type: cashBoxType,
+        allocations: allocations,
+        details: {
+            payment_type: method,
+            cheque_no: document.getElementById('f-cheque-no').value,
+            cheque_bank: document.getElementById('f-cheque-bank').value,
+            cheque_date: document.getElementById('f-cheque-date').value,
+            transfer_no: document.getElementById('f-transfer-no').value,
+            transfer_bank: document.getElementById('f-transfer-bank').value,
+            card_txn_no: document.getElementById('f-card-txn').value,
+            card_last4: document.getElementById('f-card-last4').value,
+            card_bank: document.getElementById('f-card-bank').value,
+            wallet_name: document.getElementById('f-wallet-name').value,
+            wallet_txn_no: document.getElementById('f-wallet-txn').value,
+            wallet_phone: document.getElementById('f-wallet-phone').value
+        }
+    };
+
+    try {
+        const r = await fetch(`${API}/payments/payments/`, {
+            method: 'POST', headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(data)
+        }).then(x => x.json());
+        if (r.success) {
+            // احفظ التفاصيل
+            if (r.data && r.data.id) {
+                await fetch(`${API}/payments/details`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        ...data.details,
+                        payment_id: r.data.id,
+                        source_type: 'SUPPLIER_PAYMENT'
+                    })
+                });
+            }
+            alert(`تم حفظ الدفعة ${r.data.payment_no}`);
+            payModal.hide();
+            load();
+        } else alert(r.message || 'خطأ');
+    } catch(e) { alert('خطأ في الاتصال'); console.error(e); }
+}
+
+async function del(id) {
+    if (!confirm('حذف الدفعة؟ سيُحذف القيد المحاسبي أيضاً.')) return;
+    const r = await fetch(`${API}/payments/payments/${id}`, {method: 'DELETE'}).then(x => x.json());
+    if (r.success) { alert('تم الحذف'); load(); }
+    else alert(r.message || 'خطأ');
+}
+
+(async () => { await loadRefs(); await load(); })();
+</script>
+
+<script>
+// دالة تصدير Excel
+function exportToExcel(templateKey) {
+    if (!templateKey) {
+        alert('مفيش قالب تصدير');
+        return;
+    }
+    window.location.href = '/api/v1/export/excel/export/' + templateKey;
+}
+</script>
+
+</body>
+</html>

@@ -1,14 +1,15 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head><meta charset="UTF-8"><title>الجرد</title>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
-<link href="style.css" rel="stylesheet"></head>
+<link href="style.css" rel="stylesheet"><script src="permissions.js"></script>
+</head>
 <body><div class="container-fluid"><div class="row">
 <div class="col-md-2 sidebar p-0">
 <div class="brand"><i class="bi bi-box-seam" style="font-size:2rem;"></i><h5 class="mt-2 mb-0">موديول المخازن</h5></div>
 <nav class="mt-3">
-<a href="index.html"><i class="bi bi-speedometer2"></i> لوحة التحكم</a>
+<a href="index.html"><i class="bi bi-house-fill"></i> الرئيسية</a>
 <a href="notifications.html"><i class="bi bi-bell"></i> الإشعارات</a>
 <a href="accounts.html"><i class="bi bi-book"></i> الدليل المحاسبي</a>
 <a href="warehouses.html"><i class="bi bi-building"></i> المستودعات</a>
@@ -38,15 +39,26 @@
 <div class="col-md-10 p-4">
 <div class="d-flex justify-content-between mb-4">
 <h2><i class="bi bi-clipboard-check"></i> الجرد المخزني</h2>
+<div class="d-flex gap-2">
+<button class="btn btn-sm btn-outline-success" onclick="exportToExcel('counts')" title="تصدير Excel">
+                <i class="bi bi-file-earmark-excel"></i> Excel
+            </button>
+            <a href="index.html" class="btn btn-outline-secondary">
+                <i class="bi bi-house-fill"></i> الرئيسية
+            </a>
+<a href="stock_adjustments.html" class="btn btn-outline-primary">
+    <i class="bi bi-sliders"></i> التسويات
+</a>
 <button class="btn btn-warning" onclick="openAdd()"><i class="bi bi-plus-circle"></i> جرد جديد</button>
+</div>
 </div>
 <div class="card p-3">
 <table class="table table-hover">
 <thead><tr>
 <th>رقم الجرد</th><th>التاريخ</th><th>المستودع</th><th>النوع</th>
-<th>الحالة</th><th>إجراءات</th>
+<th>الحالة</th><th>المستخدم</th><th>إجراءات</th>
 </tr></thead>
-<tbody id="tbl"><tr><td colspan="6" class="text-center">جاري التحميل...</td></tr></tbody>
+<tbody id="tbl"><tr><td colspan="7" class="text-center">جاري التحميل...</td></tr></tbody>
 </table></div></div></div></div>
 
 <!-- Add Modal -->
@@ -117,6 +129,7 @@ async function load(){
    <td>${c.warehouse_name||'-'}</td>
    <td>${typeLabels[c.count_type]||c.count_type}</td>
    <td><span class="badge-status badge-${c.status}">${c.status}</span></td>
+   <td>${c.created_by_name||'—'}</td>
    <td>
     ${c.status==='DRAFT' || c.status==='IN_PROGRESS' ? `
      <button class="btn btn-sm btn-info" onclick="openEdit(${c.id})" title="إدخال الكميات"><i class="bi bi-pencil"></i></button>
@@ -124,7 +137,7 @@ async function load(){
      <button class="btn btn-sm btn-success" onclick="postCountById(${c.id})" title="ترحيل"><i class="bi bi-check-circle"></i></button>
     ` : '<span class="text-muted">مكتمل</span>'}
    </td>
-  </tr>`).join('') : '<tr><td colspan="6" class="text-center text-muted">لا توجد عمليات جرد</td></tr>';
+  </tr>`).join('') : '<tr><td colspan="7" class="text-center text-muted">لا توجد عمليات جرد</td></tr>';
 }
 
 function openAdd(){
@@ -226,4 +239,16 @@ async function delCount(id){
 }
 
 (async()=>{ await loadWarehouses(); await load(); })();
-</script></body></html>
+</script>
+<script>
+// دالة تصدير Excel
+function exportToExcel(templateKey) {
+    if (!templateKey) {
+        alert('مفيش قالب تصدير');
+        return;
+    }
+    window.location.href = '/api/v1/export/excel/export/' + templateKey;
+}
+</script>
+
+</body></html>

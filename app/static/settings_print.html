@@ -1,0 +1,312 @@
+﻿<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>إعدادات الطباعة</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+* { font-family: Cairo, sans-serif; box-sizing: border-box; }
+body { background: #f5f6fa; padding: 12px; font-size: 13px; color: #1e293b; line-height: 1.5; }
+.container-box { max-width: 1300px; margin: 0 auto; }
+.page-head { background: white; border-radius: 10px; padding: 14px 18px; margin-bottom: 14px; box-shadow: 0 1px 6px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px; }
+.page-head h2 { margin: 0; font-size: 1.15rem; font-weight: 700; color: #1e3c72; display: flex; align-items: center; gap: 8px; }
+.page-head h2 i { color: #64748b; }
+.page-head .btn { font-size: 0.82rem; padding: 6px 14px; border-radius: 7px; }
+.tab-content { background: white; border-radius: 10px; padding: 20px; box-shadow: 0 1px 6px rgba(0,0,0,0.05); margin-bottom: 14px; }
+.form-label { font-size: 0.8rem; font-weight: 600; color: #475569; margin-bottom: 4px; }
+.form-control, .form-select { font-size: 0.85rem; padding: 7px 12px; border-radius: 6px; border-color: #e2e8f0; }
+.form-section-title { font-weight: 700; font-size: 0.9rem; color: #1e3c72; padding-bottom: 8px; margin-bottom: 12px; border-bottom: 1.5px solid #f1f5f9; display: flex; align-items: center; gap: 6px; }
+.form-section-title i { color: #64748b; }
+.form-switch .form-check-input { width: 2.5em; height: 1.3em; cursor: pointer; }
+.form-check-label { font-size: 0.85rem; cursor: pointer; }
+.form-check-input:checked { background-color: #64748b; border-color: #64748b; }
+.save-bar { background: white; border-radius: 10px; padding: 12px 18px; box-shadow: 0 -2px 10px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; position: sticky; bottom: 12px; z-index: 100; margin-top: 14px; }
+.save-bar .info { font-size: 0.82rem; color: #64748b; }
+.save-bar .info.dirty { color: #dc2626; font-weight: 600; }
+.toast-msg { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #16a34a; color: white; padding: 12px 24px; border-radius: 8px; font-weight: 600; box-shadow: 0 8px 24px rgba(0,0,0,0.15); z-index: 9999; display: none; align-items: center; gap: 8px; }
+.toast-msg.show { display: flex; }
+.toast-msg.error { background: #dc2626; }
+.setting-row { padding: 12px 0; border-bottom: 1px solid #f1f5f9; }
+.setting-row:last-child { border-bottom: none; }
+.setting-label { font-weight: 600; font-size: 0.88rem; color: #1e293b; margin-bottom: 2px; }
+.setting-desc { font-size: 0.75rem; color: #64748b; }
+.preview-box { background: #f8fafc; border: 1px dashed #cbd5e1; border-radius: 8px; padding: 20px; margin-top: 12px; }
+.preview-title { font-size: 0.75rem; font-weight: 700; color: #64748b; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
+.preview-content { background: white; padding: 20px; border-radius: 6px; box-shadow: 0 1px 4px rgba(0,0,0,0.05); font-size: 0.75rem; }
+</style>
+<script src="permissions.js"></script>
+</head>
+<body>
+<div class="container-box">
+<div class="page-head">
+<h2><i class="bi bi-printer"></i> إعدادات الطباعة</h2>
+<div class="d-flex gap-2">
+<a href="settings.html" class="btn btn-outline-info"><i class="bi bi-arrow-right"></i> الإعدادات</a>
+<a href="index.html" class="btn btn-outline-secondary"><i class="bi bi-house-fill"></i> الرئيسية</a>
+</div>
+</div>
+
+<div class="tab-content">
+<div class="form-section-title"><i class="bi bi-file-earmark-text"></i> إعدادات الصفحة</div>
+
+<div class="row g-3 mb-3">
+<div class="col-md-4">
+<label class="form-label">حجم الورق</label>
+<select class="form-select" id="f-paper_size" onchange="markDirty()">
+<option value="A4">A4 (210 × 297 مم)</option>
+<option value="A5">A5 (148 × 210 مم)</option>
+<option value="Letter">Letter (216 × 279 مم)</option>
+<option value="80mm">إيصال حراري 80 مم</option>
+<option value="58mm">إيصال حراري 58 مم</option>
+</select>
+</div>
+<div class="col-md-4">
+<label class="form-label">اتجاه الصفحة</label>
+<select class="form-select" id="f-page_orientation" onchange="markDirty()">
+<option value="portrait">طولي (Portrait)</option>
+<option value="landscape">عرضي (Landscape)</option>
+</select>
+</div>
+<div class="col-md-4">
+<label class="form-label">حجم الخط</label>
+<select class="form-select" id="f-font_size" onchange="markDirty()">
+<option value="small">صغير</option>
+<option value="medium">متوسط</option>
+<option value="large">كبير</option>
+</select>
+</div>
+</div>
+
+<div class="form-section-title mt-4"><i class="bi bi-file-earmark-image"></i> تصميم الفواتير</div>
+
+<div class="row g-3 mb-3">
+<div class="col-md-6">
+<label class="form-label">تصميم الفاتورة</label>
+<select class="form-select" id="f-invoice_template" onchange="markDirty()">
+<option value="classic">كلاسيكي</option>
+<option value="modern">حديث</option>
+<option value="minimal">مبسط</option>
+<option value="thermal">إيصال حراري</option>
+</select>
+</div>
+<div class="col-md-6">
+<label class="form-label">عدد النسخ الافتراضي</label>
+<select class="form-select" id="f-print_copies" onchange="markDirty()">
+<option value="1">نسخة واحدة</option>
+<option value="2">نسختين</option>
+<option value="3">3 نسخ</option>
+</select>
+</div>
+</div>
+
+<div class="form-section-title mt-4"><i class="bi bi-check2-square"></i> عناصر الفاتورة</div>
+
+<div class="setting-row">
+<div class="row align-items-center">
+<div class="col-md-8">
+<div class="setting-label">إظهار الشعار</div>
+<div class="setting-desc">طباعة شعار الشركة في رأس الفاتورة</div>
+</div>
+<div class="col-md-4 text-end">
+<div class="form-check form-switch d-inline-block">
+<input class="form-check-input" type="checkbox" id="f-print_logo" onchange="markDirty()">
+</div>
+</div>
+</div>
+</div>
+
+<div class="setting-row">
+<div class="row align-items-center">
+<div class="col-md-8">
+<div class="setting-label">إظهار الرقم الضريبي</div>
+<div class="setting-desc">طباعة الرقم الضريبي للشركة والعميل</div>
+</div>
+<div class="col-md-4 text-end">
+<div class="form-check form-switch d-inline-block">
+<input class="form-check-input" type="checkbox" id="f-print_tax_number" onchange="markDirty()">
+</div>
+</div>
+</div>
+</div>
+
+<div class="setting-row">
+<div class="row align-items-center">
+<div class="col-md-8">
+<div class="setting-label">إظهار QR Code</div>
+<div class="setting-desc">إضافة رمز QR للفاتورة (للفاتورة الإلكترونية)</div>
+</div>
+<div class="col-md-4 text-end">
+<div class="form-check form-switch d-inline-block">
+<input class="form-check-input" type="checkbox" id="f-print_qr" onchange="markDirty()">
+</div>
+</div>
+</div>
+</div>
+
+<div class="setting-row">
+<div class="row align-items-center">
+<div class="col-md-8">
+<div class="setting-label">إظهار الختم الرسمي</div>
+<div class="setting-desc">طباعة ختم الشركة على الفاتورة</div>
+</div>
+<div class="col-md-4 text-end">
+<div class="form-check form-switch d-inline-block">
+<input class="form-check-input" type="checkbox" id="f-print_stamp" onchange="markDirty()">
+</div>
+</div>
+</div>
+</div>
+
+<div class="setting-row">
+<div class="row align-items-center">
+<div class="col-md-8">
+<div class="setting-label">إظهار توقيع المدير</div>
+<div class="setting-desc">طباعة توقيع المدير أسفل الفاتورة</div>
+</div>
+<div class="col-md-4 text-end">
+<div class="form-check form-switch d-inline-block">
+<input class="form-check-input" type="checkbox" id="f-print_signature" onchange="markDirty()">
+</div>
+</div>
+</div>
+</div>
+
+<div class="setting-row">
+<div class="row align-items-center">
+<div class="col-md-8">
+<div class="setting-label">إظهار المبلغ بالحروف (التفقيط)</div>
+<div class="setting-desc">طباعة المبلغ كتابةً بالعربي أسفل الإجماليات</div>
+</div>
+<div class="col-md-4 text-end">
+<div class="form-check form-switch d-inline-block">
+<input class="form-check-input" type="checkbox" id="f-print_tafqeet" onchange="markDirty()">
+</div>
+</div>
+</div>
+</div>
+
+<div class="setting-row">
+<div class="row align-items-center">
+<div class="col-md-8">
+<div class="setting-label">إظهار الباركود</div>
+<div class="setting-desc">طباعة باركود رقم الفاتورة</div>
+</div>
+<div class="col-md-4 text-end">
+<div class="form-check form-switch d-inline-block">
+<input class="form-check-input" type="checkbox" id="f-print_barcode" onchange="markDirty()">
+</div>
+</div>
+</div>
+</div>
+
+<div class="form-section-title mt-4"><i class="bi bi-chat-quote"></i> نصوص مخصصة</div>
+
+<div class="row g-3">
+<div class="col-md-12">
+<label class="form-label">نص تذييل الفاتورة</label>
+<textarea class="form-control" id="f-invoice_footer" rows="2" oninput="markDirty()" placeholder="مثال: شكرًا لتعاملكم معنا - البضاعة المباعة لا تُرد ولا تُستبدل بعد 14 يوم"></textarea>
+</div>
+<div class="col-md-12">
+<label class="form-label">شروط البيع / الملاحظات</label>
+<textarea class="form-control" id="f-invoice_terms" rows="2" oninput="markDirty()" placeholder="الشروط والأحكام"></textarea>
+</div>
+</div>
+
+<div class="preview-box">
+<div class="preview-title"><i class="bi bi-eye"></i> معاينة سريعة للفاتورة</div>
+<div class="preview-content">
+<div style="text-align:center; border-bottom: 2px solid #1e3c72; padding-bottom: 10px; margin-bottom: 10px;">
+<div style="font-size: 1rem; font-weight: 800; color: #1e3c72;">اسم الشركة</div>
+<div style="font-size: 0.7rem; color: #64748b;">العنوان - التليفون - الرقم الضريبي</div>
+</div>
+<div style="background: #eff6ff; padding: 8px; border-radius: 4px; text-align: center; font-weight: 700; color: #1e3c72; margin-bottom: 10px;">
+فاتورة بيع رقم SINV-2026-000001
+</div>
+<div style="height: 40px; background: #f8fafc; border-radius: 4px; margin-bottom: 8px;"></div>
+<div style="height: 40px; background: #f8fafc; border-radius: 4px; margin-bottom: 8px;"></div>
+<div style="text-align: left; font-weight: 700; color: #1e3c72;">الإجمالي: 1,250.00 ج.م</div>
+</div>
+</div>
+
+</div>
+
+<div class="save-bar">
+<div class="info" id="save-info"><i class="bi bi-info-circle"></i> لا توجد تغييرات غير محفوظة</div>
+<button class="btn btn-primary" onclick="save()" id="btn-save"><i class="bi bi-check-circle-fill"></i> حفظ التغييرات</button>
+</div>
+</div>
+
+<div class="toast-msg" id="toast"><i class="bi bi-check-circle-fill"></i> <span id="toast-text">تم الحفظ</span></div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+var API = "http://localhost:5000/api/v1";
+var isDirty = false;
+
+async function load() {
+    try {
+        var r = await fetch(API + "/settings/print").then(function(x) { return x.json(); });
+        if (!r.success) return;
+        for (var k in r.data) {
+            var el = document.getElementById("f-" + k);
+            if (!el) continue;
+            if (el.type === "checkbox") el.checked = !!r.data[k];
+            else el.value = r.data[k] || "";
+        }
+        isDirty = false;
+        updateSaveBar();
+    } catch (e) { console.error(e); }
+}
+
+function markDirty() { isDirty = true; updateSaveBar(); }
+
+function updateSaveBar() {
+    var info = document.getElementById("save-info");
+    if (isDirty) {
+        info.innerHTML = "<i class=\"bi bi-exclamation-circle\"></i> هناك تغييرات غير محفوظة";
+        info.className = "info dirty";
+    } else {
+        info.innerHTML = "<i class=\"bi bi-info-circle\"></i> لا توجد تغييرات غير محفوظة";
+        info.className = "info";
+    }
+}
+
+async function save() {
+    var btn = document.getElementById("btn-save");
+    btn.disabled = true;
+    btn.innerHTML = "جاري الحفظ...";
+    var data = {};
+    document.querySelectorAll("[id^=\"f-\"]").forEach(function(el) {
+        var k = el.id.replace("f-", "");
+        data[k] = el.type === "checkbox" ? el.checked : el.value;
+    });
+    try {
+        var r = await fetch(API + "/settings/print", {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(data)
+        }).then(function(x) { return x.json(); });
+        if (r.success) {
+            showToast("تم حفظ إعدادات الطباعة");
+            isDirty = false;
+            updateSaveBar();
+        } else showToast(r.message || "خطأ", true);
+    } catch (e) { showToast("خطأ في الاتصال", true); }
+    finally { btn.disabled = false; btn.innerHTML = "حفظ التغييرات"; }
+}
+
+function showToast(msg, err) {
+    var t = document.getElementById("toast");
+    document.getElementById("toast-text").textContent = msg;
+    t.className = "toast-msg show" + (err ? " error" : "");
+    setTimeout(function() { t.className = "toast-msg"; }, 3000);
+}
+
+window.addEventListener("beforeunload", function(e) { if (isDirty) { e.preventDefault(); e.returnValue = ""; } });
+
+load();
+</script>
+</body>
+</html>

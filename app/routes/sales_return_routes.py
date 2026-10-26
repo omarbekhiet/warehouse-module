@@ -1,6 +1,6 @@
-﻿from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify
 from app.database import db
-from app.utils import json_safe, to_decimal, round_decimal
+from app.utils import json_safe, to_decimal, round_decimal, get_user_id, enrich_with_user
 from datetime import datetime
 
 sr_bp = Blueprint('sales_returns', __name__)
@@ -52,6 +52,7 @@ def list_returns():
             ORDER BY sr.id DESC LIMIT 200""",
         vals
     )
+    rows = enrich_with_user(rows)
     return jsonify({'success': True, 'data': json_safe(rows)})
 
 
@@ -90,12 +91,13 @@ def create_return():
         no = _next_no(conn)
         cur = conn.execute(
             """INSERT INTO sales_returns
-               (return_no, return_date, original_invoice_id, customer_id, warehouse_id,
-                tax_rate, status, reason, notes)
-               VALUES (?, ?, ?, ?, ?, ?, 'DRAFT', ?, ?)""",
+                (return_no, return_date, original_invoice_id, customer_id, warehouse_id,
+                tax_rate, status, reason, notes, created_by)
+               VALUES (?, ?, ?, ?, ?, ?, 'DRAFT', ?, ?, ?)""",
             (no, d.get('return_date', datetime.now().strftime('%Y-%m-%d')),
              d.get('original_invoice_id'), d['customer_id'], d['warehouse_id'],
-             d.get('tax_rate', 14), d.get('reason'), d.get('notes'))
+             d.get('tax_rate', 14), d.get('reason'), d.get('notes'),
+             get_user_id())
         )
         rid = cur.lastrowid
 
@@ -171,12 +173,10 @@ def post_return(rid):
                (transaction_no, transaction_type, transaction_date,
                 to_warehouse_id, reference_type, reference_no,
                 status, notes, created_by)
-               VALUES (?, 'RECEIPT', ?, ?, 'SALES_RETURN', ?, 'POSTED', ?, 1)""",
+               VALUES (?, 'RECEIPT', ?, ?, 'SALES_RETURN', ?, 'POSTED', ?, ?)""",
             (txn_no, r['return_date'], r['warehouse_id'], r['return_no'],
-             f"مرتجع بيع {r['return_no']}")
+             f"مرتجع بيع {r['return_no']}", get_user_id())
         )
-        txn_id = cur.lastrowid
-
         # Process lines + add stock back
         for i, line in enumerate(lines, start=1):
             base_qty = float(line['base_quantity'])
@@ -219,11 +219,10 @@ def post_return(rid):
         je_no = f"JE-{datetime.now().year}-{str(conn.execute('SELECT COUNT(*)+1 as n FROM journal_entries').fetchone()['n']).zfill(6)}"
         cur = conn.execute(
             """INSERT INTO journal_entries
-               (entry_no, entry_date, reference_type, reference_id, reference_no, description, status)
-               VALUES (?, ?, 'SALES_RETURN', ?, ?, ?, 'POSTED')""",
-            (je_no, r['return_date'], rid, r['return_no'], f"قيد مرتجع بيع {r['return_no']}")
+               (entry_no, entry_date, reference_type, reference_id, reference_no, description, status, created_by)
+               VALUES (?, ?, 'SALES_RETURN', ?, ?, ?, 'POSTED', ?)""",
+            (je_no, r['return_date'], rid, r['return_no'], f"قيد مرتجع بيع {r['return_no']}", get_user_id())
         )
-        je_id = cur.lastrowid
 
         line_no = 1
         td = 0

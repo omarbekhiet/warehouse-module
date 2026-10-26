@@ -1,0 +1,165 @@
+﻿<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>طباعة تحويل مخزني</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="print_common.css" rel="stylesheet">
+<script src="permissions.js"></script>
+</head>
+<body>
+
+<div id="toolbar"></div>
+<div id="content"></div>
+
+<script src="company_config.js"></script>
+<script src="print_common.js"></script>
+<script>
+async function load() {
+    const id = getIdFromUrl();
+    if (!id) return;
+
+    document.getElementById('content').innerHTML = renderLoading('جاري تحميل التحويل...');
+
+    try {
+        const r = await fetch(`${PRINT_API}/transfers/${id}`).then(x => x.json());
+        if (!r.success) {
+            document.getElementById('content').innerHTML = renderError(r.message || 'خطأ');
+            return;
+        }
+        render(r.data);
+    } catch (e) {
+        document.getElementById('content').innerHTML = renderError('خطأ في الاتصال');
+    }
+}
+
+function render(data) {
+    const txn = data.txn || data;
+    const lines = data.lines || [];
+
+    document.getElementById('toolbar').innerHTML = renderToolbar('معاينة طباعة - تحويل مخزني');
+
+    let totalQty = 0, totalValue = 0;
+    lines.forEach(l => {
+        totalQty += parseFloat(l.quantity || 0);
+        totalValue += parseFloat(l.total_cost || 0);
+    });
+
+    let linesHtml = '';
+    if (lines.length === 0) {
+        linesHtml = '<tr><td colspan="6" style="text-align:center; padding:20px; color:#94a3b8;">لا توجد بنود</td></tr>';
+    } else {
+        lines.forEach((l, idx) => {
+            linesHtml += `
+                <tr>
+                    <td>${idx + 1}</td>
+                    <td><strong>${l.item_code || '—'}</strong></td>
+                    <td class="text-right">${l.item_name || '—'}</td>
+                    <td>${fmtNum(l.quantity)}</td>
+                    <td>${fmtNum(l.unit_cost)}</td>
+                    <td><strong>${fmtNum(l.total_cost)}</strong></td>
+                </tr>`;
+        });
+    }
+
+    const statusClass = 'status-' + (txn.status || 'DRAFT');
+
+    document.getElementById('content').innerHTML = `
+    <div class="a4-page">
+        <div class="doc-header">
+            ${renderCompanyHeader()}
+            <div class="doc-title-box">
+                <div class="doc-title"><i class="bi bi-arrow-left-right"></i> تحويل مخزني</div>
+                <div class="doc-no-box">
+                    رقم التحويل: <strong>${txn.transaction_no || '—'}</strong>
+                </div>
+            </div>
+        </div>
+
+        <div class="info-grid">
+            <div class="info-box">
+                <div class="info-box-title"><i class="bi bi-box-arrow-right"></i> من مستودع</div>
+                <div class="info-box-body">
+                    <div class="info-row">
+                        <span class="label">المستودع:</span>
+                        <span class="value">${txn.from_warehouse_name || txn.from_wh || '—'}</span>
+                    </div>
+                </div>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title"><i class="bi bi-box-arrow-in-left"></i> إلى مستودع</div>
+                <div class="info-box-body">
+                    <div class="info-row">
+                        <span class="label">المستودع:</span>
+                        <span class="value">${txn.to_warehouse_name || txn.to_wh || '—'}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="info-grid">
+            <div class="info-box">
+                <div class="info-box-title"><i class="bi bi-info-circle"></i> بيانات التحويل</div>
+                <div class="info-box-body">
+                    <div class="info-row">
+                        <span class="label">التاريخ:</span>
+                        <span class="value">${txn.transaction_date || '—'}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="label">الحالة:</span>
+                        <span class="value"><span class="status-badge ${statusClass}">${statusAr(txn.status)}</span></span>
+                    </div>
+                </div>
+            </div>
+            <div class="info-box">
+                <div class="info-box-title"><i class="bi bi-clipboard"></i> إجماليات</div>
+                <div class="info-box-body">
+                    <div class="info-row">
+                        <span class="label">عدد البنود:</span>
+                        <span class="value">${lines.length}</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="label">إجمالي الكمية:</span>
+                        <span class="value">${fmtNum(totalQty)}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <table class="items-table">
+            <thead>
+                <tr>
+                    <th style="width:40px;">#</th>
+                    <th style="width:100px;">الكود</th>
+                    <th>الصنف</th>
+                    <th style="width:90px;">الكمية</th>
+                    <th style="width:100px;">سعر الوحدة</th>
+                    <th style="width:110px;">الإجمالي</th>
+                </tr>
+            </thead>
+            <tbody>${linesHtml}</tbody>
+        </table>
+
+        <div class="totals-wrap">
+            <div class="tafqeet-box">
+                <div class="label"><i class="bi bi-calculator"></i> الإجمالي:</div>
+                <div class="text">${fmtNum(totalValue)} ج.م</div>
+            </div>
+            <table class="totals-table">
+                <tr class="grand-total"><td>القيمة الإجمالية:</td><td>${fmtNum(totalValue)} ج.م</td></tr>
+            </table>
+        </div>
+
+        ${txn.notes ? `<div class="notes-box"><div class="label"><i class="bi bi-sticky"></i> ملاحظات:</div><div>${txn.notes}</div></div>` : ''}
+
+        ${renderSignatures('توقيع أمين المخزن المُسلِّم', 'توقيع أمين المخزن المُستلِم')}
+        ${renderPageFooter()}
+    </div>`;
+}
+
+loadCompanyInfo().then(() => load());
+</script>
+</body>
+</html>

@@ -1,5 +1,7 @@
-﻿from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify
 from app.database import db
+from app.services.valuation_service import valuation_service
+from app.services.settings_service import get_inventory, get_accounting, check_period, resolve_warehouse, get_cost_method
 from app.utils import json_safe, to_decimal, round_decimal
 from app.services.accounting_service import accounting_service
 
@@ -62,11 +64,110 @@ def get_issue(tid):
     return jsonify({'success': True, 'data': json_safe(txn)})
 
 
+
+
+# ==========================================
+# دوال التحقق من سياسات المخازن
+# ==========================================
+
+def _validate_issue_policies(warehouse_id, lines):
+    """
+    التحقق من سياسات المخازن قبل إنشاء إذن صرف
+    - allow_negative_stock: منع الصرف بأكثر من المخزون
+    """
+    inv_settings = get_inventory()
+
+    # فحص المخزون السالب
+    if not inv_settings.get('allow_negative_stock'):
+        for line in lines:
+            item_id = line.get('item_id')
+            qty = float(line.get('quantity', 0))
+
+            # جيب الوحدة الأساسية
+            factor, base_qty = _get_base_quantity_ro(item_id, line.get('uom_id'), qty)
+            if base_qty is None:
+                continue
+
+            # جيب الرصيد
+            row = db.query(
+                """SELECT COALESCE(SUM(quantity), 0) AS q
+                   FROM stock_balances
+                   WHERE warehouse_id=? AND item_id=?""",
+                (warehouse_id, item_id), one=True
+            )
+            available = float(row['q'] or 0)
+
+            if float(base_qty) > available:
+                item = db.query(
+                    "SELECT code, name_ar FROM items WHERE id=?",
+                    (item_id,), one=True
+                )
+                item_label = f"{item['code']} - {item['name_ar']}" if item else f"#{item_id}"
+                return {
+                    'ok': False,
+                    'message': f"المخزون غير كافي للصرف - الصنف: {item_label} | المطلوب: {base_qty} | المتاح: {available}",
+                    'code': 400
+                }
+
+    return {'ok': True}
+
+
+def _get_base_quantity_ro(item_id, uom_id, quantity):
+    """نسخة read-only للحصول على الكمية الأساسية"""
+    try:
+        if not uom_id:
+            return 1, float(quantity)
+
+        row = db.query(
+            "SELECT base_uom_id, medium_uom_id, medium_to_minor_factor, major_uom_id, major_to_medium_factor FROM items WHERE id=?",
+            (item_id,), one=True
+        )
+        if not row:
+            return 1, float(quantity)
+
+        base_uom_id = row['base_uom_id']
+        if int(uom_id) == int(base_uom_id):
+            return 1, float(quantity)
+
+        if row['medium_uom_id'] and int(uom_id) == int(row['medium_uom_id']):
+            factor = float(row['medium_to_minor_factor'] or 1)
+            return factor, float(quantity) * factor
+
+        if row['major_uom_id'] and int(uom_id) == int(row['major_uom_id']):
+            factor = float(row['major_to_medium_factor'] or 1) * float(row['medium_to_minor_factor'] or 1)
+            return factor, float(quantity) * factor
+
+        return 1, float(quantity)
+    except Exception:
+        return 1, float(quantity)
+
+
+
 @issue_bp.route('/', methods=['POST'])
 def create_issue():
     d = request.get_json() or {}
     if not d.get('warehouse_id') or not d.get('lines'):
         return jsonify({'success': False, 'message': 'بيانات ناقصة'}), 400
+
+    # فحص سياسات المخازن
+    v = _validate_issue_policies(d['warehouse_id'], d['lines'])
+    if not v['ok']:
+        return jsonify({'success': False, 'message': v['message']}), v.get('code', 400)
+
+    # فحص الفترة المالية
+    from datetime import datetime
+    _date = d.get('transaction_date', '2026-01-01')
+    _period_check = check_period(_date)
+    if not _period_check['ok']:
+        return jsonify({'success': False, 'message': _period_check['message']}), _period_check.get('code', 400)
+
+    # فحص multi_warehouse
+    _wh_input = d.get('warehouse_id') if 'd' in dir() else None
+    wh_result = resolve_warehouse(_wh_input)
+    if not wh_result['ok']:
+        return jsonify({'success': False, 'message': wh_result['message']}), wh_result.get('code', 400)
+    d['warehouse_id'] = wh_result['warehouse_id']
+
 
     with db.transaction() as conn:
         txn_no = _next_txn_no(conn, 'ISS', 'ISSUE')
@@ -167,19 +268,82 @@ def post_issue(tid):
         # Deduct from stock
         for line in lines:
             base_qty = float(line['base_quantity'] or line['quantity'])
-            conn.execute(
-                """UPDATE stock_balances
-                   SET quantity = quantity - ?,
-                       total_value = total_value - ?,
-                       average_cost = CASE WHEN quantity - ? > 0
-                         THEN (total_value - ?) / (quantity - ?) ELSE 0 END
-                   WHERE warehouse_id=? AND item_id=? AND batch_no=''""",
-                (base_qty, line['total_cost'],
-                 base_qty, line['total_cost'], base_qty,
-                 txn['from_warehouse_id'], line['item_id'])
-            )
+            # batch_tracking: اختيار batch
+            _batch_enabled = bool(get_inventory().get('batch_tracking', False))
+            _expiry_enabled = bool(get_inventory().get('expiry_tracking', False))
+            _wh_id = txn['from_warehouse_id']
 
-        je_id = accounting_service.create_journal_entry(conn, txn, lines)
+            if _batch_enabled and not line.get('batch_no'):
+                if _expiry_enabled:
+                    _order = "CASE WHEN expiry_date IS NULL OR expiry_date = '' THEN 1 ELSE 0 END, expiry_date ASC, id ASC"
+                else:
+                    _order = "id ASC"
+                _cur = conn.execute(f"""
+                    SELECT id, batch_no, quantity FROM stock_balances
+                    WHERE warehouse_id=? AND item_id=? AND quantity > 0
+                    ORDER BY {_order}
+                    LIMIT 1
+                """, (_wh_id, line['item_id']))
+                _b = _cur.fetchone()
+                if _b:
+                    line['batch_no'] = _b['batch_no']
+
+            if _batch_enabled and line.get('batch_no'):
+                conn.execute(
+                    """UPDATE stock_balances
+                       SET quantity = quantity - ?,
+                           total_value = total_value - ?
+                       WHERE warehouse_id=? AND item_id=? AND batch_no=?""",
+                    (base_qty, line['total_cost'], _wh_id, line['item_id'], line['batch_no'])
+                )
+                try:
+                    cost_method = get_cost_method(line['item_id'])
+                    if cost_method == 'FIFO':
+                        result = valuation_service.calculate(
+                            conn, _wh_id, line['item_id'], base_qty, 'FIFO'
+                        )
+                        valuation_service.consume_layers(conn, result.get('consumed_layers', []))
+                except Exception as e:
+                    print(f"WARN: consume_layers failed: {e}")
+            else:
+                conn.execute(
+                    """UPDATE stock_balances
+                       SET quantity = quantity - ?,
+                           total_value = total_value - ?,
+                           average_cost = CASE WHEN quantity - ? > 0
+                             THEN (total_value - ?) / (quantity - ?) ELSE 0 END
+                       WHERE warehouse_id=? AND item_id=? AND batch_no=''""",
+                    (base_qty, line['total_cost'],
+                     base_qty, line['total_cost'], base_qty,
+                     _wh_id, line['item_id'])
+                )
+                try:
+                    cost_method = get_cost_method(line['item_id'])
+                    if cost_method == 'FIFO':
+                        result = valuation_service.calculate(
+                            conn, _wh_id, line['item_id'], base_qty, 'FIFO'
+                        )
+                        valuation_service.consume_layers(conn, result.get('consumed_layers', []))
+                except Exception as e:
+                    print(f"WARN: consume_layers failed: {e}")
+
+            # خصم من cost_layers للـ FIFO
+            try:
+                cost_method = get_cost_method(line['item_id'])
+                if cost_method == 'FIFO':
+                    result = valuation_service.calculate(
+                        conn, txn['from_warehouse_id'], line['item_id'], base_qty, 'FIFO'
+                    )
+                    valuation_service.consume_layers(conn, result.get('consumed_layers', []))
+            except Exception as e:
+                print(f"WARN: consume_layers failed for item {line['item_id']}: {e}")
+
+        # فحص القيد التلقائي
+        acc_settings = get_accounting()
+        if acc_settings.get('auto_journal_issues', True):
+            je_id = accounting_service.create_journal_entry(conn, txn, lines)
+        else:
+            je_id = None
 
         conn.execute(
             "UPDATE stock_transactions SET status='POSTED', posted_at=CURRENT_TIMESTAMP, journal_entry_id=? WHERE id=?",

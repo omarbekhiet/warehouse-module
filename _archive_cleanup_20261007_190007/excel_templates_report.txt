@@ -1,0 +1,20 @@
+تقرير قوالب Excel
+============================================================
+
+قوالب التصدير:
+  ✅ نجح: 27
+  ❌ فشل: 0
+
+
+قوالب الاستيراد:
+  • accounts → accounts
+  • customers → customers
+  • suppliers → suppliers
+  • items → items
+  • warehouses → warehouses
+  • item_groups → item_groups
+  • uom → units_of_measure
+  • branches → branches
+  • expense_categories → expense_categories
+  • cash_boxes → cash_boxes
+  • banks → banks

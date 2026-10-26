@@ -1,6 +1,7 @@
-﻿from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify
 from app.database import db
 from app.utils import json_safe
+from app.services.settings_service import get_inventory
 
 notif_bp = Blueprint('notifications', __name__)
 
@@ -98,7 +99,7 @@ def summary():
             'value': float(si_draft['v'] or 0),
             'url': '/sales_invoices.html?status=DRAFT'
         },
-        {
+        *([{
             'type': 'LOW_STOCK',
             'severity': 'danger',
             'icon': 'exclamation-triangle',
@@ -107,7 +108,7 @@ def summary():
             'count': low_stock,
             'value': 0,
             'url': '/reports.html'
-        },
+        }] if get_inventory().get('low_stock_alerts', True) else []),
         {
             'type': 'GRNI',
             'severity': 'warning',

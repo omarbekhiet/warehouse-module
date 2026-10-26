@@ -1,14 +1,15 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head><meta charset="UTF-8"><title>التقارير</title>
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
 <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
-<link href="style.css" rel="stylesheet"></head>
+<link href="style.css" rel="stylesheet"><script src="permissions.js"></script>
+</head>
 <body><div class="container-fluid"><div class="row">
 <div class="col-md-2 sidebar p-0">
 <div class="brand"><i class="bi bi-box-seam" style="font-size:2rem;"></i><h5 class="mt-2 mb-0">موديول المخازن</h5></div>
 <nav class="mt-3">
-<a href="index.html"><i class="bi bi-speedometer2"></i> لوحة التحكم</a>
+<a href="index.html"><i class="bi bi-house-fill"></i> الرئيسية</a>
 <a href="notifications.html"><i class="bi bi-bell"></i> الإشعارات</a>
 <a href="accounts.html"><i class="bi bi-book"></i> الدليل المحاسبي</a>
 <a href="warehouses.html"><i class="bi bi-building"></i> المستودعات</a>
@@ -37,6 +38,17 @@
 </nav></div>
 <div class="col-md-10 p-4">
 <h2 class="mb-4"><i class="bi bi-file-earmark-bar-graph"></i> التقارير</h2>
+<div class="d-flex gap-2 mb-3">
+<button class="btn btn-sm btn-outline-success" onclick="exportToExcel('reports')" title="تصدير Excel">
+                <i class="bi bi-file-earmark-excel"></i> Excel
+            </button>
+            <a href="index.html" class="btn btn-outline-secondary">
+                <i class="bi bi-house-fill"></i> الرئيسية
+            </a>
+<button class="btn btn-success" onclick="printCurrentReport()">
+    <i class="bi bi-printer-fill"></i> طباعة A4
+</button>
+</div>
 
 <!-- Filters Bar -->
 <div class="card p-3 mb-3">
@@ -59,6 +71,7 @@
 <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-issues" onclick="currentTab='issues'; loadCurrent()"><i class="bi bi-arrow-up-circle text-danger"></i> حركات الصرف</button></li>
 <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-transfers" onclick="currentTab='transfers'; loadCurrent()"><i class="bi bi-arrow-left-right text-info"></i> التحويلات</button></li>
 <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-counts" onclick="currentTab='counts'; loadCurrent()"><i class="bi bi-clipboard-check text-warning"></i> الجرد</button></li>
+        <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-batches" onclick="currentTab='batches'; loadCurrent()"><i class="bi bi-calendar-check text-warning"></i> الدفعات</button></li>
 </ul>
 
 <div class="tab-content">
@@ -139,6 +152,35 @@
 </div>
 </div>
 </div>
+
+            <div class="tab-pane fade" id="tab-batches">
+                <div class="card p-3">
+                    <div class="d-flex justify-content-between mb-2">
+                        <h5><i class="bi bi-calendar-check"></i> تقارير الدفعات والصلاحية</h5>
+                        <a href="batches_report.html" class="btn btn-sm btn-outline-primary" target="_blank">
+                            <i class="bi bi-arrows-angle-expand"></i> عرض مفصّل
+                        </a>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="table table-hover table-sm">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>الدفعة</th>
+                                    <th>الصنف</th>
+                                    <th>المستودع</th>
+                                    <th class="text-end">الكمية</th>
+                                    <th class="text-end">القيمة</th>
+                                    <th>تاريخ الانتهاء</th>
+                                    <th>الأيام المتبقية</th>
+                                </tr>
+                            </thead>
+                            <tbody id="batches-body">
+                                <tr><td colspan="7" class="text-center text-muted py-3">جاري التحميل...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
 </div>
 
 </div></div></div>
@@ -187,12 +229,48 @@ function resetFilters(){
  loadCurrent();
 }
 
+
+
+async function loadBatches(){
+ const r = await fetch(`${API}/reports/batches`).then(x=>x.json());
+ const rows = r.data||[];
+ const tbody = document.getElementById('batches-body');
+ if (!tbody) return;
+
+ if (!rows.length) {
+  tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-3">لا توجد دفعات</td></tr>';
+  return;
+ }
+
+ tbody.innerHTML = rows.map(x=>{
+  const days = x.days_to_expiry;
+  let badge = '—';
+  if (days !== null && days !== undefined) {
+   if (days < 0) badge = `<span class="badge bg-danger">منتهية (${Math.abs(days)} يوم)</span>`;
+   else if (days <= 30) badge = `<span class="badge bg-danger">${days} يوم</span>`;
+   else if (days <= 90) badge = `<span class="badge bg-warning text-dark">${days} يوم</span>`;
+   else badge = `<span class="badge bg-success">${days} يوم</span>`;
+  }
+  return `<tr>
+   <td><code>${x.batch_no}</code></td>
+   <td><code>${x.item_code}</code> ${x.item_name}</td>
+   <td>${x.warehouse_name}</td>
+   <td class="text-end">${parseFloat(x.quantity).toFixed(2)}</td>
+   <td class="text-end">${parseFloat(x.total_value||0).toFixed(2)}</td>
+   <td>${x.expiry_date||'—'}</td>
+   <td>${badge}</td>
+  </tr>`;
+ }).join('');
+}
+
+
 function loadCurrent(){
  if (currentTab === 'stock') loadStock();
  else if (currentTab === 'receipts') loadReceipts();
  else if (currentTab === 'issues') loadIssues();
  else if (currentTab === 'transfers') loadTransfers();
  else if (currentTab === 'counts') loadCounts();
+ else if (currentTab === 'batches') loadBatches();
 }
 
 async function loadStock(){
@@ -282,4 +360,51 @@ async function loadCounts(){
 }
 
 (async()=>{ await loadLists(); loadCurrent(); })();
-</script></body></html>
+
+
+// ══════════════════════════════════════════
+// فتح شاشة الطباعة للتقرير الحالي
+// ══════════════════════════════════════════
+function printCurrentReport() {
+    // ربط اسم التاب بنوع التقرير في print_report.html
+    const typeMap = {
+        'stock': 'stock_balance',
+        'receipts': 'receipts',
+        'issues': 'issues',
+        'transfers': 'transfers',
+        'counts': 'stock_balance'  // الجرد → نستخدم stock_balance مؤقتًا
+    };
+
+    const type = typeMap[currentTab];
+    if (!type) {
+        alert('التقرير الحالي غير مدعوم للطباعة');
+        return;
+    }
+
+    // ناخد الفلاتر الحالية
+    let url = 'print_report.html?type=' + type;
+
+    const from = document.getElementById('f-from').value;
+    const to = document.getElementById('f-to').value;
+    const wh = document.getElementById('f-warehouse').value;
+    const it = document.getElementById('f-item').value;
+
+    if (from) url += '&date_from=' + from;
+    if (to) url += '&date_to=' + to;
+    if (wh) url += '&warehouse_id=' + wh;
+    if (it) url += '&item_id=' + it;
+
+    window.open(url, '_blank');
+}</script>
+<script>
+// دالة تصدير Excel
+function exportToExcel(templateKey) {
+    if (!templateKey) {
+        alert('مفيش قالب تصدير');
+        return;
+    }
+    window.location.href = '/api/v1/export/excel/export/' + templateKey;
+}
+</script>
+
+</body></html>

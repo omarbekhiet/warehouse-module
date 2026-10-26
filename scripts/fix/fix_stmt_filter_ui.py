@@ -1,0 +1,113 @@
+﻿# -*- coding: utf-8 -*-
+import re
+
+PATH = "app/static/trial_balance.html"
+raw = open(PATH, "rb").read()
+content = raw.decode("utf-8-sig")
+
+# البحث عن دالة loadTrialBalance
+js_pattern = re.compile(r'async function loadTrialBalance\(\)\s*\{.*?(?=window\.onload)', re.DOTALL)
+
+new_js = """
+async function loadTrialBalance() {
+    const f = document.getElementById('fromDate').value;
+    const t = document.getElementById('toDate').value;
+    const level = document.getElementById('f-level').value;
+    const stmtEl = document.getElementById('f-stmt');
+    const stmt = stmtEl ? stmtEl.value : 'all';
+    
+    const qs = new URLSearchParams();
+    if (f) qs.append('from_date', f);
+    if (t) qs.append('to_date', t);
+    if (level) qs.append('level', level);
+    // لا نرسل stmt إلى السيرفر، بل نفلتر في الواجهة (لأن السيرفر يرسل كل الحسابات)
+    // if (stmt && stmt !== 'all') qs.append('stmt', stmt);
+    
+    try {
+        const res = await fetch(`${API}/reports/trial-balance?${qs.toString()}`).then(r => r.json());
+        const tbody = document.getElementById('tbBody');
+        const tfoot = document.getElementById('tbFooter');
+        
+        if (!res.success || !res.data || res.data.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="9" class="text-center text-danger">لا توجد بيانات</td></tr>';
+            tfoot.style.display = 'none';
+            return;
+        }
+        
+        const getNumLevel = (lvl) => {
+            if (typeof lvl === 'number') return lvl;
+            if (typeof lvl === 'string') return parseInt(lvl.replace('L', '')) || 1;
+            return 1;
+        };
+        
+        // فلترة الحسابات حسب نوع القائمة المختار
+        let data = res.data;
+        if (stmt && stmt !== 'all') {
+            data = data.filter(r => r.financial_statement === stmt);
+        }
+        
+        const parentCodes = new Set();
+        data.forEach(row => {
+            if (row.parent_code) parentCodes.add(row.parent_code);
+        });
+        
+        // متغيرات لجمع الإجماليات
+        let sumOpD = 0, sumOpC = 0, sumPd = 0, sumPc = 0, sumClD = 0, sumClC = 0;
+        
+        tbody.innerHTML = data.map(r => {
+            const openingDebit = r.opening_balance > 0 ? r.opening_balance : 0;
+            const openingCredit = r.opening_balance < 0 ? -r.opening_balance : 0;
+            const closingDebit = r.closing_balance > 0 ? r.closing_balance : 0;
+            const closingCredit = r.closing_balance < 0 ? -r.closing_balance : 0;
+            
+            sumOpD += openingDebit;
+            sumOpC += openingCredit;
+            sumPd += (r.period_debit || 0);
+            sumPc += (r.period_credit || 0);
+            sumClD += closingDebit;
+            sumClC += closingCredit;
+            
+            const lvl = getNumLevel(r.level);
+            const indent = lvl > 1 ? '&nbsp;&nbsp;&nbsp;&nbsp;'.repeat(lvl - 1) + '↳ ' : '';
+            
+            const isParent = parentCodes.has(r.code);
+            const rowClass = isParent ? 'fw-bold' : '';
+            
+            const stmtLabel = r.financial_statement === 'BS' ? 'ميزانية' : (r.financial_statement === 'IS' ? 'دخل' : '—');
+            
+            return `
+                <tr class="${rowClass}">
+                    <td>${r.code}</td>
+                    <td class="text-end">${indent}${r.name}</td>
+                    <td><span class="badge bg-secondary">${stmtLabel}</span></td>
+                    <td>${openingDebit.toLocaleString('en-US', {minimumFractionDigits:2})}</td>
+                    <td>${openingCredit.toLocaleString('en-US', {minimumFractionDigits:2})}</td>
+                    <td>${(r.period_debit || 0).toLocaleString('en-US', {minimumFractionDigits:2})}</td>
+                    <td>${(r.period_credit || 0).toLocaleString('en-US', {minimumFractionDigits:2})}</td>
+                    <td>${closingDebit.toLocaleString('en-US', {minimumFractionDigits:2})}</td>
+                    <td>${closingCredit.toLocaleString('en-US', {minimumFractionDigits:2})}</td>
+                </tr>
+            `;
+        }).join('');
+        
+        // تحديث سطر الإجماليات
+        document.getElementById('ft_opD').textContent = sumOpD.toLocaleString('en-US', {minimumFractionDigits:2});
+        document.getElementById('ft_opC').textContent = sumOpC.toLocaleString('en-US', {minimumFractionDigits:2});
+        document.getElementById('ft_pD').textContent = sumPd.toLocaleString('en-US', {minimumFractionDigits:2});
+        document.getElementById('ft_pC').textContent = sumPc.toLocaleString('en-US', {minimumFractionDigits:2});
+        document.getElementById('ft_clD').textContent = sumClD.toLocaleString('en-US', {minimumFractionDigits:2});
+        document.getElementById('ft_clC').textContent = sumClC.toLocaleString('en-US', {minimumFractionDigits:2});
+        
+        tfoot.style.display = 'table-footer-group';
+        
+    } catch (e) {
+        alert('خطأ: ' + e.message);
+    }
+}
+"""
+content = js_pattern.sub(new_js, content)
+
+with open(PATH, "w", encoding="utf-8", newline="\n") as f:
+    f.write(content)
+
+print("✅ تم تعديل الواجهة: الفلترة حسب نوع القائمة (BS / IS) تتم في الواجهة، ولا تظهر حسابات خارج النوع المختار.")

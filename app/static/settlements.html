@@ -1,0 +1,260 @@
+﻿<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<title>تسويات الشيكات والبطاقات</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+body { font-family: 'Cairo','Segoe UI',Tahoma,sans-serif; background: #f5f6fa; padding: 20px; }
+.container-box { max-width: 1400px; margin: 0 auto; }
+h2 { color: #1e3c72; font-weight: 700; }
+.card-box { background: white; border-radius: 12px; padding: 20px; box-shadow: 0 1px 10px rgba(0,0,0,0.05); margin-bottom: 20px; }
+table { font-size: 0.85rem; }
+.badge-status { padding: 4px 10px; border-radius: 12px; font-size: 0.72rem; font-weight: 600; }
+.badge-PENDING { background: #fff3e0; color: #e65100; }
+.badge-CLEARED { background: #e8f5e9; color: #2e7d32; }
+.badge-BOUNCED { background: #ffebee; color: #c62828; }
+.badge-CANCELLED { background: #eceff1; color: #455a64; }
+.nav-tabs .nav-link { font-weight: 600; }
+</style>
+<script src="permissions.js"></script>
+</head>
+<body>
+<div class="container-box">
+    <div class="d-flex justify-content-between mb-4">
+        <h2><i class="bi bi-check2-circle"></i> تسويات الشيكات والبطاقات</h2>
+        <button class="btn btn-sm btn-outline-success" onclick="exportToExcel('settlements')" title="تصدير Excel">
+                <i class="bi bi-file-earmark-excel"></i> Excel
+            </button>
+            <a href="index.html" class="btn btn-outline-secondary"><i class="bi bi-house"></i> الرئيسية</a>
+    </div>
+
+    <div class="alert alert-info">
+        <i class="bi bi-info-circle"></i> <b>الشيكات:</b> تُسوّى عند التحصيل (تحويل من 1225 إلى 1212). |
+        <b>البطاقات:</b> عند وصول المبلغ من البنك مع تسجيل العمولة.
+    </div>
+
+    <ul class="nav nav-tabs mb-3" role="tablist">
+        <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-cheques" onclick="currentTab='cheques'; load()"><i class="bi bi-file-earmark-text"></i> الشيكات</button></li>
+        <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-cards" onclick="currentTab='cards'; load()"><i class="bi bi-credit-card"></i> البطاقات</button></li>
+    </ul>
+
+    <div class="tab-content">
+
+        <!-- Cheques -->
+        <div class="tab-pane fade show active" id="tab-cheques">
+            <div class="card-box">
+                <h5><i class="bi bi-file-earmark-text"></i> الشيكات المعلقة</h5>
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>رقم التسوية</th>
+                            <th>التاريخ</th>
+                            <th>النوع</th>
+                            <th>الجهة</th>
+                            <th>رقم الشيك</th>
+                            <th class="text-end">المبلغ</th>
+                            <th>الحالة</th>
+                            <th>إجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody id="cheques-body">
+                        <tr><td colspan="8" class="text-center">جاري التحميل...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="card-box">
+                <h5><i class="bi bi-check-all"></i> كل الشيكات</h5>
+                <table class="table table-sm">
+                    <thead class="table-light">
+                        <tr>
+                            <th>رقم التسوية</th>
+                            <th>التاريخ</th>
+                            <th>رقم الشيك</th>
+                            <th class="text-end">المبلغ</th>
+                            <th>الحالة</th>
+                            <th>تاريخ التحصيل</th>
+                        </tr>
+                    </thead>
+                    <tbody id="all-cheques-body">
+                        <tr><td colspan="6" class="text-center">جاري التحميل...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Cards -->
+        <div class="tab-pane fade" id="tab-cards">
+            <div class="card-box">
+                <h5><i class="bi bi-credit-card"></i> البطاقات المعلقة</h5>
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>رقم التسوية</th>
+                            <th>التاريخ</th>
+                            <th>الجهة</th>
+                            <th>النوع</th>
+                            <th class="text-end">المبلغ الإجمالي</th>
+                            <th class="text-end">العمولة</th>
+                            <th class="text-end">الصافي</th>
+                            <th>إجراءات</th>
+                        </tr>
+                    </thead>
+                    <tbody id="cards-body">
+                        <tr><td colspan="8" class="text-center">جاري التحميل...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+const API = '/api/v1';
+let currentTab = 'cheques';
+
+async function load() {
+    if (currentTab === 'cheques') {
+        await loadPendingCheques();
+        await loadAllCheques();
+    } else {
+        await loadPendingCards();
+    }
+}
+
+async function loadPendingCheques() {
+    try {
+        const r = await fetch(`${API}/settlements/cheques/pending/`).then(x => x.json());
+        const rows = r.data || [];
+        
+        document.getElementById('cheques-body').innerHTML = rows.length ? rows.map(c => `
+            <tr>
+                <td><code>${c.settlement_no}</code></td>
+                <td>${c.settlement_date}</td>
+                <td>${c.settlement_type === 'RECEIVED' ? 'محصّل' : 'صادر'}</td>
+                <td>${c.party_name || '-'}</td>
+                <td>${c.cheque_no || '-'}</td>
+                <td class="text-end"><strong>${parseFloat(c.amount).toFixed(2)}</strong></td>
+                <td><span class="badge-status badge-${c.status}">${c.status}</span></td>
+                <td>
+                    <button class="btn btn-sm btn-success" onclick="clearCheque(${c.id})" title="تحصيل">
+                        <i class="bi bi-check-circle"></i> تحصيل
+                    </button>
+                    <button class="btn btn-sm btn-danger" onclick="bounceCheque(${c.id})" title="ارتداد">
+                        <i class="bi bi-x-circle"></i>
+                    </button>
+                </td>
+            </tr>
+        `).join('') : '<tr><td colspan="8" class="text-center text-muted">لا توجد شيكات معلقة</td></tr>';
+    } catch(e) { console.error(e); }
+}
+
+async function loadAllCheques() {
+    try {
+        const r = await fetch(`${API}/settlements/cheques/`).then(x => x.json());
+        const rows = r.data || [];
+        
+        document.getElementById('all-cheques-body').innerHTML = rows.length ? rows.map(c => `
+            <tr>
+                <td><code>${c.settlement_no}</code></td>
+                <td>${c.settlement_date}</td>
+                <td>${c.cheque_no || '-'}</td>
+                <td class="text-end">${parseFloat(c.amount).toFixed(2)}</td>
+                <td><span class="badge-status badge-${c.status}">${c.status}</span></td>
+                <td>${c.cleared_date || '-'}</td>
+            </tr>
+        `).join('') : '<tr><td colspan="6" class="text-center text-muted">لا توجد بيانات</td></tr>';
+    } catch(e) { console.error(e); }
+}
+
+async function loadPendingCards() {
+    try {
+        const r = await fetch(`${API}/settlements/cards/pending/`).then(x => x.json());
+        const rows = r.data || [];
+        
+        document.getElementById('cards-body').innerHTML = rows.length ? rows.map(c => `
+            <tr>
+                <td><code>${c.settlement_no}</code></td>
+                <td>${c.settlement_date}</td>
+                <td>${c.party_name || '-'}</td>
+                <td>${c.card_type || '-'}</td>
+                <td class="text-end">${parseFloat(c.gross_amount).toFixed(2)}</td>
+                <td class="text-end text-warning">${parseFloat(c.commission_amount).toFixed(2)}</td>
+                <td class="text-end text-success"><strong>${parseFloat(c.net_amount).toFixed(2)}</strong></td>
+                <td>
+                    <button class="btn btn-sm btn-success" onclick="settleCard(${c.id})">
+                        <i class="bi bi-check-circle"></i> تسوية
+                    </button>
+                </td>
+            </tr>
+        `).join('') : '<tr><td colspan="8" class="text-center text-muted">لا توجد بطاقات معلقة</td></tr>';
+    } catch(e) { console.error(e); }
+}
+
+async function clearCheque(id) {
+    if (!confirm('تحصيل الشيك؟ سيحوّل المبلغ من 1225 إلى البنك.')) return;
+    
+    const cleared_date = prompt('تاريخ التحصيل:', new Date().toISOString().split('T')[0]);
+    if (!cleared_date) return;
+    
+    const r = await fetch(`${API}/settlements/cheques/${id}/clear`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ cleared_date })
+    }).then(x => x.json());
+    
+    if (r.success) {
+        alert('تم تحصيل الشيك');
+        load();
+    } else {
+        alert(r.message || 'خطأ');
+    }
+}
+
+async function bounceCheque(id) {
+    if (!confirm('تسجيل ارتداد الشيك؟ سيُعاد الذمة للعميل/المورد.')) return;
+    
+    const reason = prompt('سبب الارتداد:');
+    if (reason === null) return;
+    
+    const bounce_date = new Date().toISOString().split('T')[0];
+    
+    const r = await fetch(`${API}/settlements/cheques/${id}/bounce`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ bounce_date, reason })
+    }).then(x => x.json());
+    
+    if (r.success) {
+        alert('تم تسجيل الارتداد');
+        load();
+    } else {
+        alert(r.message || 'خطأ');
+    }
+}
+
+async function settleCard(id) {
+    alert('شاشة تسوية البطاقة ستُضاف قريباً — يمكن استخدام API مباشرة.');
+}
+
+(async () => { await load(); })();
+</script>
+
+<script>
+// دالة تصدير Excel
+function exportToExcel(templateKey) {
+    if (!templateKey) {
+        alert('مفيش قالب تصدير');
+        return;
+    }
+    window.location.href = '/api/v1/export/excel/export/' + templateKey;
+}
+</script>
+
+</body>
+</html>

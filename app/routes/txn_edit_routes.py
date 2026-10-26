@@ -1,4 +1,4 @@
-﻿from flask import Blueprint, request, jsonify
+from flask import Blueprint, request, jsonify
 from app.database import db
 from app.utils import json_safe, to_decimal, round_decimal
 from app.services.accounting_service import accounting_service
