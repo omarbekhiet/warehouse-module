@@ -10,7 +10,10 @@
     <style>
         body { background: #f1f5f9; padding: 15px; font-size: 13px; font-family: 'Cairo','Segoe UI',Tahoma,sans-serif; }
         .report-card { max-width: 1200px; margin: 0 auto; background: white; border-radius: 10px; padding: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        .table th { background: #e2e8f0; font-weight: 700; }
+        .table th { background: #e2e8f0; font-weight: 700; text-align: center; vertical-align: middle; }
+        .table td { vertical-align: middle; }
+        .num { font-family: monospace; font-weight: bold; direction: ltr; text-align: center; }
+        .total-row { background-color: #dbeafe !important; font-weight: 900; color: #1e3c72; }
     </style>
 </head>
 <body>
@@ -18,7 +21,10 @@
     <div class="report-card">
         <div class="d-flex justify-content-between align-items-center mb-3">
             <h4><i class="bi bi-list-columns-reverse"></i> ميزان المراجعة</h4>
-            <a href="index.html" class="btn btn-sm btn-outline-secondary"><i class="bi bi-house"></i> الرئيسية</a>
+            <div>
+                <button class="btn btn-sm btn-outline-primary me-2" onclick="window.print()"><i class="bi bi-printer"></i> طباعة</button>
+                <a href="index.html" class="btn btn-sm btn-outline-secondary"><i class="bi bi-house"></i> الرئيسية</a>
+            </div>
         </div>
         
         <!-- Filters -->
@@ -35,8 +41,8 @@
                 <label class="form-label">مستوى العرض</label>
                 <select id="f-level" class="form-select form-select-sm" onchange="loadTrialBalance()">
                     <option value="1">المستوى الأول</option>
-                    <option value="2" selected>المستوى الثاني</option>
-                    <option value="3">المستوى الثالث</option>
+                    <option value="2">المستوى الثاني</option>
+                    <option value="3" selected>المستوى الثالث</option>
                     <option value="99">كل المستويات</option>
                 </select>
             </div>
@@ -48,7 +54,6 @@
                     <option value="IS">قائمة الدخل</option>
                 </select>
             </div>
-            <!-- إضافة زر إخفاء الأصفار هنا -->
             <div class="col-md-2 d-flex align-items-end">
                 <div class="form-check form-switch mb-2" style="padding-right: 25px;">
                     <input class="form-check-input" type="checkbox" id="f-hide-zero" checked onchange="loadTrialBalance()" style="cursor: pointer;">
@@ -81,17 +86,17 @@
                     </tr>
                 </thead>
                 <tbody id="tbBody">
-                    <tr><td colspan="8" class="text-center text-muted">جاري التحميل...</td></tr>
+                    <tr><td colspan="9" class="text-center text-muted">جاري التحميل...</td></tr>
                 </tbody>
-                <tfoot id="tbFooter" style="display:none; background:#e2e8f0; font-weight:bold;">
+                <tfoot id="tbFooter" style="display:none;" class="total-row">
                     <tr>
                         <td colspan="3" class="text-end">الإجمالي العام:</td>
-                        <td id="ft_opD" class="text-success">0.00</td>
-                        <td id="ft_opC" class="text-danger">0.00</td>
-                        <td id="ft_pD" class="text-success">0.00</td>
-                        <td id="ft_pC" class="text-danger">0.00</td>
-                        <td id="ft_clD" class="text-success">0.00</td>
-                        <td id="ft_clC" class="text-danger">0.00</td>
+                        <td id="ft_opD">0.00</td>
+                        <td id="ft_opC">0.00</td>
+                        <td id="ft_pD">0.00</td>
+                        <td id="ft_pC">0.00</td>
+                        <td id="ft_clD">0.00</td>
+                        <td id="ft_clC">0.00</td>
                     </tr>
                 </tfoot>
             </table>
@@ -129,10 +134,9 @@ async function loadTrialBalance() {
             return 1;
         };
         
-        // 1. فلترة البيانات (تراكمية)
+        // 1. فلترة البيانات (نوع القائمة + المستوى)
         let data = res.data;
         
-        // فلترة نوع القائمة
         if (stmt !== 'all') {
             if (stmt === 'BS') {
                 data = data.filter(r => r.financial_statement === 'BS' || r.financial_statement === 'EQ');
@@ -141,7 +145,6 @@ async function loadTrialBalance() {
             }
         }
         
-        // فلترة المستوى (تراكمية)
         if (level !== '99') {
             const target = parseInt(level);
             data = data.filter(r => getNumLevel(r.level) <= target);
@@ -154,7 +157,6 @@ async function loadTrialBalance() {
                 const periodD = Math.abs(r.period_debit || 0) > 0.01;
                 const periodC = Math.abs(r.period_credit || 0) > 0.01;
                 const closing = Math.abs(r.closing_balance || 0) > 0.01;
-                // الاحتفاظ بالحساب الأب إذا كان أحد أبنائه له حركة
                 const hasActiveChildren = data.some(child => child.parent_code === r.code && 
                     (Math.abs(child.opening_balance || 0) > 0.01 || Math.abs(child.period_debit || 0) > 0.01 || Math.abs(child.period_credit || 0) > 0.01 || Math.abs(child.closing_balance || 0) > 0.01)
                 );
@@ -162,15 +164,17 @@ async function loadTrialBalance() {
             });
         }
         
-        // 2. جمع الإجماليات من الحسابات الورقية فقط (التي ليس لها أبناء)
+        // 2. حساب الإجماليات من الحسابات الورقية (اللي ليس لها أبناء) بناءً على البيانات المفلترة
         const parentCodes = new Set();
-        res.data.forEach(row => {
+        data.forEach(row => {
             if (row.parent_code) parentCodes.add(row.parent_code);
         });
         
         let sumOpD = 0, sumOpC = 0, sumPd = 0, sumPc = 0, sumClD = 0, sumClC = 0;
-        res.data.forEach(r => {
-            if (parentCodes.has(r.code)) return; // تخطي الآباء
+        
+        data.forEach(r => {
+            // تخطي الحسابات الأب لتجنب التكرار (Double Counting)
+            if (parentCodes.has(r.code)) return; 
             
             const openingDebit = r.opening_balance > 0 ? r.opening_balance : 0;
             const openingCredit = r.opening_balance < 0 ? -r.opening_balance : 0;
@@ -185,7 +189,7 @@ async function loadTrialBalance() {
             sumClC += closingCredit;
         });
         
-        // 3. عرض الحسابات المفلترة
+        // 3. عرض الحسابات المفلترة في الجدول
         const parentCodesDisplay = new Set();
         data.forEach(row => {
             if (row.parent_code) parentCodesDisplay.add(row.parent_code);
@@ -210,17 +214,17 @@ async function loadTrialBalance() {
                     <td>${r.code}</td>
                     <td class="text-end">${indent}${r.name}</td>
                     <td><span class="badge bg-secondary">${stmtLabel}</span></td>
-                    <td>${openingDebit.toLocaleString('en-US', {minimumFractionDigits:2})}</td>
-                    <td>${openingCredit.toLocaleString('en-US', {minimumFractionDigits:2})}</td>
-                    <td>${(r.period_debit || 0).toLocaleString('en-US', {minimumFractionDigits:2})}</td>
-                    <td>${(r.period_credit || 0).toLocaleString('en-US', {minimumFractionDigits:2})}</td>
-                    <td>${closingDebit.toLocaleString('en-US', {minimumFractionDigits:2})}</td>
-                    <td>${closingCredit.toLocaleString('en-US', {minimumFractionDigits:2})}</td>
+                    <td class="num">${openingDebit.toLocaleString('en-US', {minimumFractionDigits:2})}</td>
+                    <td class="num">${openingCredit.toLocaleString('en-US', {minimumFractionDigits:2})}</td>
+                    <td class="num text-danger">${(r.period_debit || 0).toLocaleString('en-US', {minimumFractionDigits:2})}</td>
+                    <td class="num text-success">${(r.period_credit || 0).toLocaleString('en-US', {minimumFractionDigits:2})}</td>
+                    <td class="num">${closingDebit.toLocaleString('en-US', {minimumFractionDigits:2})}</td>
+                    <td class="num">${closingCredit.toLocaleString('en-US', {minimumFractionDigits:2})}</td>
                 </tr>
             `;
         }).join('');
         
-        // 4. تحديث سطر الإجماليات
+        // 4. تحديث سطر الإجماليات (اللي بيتحسب بناءً على الفلتر)
         document.getElementById('ft_opD').textContent = sumOpD.toLocaleString('en-US', {minimumFractionDigits:2});
         document.getElementById('ft_opC').textContent = sumOpC.toLocaleString('en-US', {minimumFractionDigits:2});
         document.getElementById('ft_pD').textContent = sumPd.toLocaleString('en-US', {minimumFractionDigits:2});
