@@ -432,49 +432,6 @@ body {
     .detail-panel { padding: 14px; }
 }
 
-/* ============ AI Chat ============ */
-.chat-message {
-    margin-bottom: 15px;
-    display: flex;
-    gap: 10px;
-    animation: fadeIn 0.3s ease-out;
-}
-@keyframes fadeIn {
-    from { opacity: 0; transform: translateY(10px); }
-    to { opacity: 1; transform: translateY(0); }
-}
-.chat-message.user { flex-direction: row-reverse; }
-.chat-message .avatar {
-    width: 36px; height: 36px; border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 1rem; flex-shrink: 0;
-}
-.chat-message.user .avatar { background: #6366f1; color: white; }
-.chat-message.ai .avatar { background: #10b981; color: white; }
-.chat-message .bubble {
-    max-width: 75%; padding: 10px 15px; border-radius: 15px;
-    font-size: 0.9rem; line-height: 1.5; word-wrap: break-word;
-}
-.chat-message.user .bubble {
-    background: #6366f1; color: white; border-bottom-right-radius: 5px;
-}
-.chat-message.ai .bubble {
-    background: white; color: #1e293b; border: 1px solid #e2e8f0;
-    border-bottom-left-radius: 5px;
-}
-.chat-loading {
-    display: inline-block; width: 8px; height: 8px;
-    border-radius: 50%; background: #6366f1;
-    animation: pulse 1.4s ease-in-out infinite;
-    margin: 0 2px;
-}
-.chat-loading:nth-child(2) { animation-delay: 0.2s; }
-.chat-loading:nth-child(3) { animation-delay: 0.4s; }
-@keyframes pulse {
-    0%, 100% { opacity: 0.3; transform: scale(0.8); }
-    50% { opacity: 1; transform: scale(1.2); }
-}
-
 /* ============ Compact Arabic Typography ============ */
 body {
     line-height: 1.35;
@@ -523,10 +480,6 @@ p,
 .feature-desc,
 .app-sub {
     font-weight: 500;
-}
-
-.chat-message .bubble {
-    line-height: 1.35;
 }
 
 /* ============ Tighter Detail Screen Spacing ============ */
@@ -589,10 +542,6 @@ p,
                 <i class="bi bi-bell"></i> الإشعارات
                 <span id="notif-count" class="badge bg-danger" style="font-size:0.65rem;padding:1px 6px;">0</span>
             </a>
-
-            <!-- زر AI معطل مؤقتاً -->
-            <!-- <button class="btn-mini" onclick="openChat()" style="background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white; border: none;">...</button> -->
-
             <a href="#" class="btn-mini primary" id="user-btn" onclick="logout(event)" title="تسجيل الخروج">
                 <i class="bi bi-person-circle"></i> <span id="user-btn-name">admin</span>
             </a>
@@ -645,6 +594,15 @@ p,
                     <div>
                         <div class="app-name">المحاسبة</div>
                         <div class="app-sub" id="cnt-accounting">-</div>
+                    </div>
+                </div>
+
+                <!-- ========== HR CARD ========== -->
+                <div class="app-card" data-app="hr" style="--app-color: #3b82f6; --app-bg: #eff6ff; --app-shadow: rgba(59,130,246,0.15);">
+                    <div class="app-icon"><i class="bi bi-people-fill"></i></div>
+                    <div>
+                        <div class="app-name">الموارد البشرية</div>
+                        <div class="app-sub" id="cnt-hr">-</div>
                     </div>
                 </div>
 
@@ -727,7 +685,7 @@ p,
                             <i class="bi bi-star-fill"></i>
                         </div>
                         <span class="section-head-text">الشاشات الرئيسية</span>
-                        <span class="section-head-count">6</span>
+                        <span class="section-head-count">9</span>
                     </div>
                     <div class="feature-grid">
                         <a href="warehouses.html" class="feature-card" style="--feature-color: #6366f1; --feature-bg: #eef2ff;">
@@ -813,85 +771,53 @@ p,
                     </div>
                 </div>
 
-                <div class="section-block" style="--section-color: #8b5cf6;">
+                <!-- شاشات ذات صلة -->
+                <div class="section-block" style="--section-color: #64748b;">
                     <div class="section-head">
-                        <div class="section-head-icon" style="background: #f5f3ff; color: #8b5cf6;">
-                            <i class="bi bi-book"></i>
+                        <div class="section-head-icon" style="background: #f1f5f9; color: #64748b;">
+                            <i class="bi bi-link-45deg"></i>
                         </div>
-                        <span class="section-head-text">المحاسبة الأساسية</span>
-                        <span class="section-head-count">2</span>
+                        <span class="section-head-text">شاشات ذات صلة</span>
+                        <span class="section-head-count">5</span>
                     </div>
                     <div class="feature-grid">
-                        <a href="accounts.html" class="feature-card" style="--feature-color: #8b5cf6; --feature-bg: #f5f3ff;">
-                            <div class="feature-icon"><i class="bi bi-book"></i></div>
-                            <div class="feature-content">
-                                <div class="feature-name">الدليل المحاسبي</div>
-                                <div class="feature-desc">شجرة الحسابات</div>
-                            </div>
-                            <i class="bi bi-arrow-left feature-arrow"></i>
-                        </a>
-                        <a href="reports.html" class="feature-card" style="--feature-color: #ef4444; --feature-bg: #fef2f2;">
-                            <div class="feature-icon"><i class="bi bi-file-earmark-bar-graph"></i></div>
+                        <a href="reports.html" class="feature-card" style="--feature-color: #64748b; --feature-bg: #f1f5f9;">
+                            <div class="feature-icon"><i class="bi bi-link-45deg"></i></div>
                             <div class="feature-content">
                                 <div class="feature-name">تقارير المخازن</div>
-                                <div class="feature-desc">الرصيد الفعلي</div>
+                                <div class="feature-desc">في قسم التقارير</div>
                             </div>
                             <i class="bi bi-arrow-left feature-arrow"></i>
                         </a>
-
-                        <a href="item_movement.html" class="feature-card" style="--feature-color: #8b5cf6; --feature-bg: #f5f3ff;">
-                            <div class="feature-icon"><i class="bi bi-arrow-left-right"></i></div>
-                            <div class="feature-content">
-                                <div class="feature-name">حركة الأصناف</div>
-                                <div class="feature-desc">تتبع حركات الأصناف</div>
-                            </div>
-                            <i class="bi bi-arrow-left feature-arrow"></i>
-                        </a>
-                        <a href="batches_report.html" class="feature-card" style="--feature-color: #a18cd1; --feature-bg: #f5f3ff;">
-                            <div class="feature-icon"><i class="bi bi-calendar-check"></i></div>
-                            <div class="feature-content">
-                                <div class="feature-name">تقارير الدفعات</div>
-                                <div class="feature-desc">تواريخ الصلاحية</div>
-                            </div>
-                            <i class="bi bi-arrow-left feature-arrow"></i>
-                        </a>
-                        <a href="supplier_rating.html" class="feature-card" style="--feature-color: #f59e0b; --feature-bg: #fffbeb;">
-                            <div class="feature-icon"><i class="bi bi-star-fill"></i></div>
-                            <div class="feature-content">
-                                <div class="feature-name">تقييم الموردين</div>
-                                <div class="feature-desc">ترتيب ونقاط الموردين</div>
-                            </div>
-                            <i class="bi bi-arrow-left feature-arrow"></i>
-                        </a>
-                        <a href="print_center.html" class="feature-card" style="--feature-color: #06b6d4; --feature-bg: #ecfeff;">
-                            <div class="feature-icon"><i class="bi bi-printer-fill"></i></div>
-                            <div class="feature-content">
-                                <div class="feature-name">مركز الطباعة</div>
-                                <div class="feature-desc">كل قوالب الطباعة</div>
-                            </div>
-                            <i class="bi bi-arrow-left feature-arrow"></i>
-                        </a>
-                        <a href="inventory_by_warehouse.html" class="feature-card" style="--feature-color: #06b6d4; --feature-bg: #ecfeff;">
-                            <div class="feature-icon"><i class="bi bi-building-gear"></i></div>
+                        <a href="inventory_by_warehouse.html" class="feature-card" style="--feature-color: #64748b; --feature-bg: #f1f5f9;">
+                            <div class="feature-icon"><i class="bi bi-link-45deg"></i></div>
                             <div class="feature-content">
                                 <div class="feature-name">المخزون حسب المستودع</div>
-                                <div class="feature-desc">تصنيف المخزون</div>
+                                <div class="feature-desc">في قسم التقارير</div>
                             </div>
                             <i class="bi bi-arrow-left feature-arrow"></i>
                         </a>
-                        <a href="price_comparison.html" class="feature-card" style="--feature-color: #0ea5e9; --feature-bg: #f0f9ff;">
-                            <div class="feature-icon"><i class="bi bi-bar-chart-line-fill"></i></div>
+                        <a href="accounts.html" class="feature-card" style="--feature-color: #64748b; --feature-bg: #f1f5f9;">
+                            <div class="feature-icon"><i class="bi bi-link-45deg"></i></div>
                             <div class="feature-content">
-                                <div class="feature-name">مقارنة أسعار الموردين</div>
-                                <div class="feature-desc">أفضل الأسعار</div>
+                                <div class="feature-name">الدليل المحاسبي</div>
+                                <div class="feature-desc">في قسم المحاسبة</div>
                             </div>
                             <i class="bi bi-arrow-left feature-arrow"></i>
                         </a>
-                        <a href="settings.html" class="feature-card" style="--feature-color: #6366f1; --feature-bg: #eef2ff;">
-                            <div class="feature-icon"><i class="bi bi-gear-fill"></i></div>
+                        <a href="print_center.html" class="feature-card" style="--feature-color: #64748b; --feature-bg: #f1f5f9;">
+                            <div class="feature-icon"><i class="bi bi-link-45deg"></i></div>
+                            <div class="feature-content">
+                                <div class="feature-name">مركز الطباعة</div>
+                                <div class="feature-desc">في قسم الإعدادات</div>
+                            </div>
+                            <i class="bi bi-arrow-left feature-arrow"></i>
+                        </a>
+                        <a href="settings.html" class="feature-card" style="--feature-color: #64748b; --feature-bg: #f1f5f9;">
+                            <div class="feature-icon"><i class="bi bi-link-45deg"></i></div>
                             <div class="feature-content">
                                 <div class="feature-name">إعدادات النظام</div>
-                                <div class="feature-desc">الشركة، السياسات، المستخدمين</div>
+                                <div class="feature-desc">في قسم الإعدادات</div>
                             </div>
                             <i class="bi bi-arrow-left feature-arrow"></i>
                         </a>
@@ -944,7 +870,7 @@ p,
                             <i class="bi bi-list-check"></i>
                         </div>
                         <span class="section-head-text">الدورة الكاملة</span>
-                        <span class="section-head-count">5</span>
+                        <span class="section-head-count">7</span>
                     </div>
                     <div class="feature-grid">
                         <a href="requisitions.html" class="feature-card" style="--feature-color: #6366f1; --feature-bg: #eef2ff;">
@@ -1003,11 +929,24 @@ p,
                             </div>
                             <i class="bi bi-arrow-left feature-arrow"></i>
                         </a>
-                        <a href="receipts.html" class="feature-card" style="--feature-color: #06b6d4; --feature-bg: #ecfeff;">
-                            <div class="feature-icon"><i class="bi bi-arrow-down-circle"></i></div>
+                    </div>
+                </div>
+
+                <!-- شاشات ذات صلة -->
+                <div class="section-block" style="--section-color: #64748b;">
+                    <div class="section-head">
+                        <div class="section-head-icon" style="background: #f1f5f9; color: #64748b;">
+                            <i class="bi bi-link-45deg"></i>
+                        </div>
+                        <span class="section-head-text">شاشات ذات صلة</span>
+                        <span class="section-head-count">1</span>
+                    </div>
+                    <div class="feature-grid">
+                        <a href="receipts.html" class="feature-card" style="--feature-color: #64748b; --feature-bg: #f1f5f9;">
+                            <div class="feature-icon"><i class="bi bi-link-45deg"></i></div>
                             <div class="feature-content">
-                                <div class="feature-name">الاستلام</div>
-                                <div class="feature-desc">GRN</div>
+                                <div class="feature-name">الاستلام (GRN)</div>
+                                <div class="feature-desc">في قسم المخازن</div>
                             </div>
                             <i class="bi bi-arrow-left feature-arrow"></i>
                         </a>
@@ -1056,7 +995,7 @@ p,
                             <i class="bi bi-list-check"></i>
                         </div>
                         <span class="section-head-text">الدورة الكاملة</span>
-                        <span class="section-head-count">12</span>
+                        <span class="section-head-count">3</span>
                     </div>
                     <div class="feature-grid">
                         <a href="sales_invoices.html" class="feature-card" style="--feature-color: #10b981; --feature-bg: #ecfdf5;">
@@ -1083,11 +1022,24 @@ p,
                             </div>
                             <i class="bi bi-arrow-left feature-arrow"></i>
                         </a>
-                        <a href="issues.html" class="feature-card" style="--feature-color: #f59e0b; --feature-bg: #fffbeb;">
-                            <div class="feature-icon"><i class="bi bi-arrow-up-circle"></i></div>
+                    </div>
+                </div>
+
+                <!-- شاشات ذات صلة -->
+                <div class="section-block" style="--section-color: #64748b;">
+                    <div class="section-head">
+                        <div class="section-head-icon" style="background: #f1f5f9; color: #64748b;">
+                            <i class="bi bi-link-45deg"></i>
+                        </div>
+                        <span class="section-head-text">شاشات ذات صلة</span>
+                        <span class="section-head-count">1</span>
+                    </div>
+                    <div class="feature-grid">
+                        <a href="issues.html" class="feature-card" style="--feature-color: #64748b; --feature-bg: #f1f5f9;">
+                            <div class="feature-icon"><i class="bi bi-link-45deg"></i></div>
                             <div class="feature-content">
-                                <div class="feature-name">الصرف</div>
-                                <div class="feature-desc">Delivery</div>
+                                <div class="feature-name">الصرف (Delivery)</div>
+                                <div class="feature-desc">في قسم المخازن</div>
                             </div>
                             <i class="bi bi-arrow-left feature-arrow"></i>
                         </a>
@@ -1140,7 +1092,7 @@ p,
                             <i class="bi bi-list-check"></i>
                         </div>
                         <span class="section-head-text">الحركات</span>
-                        <span class="section-head-count">5</span>
+                        <span class="section-head-count">7</span>
                     </div>
                     <div class="feature-grid">
                         <a href="material_requests.html" class="feature-card" style="--feature-color: #6366f1; --feature-bg: #eef2ff;">
@@ -1183,7 +1135,6 @@ p,
                             </div>
                             <i class="bi bi-arrow-left feature-arrow"></i>
                         </a>
-
                         <a href="stock_adjustments.html" class="feature-card" style="--feature-color: #6366f1; --feature-bg: #eef2ff;">
                             <div class="feature-icon"><i class="bi bi-sliders"></i></div>
                             <div class="feature-content">
@@ -1192,7 +1143,6 @@ p,
                             </div>
                             <i class="bi bi-arrow-left feature-arrow"></i>
                         </a>
-
                         <a href="adjustments_report.html" class="feature-card" style="--feature-color: #a18cd1; --feature-bg: #f5f3ff;">
                             <div class="feature-icon"><i class="bi bi-bar-chart-fill"></i></div>
                             <div class="feature-content">
@@ -1201,12 +1151,24 @@ p,
                             </div>
                             <i class="bi bi-arrow-left feature-arrow"></i>
                         </a>
+                    </div>
+                </div>
 
-                        <a href="inventory_by_warehouse.html" class="feature-card" style="--feature-color: #8b5cf6; --feature-bg: #f5f3ff;">
-                            <div class="feature-icon"><i class="bi bi-building-gear"></i></div>
+                <!-- شاشات ذات صلة -->
+                <div class="section-block" style="--section-color: #64748b;">
+                    <div class="section-head">
+                        <div class="section-head-icon" style="background: #f1f5f9; color: #64748b;">
+                            <i class="bi bi-link-45deg"></i>
+                        </div>
+                        <span class="section-head-text">شاشات ذات صلة</span>
+                        <span class="section-head-count">1</span>
+                    </div>
+                    <div class="feature-grid">
+                        <a href="inventory_by_warehouse.html" class="feature-card" style="--feature-color: #64748b; --feature-bg: #f1f5f9;">
+                            <div class="feature-icon"><i class="bi bi-link-45deg"></i></div>
                             <div class="feature-content">
                                 <div class="feature-name">المخزون حسب المستودع</div>
-                                <div class="feature-desc">Stock per WH</div>
+                                <div class="feature-desc">في قسم التقارير</div>
                             </div>
                             <i class="bi bi-arrow-left feature-arrow"></i>
                         </a>
@@ -1255,7 +1217,7 @@ p,
                             <i class="bi bi-list-check"></i>
                         </div>
                         <span class="section-head-text">الشاشات</span>
-                        <span class="section-head-count">12</span>
+                        <span class="section-head-count">11</span>
                     </div>
                     <div class="feature-grid">
                         <a href="accounts.html" class="feature-card" style="--feature-color: #8b5cf6; --feature-bg: #f5f3ff;">
@@ -1282,15 +1244,6 @@ p,
                             </div>
                             <i class="bi bi-arrow-left feature-arrow"></i>
                         </a>
-                        <a href="financial_reports.html" class="feature-card" style="--feature-color: #10b981; --feature-bg: #ecfdf5;">
-                            <div class="feature-icon"><i class="bi bi-graph-up"></i></div>
-                            <div class="feature-content">
-                                <div class="feature-name">التقارير المالية</div>
-                                <div class="feature-desc">Financial</div>
-                            </div>
-                            <i class="bi bi-arrow-left feature-arrow"></i>
-                        </a>
-
                         <a href="cash_boxes.html" class="feature-card" style="--feature-color: #f59e0b; --feature-bg: #fffbeb;">
                             <div class="feature-icon"><i class="bi bi-safe2-fill"></i></div>
                             <div class="feature-content">
@@ -1299,7 +1252,6 @@ p,
                             </div>
                             <i class="bi bi-arrow-left feature-arrow"></i>
                         </a>
-
                         <a href="cash_box_transactions.html" class="feature-card" style="--feature-color: #6366f1; --feature-bg: #eef2ff;">
                             <div class="feature-icon"><i class="bi bi-arrow-left-right"></i></div>
                             <div class="feature-content">
@@ -1308,7 +1260,6 @@ p,
                             </div>
                             <i class="bi bi-arrow-left feature-arrow"></i>
                         </a>
-
                         <a href="expenses.html" class="feature-card" style="--feature-color: #ef4444; --feature-bg: #fef2f2;">
                             <div class="feature-icon"><i class="bi bi-receipt-cutoff"></i></div>
                             <div class="feature-content">
@@ -1317,7 +1268,6 @@ p,
                             </div>
                             <i class="bi bi-arrow-left feature-arrow"></i>
                         </a>
-
                         <a href="expense_categories.html" class="feature-card" style="--feature-color: #f59e0b; --feature-bg: #fffbeb;">
                             <div class="feature-icon"><i class="bi bi-tags"></i></div>
                             <div class="feature-content">
@@ -1326,7 +1276,6 @@ p,
                             </div>
                             <i class="bi bi-arrow-left feature-arrow"></i>
                         </a>
-
                         <a href="bank_reconciliation.html" class="feature-card" style="--feature-color: #06b6d4; --feature-bg: #ecfeff;">
                             <div class="feature-icon"><i class="bi bi-clipboard-check"></i></div>
                             <div class="feature-content">
@@ -1335,7 +1284,6 @@ p,
                             </div>
                             <i class="bi bi-arrow-left feature-arrow"></i>
                         </a>
-
                         <a href="cash_box_reports.html" class="feature-card" style="--feature-color: #a18cd1; --feature-bg: #f5f3ff;">
                             <div class="feature-icon"><i class="bi bi-bar-chart-line"></i></div>
                             <div class="feature-content">
@@ -1344,7 +1292,6 @@ p,
                             </div>
                             <i class="bi bi-arrow-left feature-arrow"></i>
                         </a>
-
                         <a href="branches.html" class="feature-card" style="--feature-color: #0ea5e9; --feature-bg: #f0f9ff;">
                             <div class="feature-icon"><i class="bi bi-building"></i></div>
                             <div class="feature-content">
@@ -1353,12 +1300,95 @@ p,
                             </div>
                             <i class="bi bi-arrow-left feature-arrow"></i>
                         </a>
-
                         <a href="movements_journal.html" class="feature-card" style="--feature-color: #8b5cf6; --feature-bg: #f5f3ff;">
                             <div class="feature-icon"><i class="bi bi-link-45deg"></i></div>
                             <div class="feature-content">
                                 <div class="feature-name">ربط الحركات بالقيود</div>
                                 <div class="feature-desc">البحث والربط</div>
+                            </div>
+                            <i class="bi bi-arrow-left feature-arrow"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ========== HR (الموارد البشرية) ========== -->
+            <div class="app-content" data-content="hr" style="display:none;">
+                <div class="detail-header">
+                    <div class="detail-icon" style="--detail-bg: #eff6ff; --detail-color: #3b82f6; --detail-shadow: rgba(59,130,246,0.15);">
+                        <i class="bi bi-people-fill"></i>
+                    </div>
+                    <div>
+                        <div class="detail-title">الموارد البشرية</div>
+                        <div class="detail-desc">إدارة شؤون الموظفين، الرواتب، الحضور، والسلف</div>
+                    </div>
+                </div>
+
+                <div class="section-block" style="--section-color: #3b82f6;">
+                    <div class="section-head">
+                        <div class="section-head-icon" style="background: #eff6ff; color: #3b82f6;">
+                            <i class="bi bi-bar-chart-fill"></i>
+                        </div>
+                        <span class="section-head-text">إحصائيات سريعة</span>
+                    </div>
+                    <div class="stats-row">
+                        <div class="stat-item">
+                            <div class="stat-item-value" id="kpi-employees">-</div>
+                            <div class="stat-item-label">موظف</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-item-value" id="kpi-attendance">-</div>
+                            <div class="stat-item-label">حضور</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-item-value" id="kpi-loans">-</div>
+                            <div class="stat-item-label">سلفة</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-item-value" id="kpi-payroll">-</div>
+                            <div class="stat-item-label">مسير رواتب</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section-block" style="--section-color: #3b82f6;">
+                    <div class="section-head">
+                        <div class="section-head-icon" style="background: #eff6ff; color: #3b82f6;">
+                            <i class="bi bi-list-check"></i>
+                        </div>
+                        <span class="section-head-text">شاشات الموارد البشرية</span>
+                        <span class="section-head-count">4</span>
+                    </div>
+                    <div class="feature-grid">
+                        <a href="hr_employees.html" class="feature-card" style="--feature-color: #3b82f6; --feature-bg: #eff6ff;">
+                            <div class="feature-icon"><i class="bi bi-person-lines-fill"></i></div>
+                            <div class="feature-content">
+                                <div class="feature-name">البيانات الرئيسية</div>
+                                <div class="feature-desc">الموظفين والأقسام</div>
+                            </div>
+                            <i class="bi bi-arrow-left feature-arrow"></i>
+                        </a>
+                        <a href="hr_attendance.html" class="feature-card" style="--feature-color: #10b981; --feature-bg: #ecfdf5;">
+                            <div class="feature-icon"><i class="bi bi-calendar-check"></i></div>
+                            <div class="feature-content">
+                                <div class="feature-name">الحضور والانصراف</div>
+                                <div class="feature-desc">تتبع الدوام</div>
+                            </div>
+                            <i class="bi bi-arrow-left feature-arrow"></i>
+                        </a>
+                        <a href="hr_loans.html" class="feature-card" style="--feature-color: #f59e0b; --feature-bg: #fffbeb;">
+                            <div class="feature-icon"><i class="bi bi-cash-stack"></i></div>
+                            <div class="feature-content">
+                                <div class="feature-name">السلف والقروض</div>
+                                <div class="feature-desc">إدارة السلف والأقساط</div>
+                            </div>
+                            <i class="bi bi-arrow-left feature-arrow"></i>
+                        </a>
+                        <a href="hr_payroll.html" class="feature-card" style="--feature-color: #8b5cf6; --feature-bg: #f5f3ff;">
+                            <div class="feature-icon"><i class="bi bi-file-earmark-text"></i></div>
+                            <div class="feature-content">
+                                <div class="feature-name">مسير الرواتب</div>
+                                <div class="feature-desc">حساب الرواتب والبدلات</div>
                             </div>
                             <i class="bi bi-arrow-left feature-arrow"></i>
                         </a>
@@ -1384,7 +1414,7 @@ p,
                             <i class="bi bi-file-earmark-bar-graph"></i>
                         </div>
                         <span class="section-head-text">التقارير المالية</span>
-                        <span class="section-head-count">6</span>
+                        <span class="section-head-count">5</span>
                     </div>
                     <div class="feature-grid">
                         <a href="trial_balance.html" class="feature-card" style="--feature-color: #ef4444; --feature-bg: #fef2f2;">
@@ -1427,14 +1457,6 @@ p,
                             </div>
                             <i class="bi bi-arrow-left feature-arrow"></i>
                         </a>
-                        <a href="financial_reports.html" class="feature-card" style="--feature-color: #8b5cf6; --feature-bg: #f5f3ff;">
-                            <div class="feature-icon"><i class="bi bi-box-seam"></i></div>
-                            <div class="feature-content">
-                                <div class="feature-name">مركز التقارير المالية</div>
-                                <div class="feature-desc">كل التقارير</div>
-                            </div>
-                            <i class="bi bi-arrow-left feature-arrow"></i>
-                        </a>
                     </div>
                 </div>
 
@@ -1444,7 +1466,7 @@ p,
                             <i class="bi bi-file-earmark-text"></i>
                         </div>
                         <span class="section-head-text">تقارير المخازن</span>
-                        <span class="section-head-count">3</span>
+                        <span class="section-head-count">2</span>
                     </div>
                     <div class="feature-grid">
                         <a href="reports.html" class="feature-card" style="--feature-color: #06b6d4; --feature-bg: #ecfeff;">
@@ -1460,14 +1482,6 @@ p,
                             <div class="feature-content">
                                 <div class="feature-name">المخزون حسب المستودع</div>
                                 <div class="feature-desc">By Warehouse</div>
-                            </div>
-                            <i class="bi bi-arrow-left feature-arrow"></i>
-                        </a>
-                        <a href="journal.html" class="feature-card" style="--feature-color: #6366f1; --feature-bg: #eef2ff;">
-                            <div class="feature-icon"><i class="bi bi-journal-text"></i></div>
-                            <div class="feature-content">
-                                <div class="feature-name">القيود</div>
-                                <div class="feature-desc">Journal Entries</div>
                             </div>
                             <i class="bi bi-arrow-left feature-arrow"></i>
                         </a>
@@ -1628,46 +1642,6 @@ p,
 
     </div>
 
-<!-- ============ AI Chat Modal ============ -->
-<div class="modal fade" id="chatModal" tabindex="-1">
-<div class="modal-dialog modal-lg">
-<div class="modal-content">
-<div class="modal-header" style="background: linear-gradient(135deg, #6366f1, #8b5cf6); color: white;">
-    <h5 class="modal-title"><i class="bi bi-robot"></i> مساعد المخازن الذكي</h5>
-    <button class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-</div>
-<div class="modal-body" style="padding: 0;">
-    <div id="chat-messages" style="height: 400px; overflow-y: auto; padding: 20px; background: #f8fafc;">
-        <div class="chat-welcome">
-            <div style="text-align: center; padding: 20px;">
-                <div style="font-size: 3rem; margin-bottom: 10px;">🤖</div>
-                <h6>أهلاً بيك في مساعد المخازن</h6>
-                <p style="font-size: 0.85rem; color: #64748b;">
-                    اسألني أي حاجة عن المخازن، الموردين، العملاء، الفواتير، القيود...
-                </p>
-                <div style="margin-top: 20px;">
-                    <button class="btn btn-sm btn-outline-primary" onclick="askQuick('إيه الأصناف الموجودة؟')">إيه الأصناف؟</button>
-                    <button class="btn btn-sm btn-outline-primary" onclick="askQuick('كام مورد عندنا؟')">كام مورد؟</button>
-                    <button class="btn btn-sm btn-outline-primary" onclick="askQuick('إيه أسماء العملاء؟')">مين العملاء؟</button>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div style="padding: 15px; border-top: 1px solid #e2e8f0; background: white;">
-        <div class="input-group">
-            <input type="text" class="form-control" id="chat-input"
-                   placeholder="اكتب سؤالك هنا..."
-                   onkeypress="if(event.key==='Enter') sendQuestion()">
-            <button class="btn btn-primary" onclick="sendQuestion()" id="chat-send-btn">
-                <i class="bi bi-send"></i> إرسال
-            </button>
-        </div>
-    </div>
-</div>
-</div>
-</div>
-</div>
-
 </div>
 
 <script>
@@ -1719,104 +1693,6 @@ function logout(e) {
 })();
 
 // ============================================================
-// AI Chat
-// ============================================================
-var chatModal = null;
-
-function openChat() {
-    if (!chatModal) {
-        chatModal = new bootstrap.Modal(document.getElementById('chatModal'));
-    }
-    chatModal.show();
-    setTimeout(() => {
-        document.getElementById('chat-input').focus();
-    }, 500);
-}
-
-function addMessage(text, type) {
-    const messages = document.getElementById('chat-messages');
-    const welcome = messages.querySelector('.chat-welcome');
-    if (welcome) welcome.remove();
-
-    const msg = document.createElement('div');
-    msg.className = 'chat-message ' + type;
-
-    const avatar = type === 'user' ? '👤' : '🤖';
-
-    msg.innerHTML = `
-        <div class="avatar">${avatar}</div>
-        <div class="bubble">${text}</div>
-    `;
-
-    messages.appendChild(msg);
-    messages.scrollTop = messages.scrollHeight;
-}
-
-function addLoading() {
-    const messages = document.getElementById('chat-messages');
-    const msg = document.createElement('div');
-    msg.className = 'chat-message ai';
-    msg.id = 'loading-msg';
-    msg.innerHTML = `
-        <div class="avatar">🤖</div>
-        <div class="bubble">
-            <span class="chat-loading"></span>
-            <span class="chat-loading"></span>
-            <span class="chat-loading"></span>
-        </div>
-    `;
-    messages.appendChild(msg);
-    messages.scrollTop = messages.scrollHeight;
-}
-
-function removeLoading() {
-    const loading = document.getElementById('loading-msg');
-    if (loading) loading.remove();
-}
-
-function askQuick(question) {
-    document.getElementById('chat-input').value = question;
-    sendQuestion();
-}
-
-async function sendQuestion() {
-    const input = document.getElementById('chat-input');
-    const question = input.value.trim();
-
-    if (!question) return;
-
-    addMessage(question, 'user');
-    input.value = '';
-
-    const btn = document.getElementById('chat-send-btn');
-    btn.disabled = true;
-
-    addLoading();
-
-    try {
-        const r = await fetch('/api/v1/ai/ask', {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({question: question})
-        }).then(x => x.json());
-
-        removeLoading();
-
-        if (r.success) {
-            addMessage(r.data.answer, 'ai');
-        } else {
-            addMessage('معلش، حصل خطأ: ' + (r.message || 'غير معروف'), 'ai');
-        }
-    } catch (e) {
-        removeLoading();
-        addMessage('معلش، فيه مشكلة في الاتصال.', 'ai');
-        console.error(e);
-    }
-
-    btn.disabled = false;
-}
-
-// ============================================================
 // Dashboard
 // ============================================================
 document.addEventListener('DOMContentLoaded', function () {
@@ -1845,7 +1721,8 @@ async function loadAll() {
             warehouses, items, groups, suppliers, customers,
             pinv, sinv, receipts, issues, transfers,
             notifications, accounts, pos, reqs, mrs, journal,
-            payments, cReceipts, pReturns, sReturns, counts
+            payments, cReceipts, pReturns, sReturns, counts,
+            employees, attendance, loans, payroll
         ] = await Promise.all([
             fetch(`${API}/warehouses/`).then(r => r.json()).catch(() => ({data: []})),
             fetch(`${API}/items/`).then(r => r.json()).catch(() => ({data: []})),
@@ -1867,7 +1744,11 @@ async function loadAll() {
             fetch(`${API}/payments/receipts/`).then(r => r.json()).catch(() => ({data: []})),
             fetch(`${API}/purchase-returns/`).then(r => r.json()).catch(() => ({data: []})),
             fetch(`${API}/sales-returns/`).then(r => r.json()).catch(() => ({data: []})),
-            fetch(`${API}/counts/`).then(r => r.json()).catch(() => ({data: []}))
+            fetch(`${API}/counts/`).then(r => r.json()).catch(() => ({data: []})),
+            fetch(`${API}/hr/employees/`).then(r => r.json()).catch(() => ({data: []})),
+            fetch(`${API}/hr/attendance/`).then(r => r.json()).catch(() => ({data: []})),
+            fetch(`${API}/hr/loans/`).then(r => r.json()).catch(() => ({data: []})),
+            fetch(`${API}/hr/payroll/`).then(r => r.json()).catch(() => ({data: []}))
         ]);
 
         const setText = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val; };
@@ -1877,7 +1758,8 @@ async function loadAll() {
         setText('cnt-sales', (sinv.data||[]).length + ' فاتورة');
         setText('cnt-warehouse', (receipts.data||[]).length + (issues.data||[]).length + (transfers.data||[]).length + ' حركة');
         setText('cnt-accounting', (accounts.data||[]).length + ' حساب');
-        setText('cnt-settings', '11 إعداد');
+        setText('cnt-hr', (employees.data||[]).length + ' موظف');
+        setText('cnt-settings', '13 إعداد');
 
         setText('kpi-wh', (warehouses.data||[]).length);
         setText('kpi-items', (items.data||[]).length);
@@ -1903,6 +1785,11 @@ async function loadAll() {
         setText('kpi-entries', (journal.data||[]).length);
         setText('kpi-clr', '3');
 
+        setText('kpi-employees', (employees.data||[]).length);
+        setText('kpi-attendance', (attendance.data||[]).length);
+        setText('kpi-loans', (loans.data||[]).length);
+        setText('kpi-payroll', (payroll.data||[]).length);
+
         const notifEl = document.getElementById('notif-count');
         if (notifEl && notifications.total_alerts) {
             notifEl.textContent = notifications.total_alerts;
@@ -1918,6 +1805,7 @@ async function loadAll() {
     }
 }
 </script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js">
+</script>
 </body>
 </html>
