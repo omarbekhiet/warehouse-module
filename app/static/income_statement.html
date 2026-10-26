@@ -79,20 +79,10 @@
 <script>
 const API = '/api/v1';
 
-// دالة مساعدة لتحويل المستوى إلى رقم (تتعامل مع الأرقام والنصوص)
 function getNumLevel(lvl) {
     if (typeof lvl === 'number') return lvl;
     if (typeof lvl === 'string') return parseInt(String(lvl).replace('L', '')) || 1;
     return 1;
-}
-
-// دالة مساعدة لمعرفة الرصيد الفعلي (opening أو closing)
-function getEffectiveBalance(item) {
-    // إذا كان closing_balance صفراً ولكن opening_balance ليس صفراً، نستخدم opening_balance
-    if (item.closing_balance === 0 && item.opening_balance !== 0) {
-        return item.opening_balance;
-    }
-    return item.closing_balance;
 }
 
 async function loadReport() {
@@ -101,7 +91,6 @@ async function loadReport() {
     const level = document.getElementById('f-level').value;
     const hideZero = document.getElementById('f-hide-zero').checked;
 
-    // التحقق من صحة التواريخ
     if (from && to && from > to) {
         document.getElementById('report-content').innerHTML = 
             '<div class="alert alert-danger text-center mt-3"><i class="bi bi-exclamation-triangle"></i> خطأ: تاريخ البداية يجب أن يكون قبل تاريخ النهاية.</div>';
@@ -116,16 +105,13 @@ async function loadReport() {
     content.innerHTML = '<div class="text-center p-5">جاري التحميل...</div>';
 
     try {
-        // 1. جلب بيانات الفترة الحالية
         const res = await fetch(`${API}/reports/income-statement?${qs.toString()}`).then(r => r.json());
         if (!res.success) { content.innerHTML = `<div class="alert alert-danger">${res.message}</div>`; return; }
         const allData = res.data;
 
-        // 2. جلب بيانات فترة المقارنة
         let compareData = [];
         try {
-            let compareFrom = '';
-            let compareTo = '';
+            let compareFrom = '', compareTo = '';
             if (from) {
                 const d = new Date(from);
                 d.setFullYear(d.getFullYear() - 1);
@@ -163,56 +149,83 @@ async function loadReport() {
             if (isCompareDataSameAsCurrent) return 0;
             if (!compareData || compareData.length === 0) return 0;
             const item = compareData.find(d => d.code === code);
-            return item ? getEffectiveBalance(item) : 0;
+            return item ? (Math.abs(item.closing_balance) || 0) : 0;
         };
 
-        // 3. حساب المجاميع (باستخدام getEffectiveBalance)
+        // 1. تحديد الحسابات الفرعية (Leaf Accounts) فقط
+        // بنشوف كل كود، لو مش موجود كبداية لكود تاني، يبقى ده حساب فرعي (مفيهوش تفريعات)
+        const allCodes = new Set(allData.map(item => item.code));
+        const isLeaf = (code) => {
+            for (let c of allCodes) {
+                if (c !== code && c.startsWith(code) && c.length > code.length) {
+                    return false;
+                }
+            }
+            return true;
+        };
+
+        // 2. حساب المجاميع من الحسابات الفرعية فقط لضمان عدم التكرار
         let totalRevenue = 0, totalCost = 0, totalOpex = 0;
+        let totalFinancing = 0, totalTaxes = 0;
+
         allData.forEach(item => {
-            const bal = Math.abs(getEffectiveBalance(item));
+            if (!isLeaf(item.code)) return; // نتجاهل الحسابات الأب
+            const bal = Math.abs(item.closing_balance || 0);
             if (item.code.startsWith('4')) totalRevenue += bal;
             else if (item.code.startsWith('3')) totalCost += bal;
             else if (item.code.startsWith('5')) totalOpex += bal;
+            else if (item.code.startsWith('6')) totalFinancing += bal;
+            else if (item.code.startsWith('7')) totalTaxes += bal;
         });
+
         const grossProfit = totalRevenue - totalCost;
         const operatingProfit = grossProfit - totalOpex;
-        const netProfit = operatingProfit;
+        const netProfit = operatingProfit - totalFinancing - totalTaxes;
 
-        // 4. حساب المجاميع لفترة المقارنة
+        // 3. حساب المجاميع لفترة المقارنة
         let compareRevenue = 0, compareCost = 0, compareOpex = 0;
+        let compareFinancing = 0, compareTaxes = 0;
+
         if (!isCompareDataSameAsCurrent && compareData && compareData.length > 0) {
+            const compareCodes = new Set(compareData.map(item => item.code));
+            const isCompareLeaf = (code) => {
+                for (let c of compareCodes) {
+                    if (c !== code && c.startsWith(code) && c.length > code.length) return false;
+                }
+                return true;
+            };
+
             compareData.forEach(item => {
-                const bal = Math.abs(getEffectiveBalance(item));
+                if (!isCompareLeaf(item.code)) return;
+                const bal = Math.abs(item.closing_balance || 0);
                 if (item.code.startsWith('4')) compareRevenue += bal;
                 else if (item.code.startsWith('3')) compareCost += bal;
                 else if (item.code.startsWith('5')) compareOpex += bal;
+                else if (item.code.startsWith('6')) compareFinancing += bal;
+                else if (item.code.startsWith('7')) compareTaxes += bal;
             });
         }
         const compareGrossProfit = compareRevenue - compareCost;
         const compareOperatingProfit = compareGrossProfit - compareOpex;
-        const compareNetProfit = compareOperatingProfit;
+        const compareNetProfit = compareOperatingProfit - compareFinancing - compareTaxes;
 
-        // 5. فلترة البيانات (باستخدام getNumLevel)
+        // 4. فلترة البيانات للعرض
         let filteredData = allData;
-        
         if (level !== '99') {
             const target = parseInt(level);
-            filteredData = filteredData.filter(r => {
-                const lvl = getNumLevel(r.level);
-                return lvl <= target;
-            });
+            filteredData = filteredData.filter(r => getNumLevel(r.level) <= target);
         }
 
         if (hideZero) {
             filteredData = filteredData.filter(r => {
-                const currentBal = Math.abs(getEffectiveBalance(r));
+                const currentBal = Math.abs(r.closing_balance || 0);
                 const compareItem = compareData ? compareData.find(d => d.code === r.code) : null;
-                const compareBal = compareItem ? Math.abs(getEffectiveBalance(compareItem)) : 0;
+                const compareBal = compareItem ? Math.abs(compareItem.closing_balance || 0) : 0;
                 return currentBal > 0.01 || compareBal > 0.01;
             });
         }
 
-        // 6. تصنيف الحسابات
+        // 5. تصنيف الحسابات
         const sections = {
             'operating': { name: 'قسم التشغيل (Operating)', items: [] },
             'investing': { name: 'قسم الاستثمار (Investing)', items: [] },
@@ -231,7 +244,6 @@ async function loadReport() {
             sections[section].items.push(r);
         });
 
-        // 7. بناء التقرير
         let html = '';
 
         html += `<div class="cf-row-header">
@@ -245,7 +257,7 @@ async function loadReport() {
         let revHtml = '', costHtml = '', opexHtml = '';
         sections.operating.items.forEach(item => {
             const compareBal = getCompareBalance(item.code);
-            const effectiveBal = getEffectiveBalance(item);
+            const effectiveBal = Math.abs(item.closing_balance || 0);
             const row = `
                 <div class="cf-row">
                     <div class="cf-name">${item.code} - ${item.name}</div>
@@ -271,59 +283,29 @@ async function loadReport() {
             <div class="cf-subtotal-amount-compare">${fmt(compareOperatingProfit)}</div>
         </div>`;
 
-        // قسم الاستثمار
-        html += `<div class="section-title">${sections.investing.name}</div>`;
-        if (sections.investing.items.length === 0) {
-            html += '<div class="text-muted p-2 text-center">لا توجد بنود استثمارية</div>';
-        } else {
-            html += sections.investing.items.map(item => {
-                const compareBal = getCompareBalance(item.code);
-                const effectiveBal = getEffectiveBalance(item);
-                return `
-                    <div class="cf-row">
-                        <div class="cf-name">${item.code} - ${item.name}</div>
-                        <div class="cf-amount ${effectiveBal < 0 ? 'text-danger' : 'text-success'}">${fmt(effectiveBal)}</div>
-                        <div class="cf-amount-compare">${fmt(compareBal)}</div>
-                    </div>
-                `;
-            }).join('');
-        }
+        // باقي الأقسام (بنفس الطريقة)
+        const renderSection = (sec) => {
+            html += `<div class="section-title">${sec.name}</div>`;
+            if (sec.items.length === 0) {
+                html += '<div class="text-muted p-2 text-center">لا توجد بنود مسجلة</div>';
+            } else {
+                html += sec.items.map(item => {
+                    const compareBal = getCompareBalance(item.code);
+                    const effectiveBal = Math.abs(item.closing_balance || 0);
+                    return `
+                        <div class="cf-row">
+                            <div class="cf-name">${item.code} - ${item.name}</div>
+                            <div class="cf-amount ${effectiveBal < 0 ? 'text-danger' : 'text-success'}">${fmt(effectiveBal)}</div>
+                            <div class="cf-amount-compare">${fmt(compareBal)}</div>
+                        </div>
+                    `;
+                }).join('');
+            }
+        };
 
-        // قسم التمويل
-        html += `<div class="section-title">${sections.financing.name}</div>`;
-        if (sections.financing.items.length === 0) {
-            html += '<div class="text-muted p-2 text-center">لا توجد بنود تمويلية</div>';
-        } else {
-            html += sections.financing.items.map(item => {
-                const compareBal = getCompareBalance(item.code);
-                const effectiveBal = getEffectiveBalance(item);
-                return `
-                    <div class="cf-row">
-                        <div class="cf-name">${item.code} - ${item.name}</div>
-                        <div class="cf-amount ${effectiveBal < 0 ? 'text-danger' : 'text-success'}">${fmt(effectiveBal)}</div>
-                        <div class="cf-amount-compare">${fmt(compareBal)}</div>
-                    </div>
-                `;
-            }).join('');
-        }
-
-        // قسم الضرائب
-        html += `<div class="section-title">${sections.taxes.name}</div>`;
-        if (sections.taxes.items.length === 0) {
-            html += '<div class="text-muted p-2 text-center">لا توجد ضرائب مسجلة</div>';
-        } else {
-            html += sections.taxes.items.map(item => {
-                const compareBal = getCompareBalance(item.code);
-                const effectiveBal = getEffectiveBalance(item);
-                return `
-                    <div class="cf-row">
-                        <div class="cf-name">${item.code} - ${item.name}</div>
-                        <div class="cf-amount ${effectiveBal < 0 ? 'text-danger' : 'text-success'}">${fmt(effectiveBal)}</div>
-                        <div class="cf-amount-compare">${fmt(compareBal)}</div>
-                    </div>
-                `;
-            }).join('');
-        }
+        renderSection(sections.investing);
+        renderSection(sections.financing);
+        renderSection(sections.taxes);
 
         // صافي الربح النهائي
         const finalLabel = netProfit >= 0 ? 'صافي الربح (Profit)' : 'صافي الخسارة (Loss)';
