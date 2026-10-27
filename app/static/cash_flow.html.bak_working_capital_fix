@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>قائمة التدفقات النقدية</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="permissions.js"></script>
+    <style>
+        body { font-family: 'Cairo', sans-serif; background-color: #f4f6f9; color: #333; padding: 20px; font-size: 13px; }
+        
+        .page-header { background: #fff; padding: 15px 25px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
+        .page-title { font-size: 22px; font-weight: 700; color: #2c3e50; display: flex; align-items: center; gap: 10px; margin: 0; }
+        
+        .filter-group { display: flex; align-items: center; gap: 15px; flex-wrap: wrap; }
+        .form-control-custom { border-radius: 8px; border: 1px solid #ced4da; padding: 8px 12px; font-size: 14px; }
+        .btn-custom { background-color: #0d6efd; color: #fff; border-radius: 8px; padding: 8px 20px; font-weight: 600; transition: all 0.3s; border: none; }
+        .btn-custom:hover { background-color: #0b5ed7; color: #fff; }
+        
+        /* تخطيط الجدول باستخدام Grid لتقريب الأعمدة */
+        .cf-grid { display: flex; flex-direction: column; gap: 8px; }
+        
+        /* الهيدر */
+        .cf-row-header { display: grid; grid-template-columns: 1fr 110px 110px 110px; padding: 8px 15px; background-color: #e2e8f0; font-weight: 700; font-size: 14px; color: #333; border-bottom: 2px solid #cbd5e1; border-radius: 8px 8px 0 0; align-items: center; }
+        .cf-header-name { text-align: right; padding-right: 10px; }
+        .cf-header-amount { text-align: left; padding-left: 10px; direction: ltr; font-family: monospace; }
+        
+        /* أقسام التقرير (الشرايط الزرقاء) */
+        .cf-section-header { background-color: #1e3a8a; color: #fff; padding: 6px 15px; border-radius: 6px; font-weight: 700; font-size: 13px; display: flex; align-items: center; gap: 8px; margin-top: 10px; }
+        
+        /* الصفوف */
+        .cf-row { display: grid; grid-template-columns: 1fr 110px 110px 110px; padding: 6px 15px; border-bottom: 1px solid #f1f3f5; font-size: 13px; background: #fff; align-items: center; transition: background 0.2s; }
+        .cf-row:hover { background-color: #f8f9fa; }
+        .cf-row.indent .cf-name { padding-right: 30px; } /* مسافة للبنود التابعة */
+        
+        .cf-name { color: #212529; text-align: right; }
+        
+        /* المربع الرمادي بتاع الأرقام */
+        .cf-amount { text-align: left; font-weight: 600; font-family: 'Courier New', Courier, monospace; direction: ltr; padding: 3px 8px; background: #f8fafc; border-radius: 4px; border: 1px solid #e2e8f0; }
+        .cf-amount.compare { color: #6c757d; font-weight: normal; }
+        .cf-amount.variance { font-weight: 700; }
+        
+        /* الألوان */
+        .text-success-custom { color: #198754; }
+        .text-danger-custom { color: #dc3545; }
+        .text-increase { color: #198754; }
+        .text-decrease { color: #dc3545; }
+        
+        /* الإجماليات الفرعية */
+        .cf-subtotal { display: grid; grid-template-columns: 1fr 110px 110px 110px; padding: 8px 15px; background-color: #f8f9fa; font-weight: 700; font-size: 13px; color: #333; border-top: 1px solid #e9ecef; border-bottom: 1px solid #e9ecef; align-items: center; margin-bottom: 5px; }
+        .cf-subtotal .name { text-align: right; padding-right: 10px; }
+        .cf-subtotal .amounts { display: contents; }
+        .cf-subtotal .amounts span { text-align: left; direction: ltr; font-family: monospace; padding: 3px 8px; background: #e2e8f0; border-radius: 4px; font-weight: 700; }
+        
+        /* الإجمالي النهائي (الأخضر) */
+        .cf-final-total { background: linear-gradient(135deg, #10b981, #059669); color: white; font-weight: 700; padding: 12px 15px; border-radius: 8px; display: grid; grid-template-columns: 1fr 110px 110px 110px; align-items: center; margin-top: 15px; font-size: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .cf-final-total.negative { background: linear-gradient(135deg, #ef4444, #dc2626); }
+        .cf-final-total .name { text-align: right; padding-right: 10px; }
+        .cf-final-total .amounts { display: contents; }
+        .cf-final-total .amounts span { text-align: left; direction: ltr; font-family: monospace; padding-left: 10px; }
+    </style>
+</head>
+<body>
+    <div class="page-header">
+        <h2 class="page-title"><i class="bi bi-cash-coin"></i> قائمة التدفقات النقدية</h2>
+        <div class="filter-group">
+            <div class="d-flex align-items-center gap-2">
+                <label class="text-muted" style="white-space: nowrap;">من تاريخ:</label>
+                <input type="date" id="fromDate" class="form-control form-control-custom" style="width: 150px;">
+            </div>
+            <div class="d-flex align-items-center gap-2">
+                <label class="text-muted" style="white-space: nowrap;">إلى تاريخ:</label>
+                <input type="date" id="toDate" class="form-control form-control-custom" style="width: 150px;">
+            </div>
+            <button class="btn btn-custom" onclick="loadReport()"><i class="bi bi-search"></i> عرض</button>
+            <a href="reports.html" class="btn btn-outline-secondary" style="border-radius: 8px;"><i class="bi bi-arrow-right"></i> الرجوع للتقارير</a>
+        </div>
+    </div>
+
+    <div id="report-content">
+        <div class="text-center py-5 text-muted"><i class="bi bi-arrow-clockwise fs-1"></i><p class="mt-2">جاري تحميل البيانات...</p></div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const API = '/api/v1';
+
+        function renderVariance(current, compare) {
+            const variance = current - compare;
+            if (Math.abs(variance) < 0.01) return `<span class="cf-amount variance text-muted">0.00</span>`;
+            
+            const isIncrease = variance > 0;
+            const colorClass = isIncrease ? 'text-increase' : 'text-decrease';
+            const sign = isIncrease ? '+' : '';
+            const fmt = (v) => (Number(v) || 0).toLocaleString('en-US', {minimumFractionDigits:2});
+            
+            return `<span class="cf-amount variance ${colorClass}">${sign}${fmt(variance)}</span>`;
+        }
+
+        async function loadReport() {
+            const from = document.getElementById('fromDate').value;
+            const to = document.getElementById('toDate').value;
+
+            if (from && to && from > to) {
+                document.getElementById('report-content').innerHTML = 
+                    '<div class="alert alert-danger text-center mt-3"><i class="bi bi-exclamation-triangle"></i> خطأ: تاريخ البداية يجب أن يكون قبل تاريخ النهاية.</div>';
+                return;
+            }
+            
+            const qs = new URLSearchParams();
+            if (from) qs.append('from_date', from);
+            if (to) qs.append('to_date', to);
+            
+            const content = document.getElementById('report-content');
+            content.innerHTML = '<div class="text-center py-5 text-primary"><i class="bi bi-arrow-clockwise fs-1"></i><p class="mt-2">جاري تحميل البيانات...</p></div>';
+
+            try {
+                // جلب البيانات للفترة الحالية
+                const res = await fetch(`${API}/reports/trial-balance?${qs.toString()}`).then(r => r.json());
+                if (!res.success) { content.innerHTML = `<div class="alert alert-danger">${res.message}</div>`; return; }
+                const allData = res.data;
+
+                // جلب البيانات لسنة المقارنة
+                let compareFrom = '', compareTo = '';
+                if (from) { const d = new Date(from); d.setFullYear(d.getFullYear() - 1); compareFrom = d.toISOString().split('T')[0]; }
+                if (to) { const d = new Date(to); d.setFullYear(d.getFullYear() - 1); compareTo = d.toISOString().split('T')[0]; }
+                
+                const qsCompare = new URLSearchParams();
+                if (compareFrom) qsCompare.append('from_date', compareFrom);
+                if (compareTo) qsCompare.append('to_date', compareTo);
+                
+                let compareData = [];
+                if (compareFrom && compareTo) {
+                    const resCompare = await fetch(`${API}/reports/trial-balance?${qsCompare.toString()}`).then(r => r.json());
+                    if (resCompare.success) compareData = resCompare.data;
+                }
+
+                const fmt = (v) => (Number(v) || 0).toLocaleString('en-US', {minimumFractionDigits:2});
+
+                const allCodes = new Set(allData.map(item => item.code));
+                const isLeaf = (code) => {
+                    for (let c of allCodes) {
+                        if (c !== code && c.startsWith(code) && c.length > code.length) return false;
+                    }
+                    return true;
+                };
+
+                const getNetMovement = (item) => (item.period_debit || 0) - (item.period_credit || 0);
+
+                // دالة لحساب التدفقات لأي مصفوفة بيانات
+                const calculateCashFlows = (data) => {
+                    let netIncome = 0, depreciation = 0, changeInReceivables = 0, changeInInventory = 0, changeInPayables = 0;
+                    let purchaseOfAssets = 0, proceedsFromAssets = 0;
+                    let financingIn = 0, financingOut = 0;
+
+                    data.forEach(item => {
+                        if (!isLeaf(item.code)) return;
+                        const movement = getNetMovement(item);
+
+                        if (item.code.startsWith('4') || item.code.startsWith('3') || item.code.startsWith('5')) netIncome += movement;
+                        if (item.code.startsWith('531')) depreciation += Math.abs(movement); 
+                        if (item.code.startsWith('121')) changeInReceivables -= ((item.closing_balance || 0) - (item.opening_balance || 0)); 
+                        if (item.code.startsWith('113')) changeInInventory -= ((item.closing_balance || 0) - (item.opening_balance || 0));
+                        if (item.code.startsWith('211')) changeInPayables += ((item.closing_balance || 0) - (item.opening_balance || 0));
+                        if (item.code.startsWith('122') || item.name.includes('أصول ثابتة') || item.name.includes('آلات')) { if (movement > 0) purchaseOfAssets += movement; }
+                        if (item.code.startsWith('3') || item.name.includes('قروض')) {
+                            if (movement > 0) financingOut += movement;
+                            if (movement < 0) financingIn += Math.abs(movement);
+                        }
+                    });
+
+                    const operatingCashFlow = netIncome + depreciation + changeInReceivables + changeInInventory + changeInPayables;
+                    const investingCashFlow = -purchaseOfAssets + proceedsFromAssets;
+                    const financingCashFlow = financingIn - financingOut;
+                    const netCashFlow = operatingCashFlow + investingCashFlow + financingCashFlow;
+
+                    return { netIncome, depreciation, changeInReceivables, changeInInventory, changeInPayables, purchaseOfAssets, operatingCashFlow, investingCashFlow, financingIn, financingOut, financingCashFlow, netCashFlow };
+                };
+
+                const current = calculateCashFlows(allData);
+                const compare = calculateCashFlows(compareData);
+
+                let html = '<div class="cf-grid">';
+
+                // هيدر الجدول
+                html += `<div class="cf-row-header">
+                    <div class="cf-header-name">البيان</div>
+                    <div class="cf-header-amount">الفترة الحالية</div>
+                    <div class="cf-header-amount">فترة المقارنة</div>
+                    <div class="cf-header-amount">التغير</div>
+                </div>`;
+
+                // ================= قسم التشغيل =================
+                html += `<div class="cf-section-header"><i class="bi bi-gear"></i> التدفقات النقدية من الأنشطة التشغيلية (Operating Activities)</div>`;
+                
+                html += `<div class="cf-row">
+                    <div class="cf-name">صافي الدخل (Net Income)</div>
+                    <div class="cf-amount">${fmt(current.netIncome)}</div>
+                    <div class="cf-amount compare">${fmt(compare.netIncome)}</div>
+                    ${renderVariance(current.netIncome, compare.netIncome)}
+                </div>`;
+                
+                html += `<div class="cf-row indent">
+                    <div class="cf-name">+ الإهلاك (Depreciation)</div>
+                    <div class="cf-amount text-success-custom">${fmt(current.depreciation)}</div>
+                    <div class="cf-amount compare">${fmt(compare.depreciation)}</div>
+                    ${renderVariance(current.depreciation, compare.depreciation)}
+                </div>`;
+                
+                html += `<div class="cf-row indent">
+                    <div class="cf-name">+/- التغير في المدينين (Receivables)</div>
+                    <div class="cf-amount ${current.changeInReceivables < 0 ? 'text-danger-custom' : 'text-success-custom'}">${fmt(current.changeInReceivables)}</div>
+                    <div class="cf-amount compare">${fmt(compare.changeInReceivables)}</div>
+                    ${renderVariance(current.changeInReceivables, compare.changeInReceivables)}
+                </div>`;
+                
+                html += `<div class="cf-row indent">
+                    <div class="cf-name">+/- التغير في المخزون (Inventory)</div>
+                    <div class="cf-amount ${current.changeInInventory < 0 ? 'text-danger-custom' : 'text-success-custom'}">${fmt(current.changeInInventory)}</div>
+                    <div class="cf-amount compare">${fmt(compare.changeInInventory)}</div>
+                    ${renderVariance(current.changeInInventory, compare.changeInInventory)}
+                </div>`;
+                
+                html += `<div class="cf-row indent">
+                    <div class="cf-name">+/- التغير في الدائنين (Payables)</div>
+                    <div class="cf-amount text-success-custom">${fmt(current.changeInPayables)}</div>
+                    <div class="cf-amount compare">${fmt(compare.changeInPayables)}</div>
+                    ${renderVariance(current.changeInPayables, compare.changeInPayables)}
+                </div>`;
+                
+                html += `<div class="cf-subtotal">
+                    <div class="name">صافي التدفق النقدي من الأنشطة التشغيلية</div>
+                    <div class="amounts">
+                        <span>${fmt(current.operatingCashFlow)}</span>
+                        <span class="text-muted">${fmt(compare.operatingCashFlow)}</span>
+                        <span>${renderVariance(current.operatingCashFlow, compare.operatingCashFlow)}</span>
+                    </div>
+                </div>`;
+
+                // ================= قسم الاستثمار =================
+                html += `<div class="cf-section-header"><i class="bi bi-graph-up-arrow"></i> التدفقات النقدية من الأنشطة الاستثمارية (Investing Activities)</div>`;
+                
+                html += `<div class="cf-row indent">
+                    <div class="cf-name">- شراء أصول ثابتة (Purchase of Fixed Assets)</div>
+                    <div class="cf-amount text-danger-custom">${fmt(-current.purchaseOfAssets)}</div>
+                    <div class="cf-amount compare">${fmt(-compare.purchaseOfAssets)}</div>
+                    ${renderVariance(-current.purchaseOfAssets, -compare.purchaseOfAssets)}
+                </div>`;
+                
+                html += `<div class="cf-subtotal">
+                    <div class="name">صافي التدفق النقدي من الأنشطة الاستثمارية</div>
+                    <div class="amounts">
+                        <span>${fmt(current.investingCashFlow)}</span>
+                        <span class="text-muted">${fmt(compare.investingCashFlow)}</span>
+                        <span>${renderVariance(current.investingCashFlow, compare.investingCashFlow)}</span>
+                    </div>
+                </div>`;
+
+                // ================= قسم التمويل =================
+                html += `<div class="cf-section-header"><i class="bi bi-bank"></i> التدفقات النقدية من الأنشطة التمويلية (Financing Activities)</div>`;
+                
+                html += `<div class="cf-row indent">
+                    <div class="cf-name">+ تمويل / قروض (Financing In)</div>
+                    <div class="cf-amount text-success-custom">${fmt(current.financingIn)}</div>
+                    <div class="cf-amount compare">${fmt(compare.financingIn)}</div>
+                    ${renderVariance(current.financingIn, compare.financingIn)}
+                </div>`;
+                
+                html += `<div class="cf-row indent">
+                    <div class="cf-name">- سداد قروض / توزيعات (Financing Out)</div>
+                    <div class="cf-amount text-danger-custom">${fmt(-current.financingOut)}</div>
+                    <div class="cf-amount compare">${fmt(-compare.financingOut)}</div>
+                    ${renderVariance(-current.financingOut, -compare.financingOut)}
+                </div>`;
+                
+                html += `<div class="cf-subtotal">
+                    <div class="name">صافي التدفق النقدي من الأنشطة التمويلية</div>
+                    <div class="amounts">
+                        <span>${fmt(current.financingCashFlow)}</span>
+                        <span class="text-muted">${fmt(compare.financingCashFlow)}</span>
+                        <span>${renderVariance(current.financingCashFlow, compare.financingCashFlow)}</span>
+                    </div>
+                </div>`;
+
+                // ================= الإجمالي النهائي =================
+                html += `<div class="${current.netCashFlow >= 0 ? 'cf-final-total' : 'cf-final-total negative'}">
+                    <div class="name">صافي التغير في النقدية (Net Increase/Decrease in Cash)</div>
+                    <div class="amounts">
+                        <span>${fmt(current.netCashFlow)}</span>
+                        <span style="opacity:0.8;">${fmt(compare.netCashFlow)}</span>
+                        <span style="color:#fff;">${renderVariance(current.netCashFlow, compare.netCashFlow)}</span>
+                    </div>
+                </div>`;
+
+                html += '</div>';
+                content.innerHTML = html;
+
+            } catch (e) {
+                console.error(e);
+                content.innerHTML = `<div class="alert alert-danger text-center">فشل تحميل البيانات: ${e.message}</div>`;
+            }
+        }
+
+        window.onload = () => {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('toDate').value = today;
+            document.getElementById('fromDate').value = new Date(new Date().getFullYear(), 0, 1).toISOString().split('T')[0];
+            loadReport();
+        };
+    </script>
+</body>
+</html>

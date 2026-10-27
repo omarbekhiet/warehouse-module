@@ -160,10 +160,10 @@
                         const movement = getNetMovement(item);
 
                         if (item.code.startsWith('4') || item.code.startsWith('3') || item.code.startsWith('5')) netIncome += movement;
-                        if (item.code.startsWith('531') || item.name.includes('إهلاك')) depreciation += Math.abs(movement); 
-                        if (item.code.startsWith('121') || item.name.includes('عملاء') || item.name.includes('مدينين')) changeInReceivables -= movement; 
-                        if (item.code.startsWith('113') || item.name.includes('مخزون')) changeInInventory -= movement;
-                        if (item.code.startsWith('211') || item.name.includes('موردين') || item.name.includes('دائنين')) changeInPayables += Math.abs(movement);
+                        if (item.code.startsWith('531')) depreciation += Math.abs(movement); 
+                        if (item.code.startsWith('121')) changeInReceivables -= ((item.closing_balance || 0) - (item.opening_balance || 0)); 
+                        if (item.code.startsWith('113')) changeInInventory -= ((item.closing_balance || 0) - (item.opening_balance || 0));
+                        if (item.code.startsWith('211')) changeInPayables += ((item.closing_balance || 0) - (item.opening_balance || 0));
                         if (item.code.startsWith('122') || item.name.includes('أصول ثابتة') || item.name.includes('آلات')) { if (movement > 0) purchaseOfAssets += movement; }
                         if (item.code.startsWith('3') || item.name.includes('قروض')) {
                             if (movement > 0) financingOut += movement;
