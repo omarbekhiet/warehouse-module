@@ -2,333 +2,398 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>قائمة الدخل - IFRS 18</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.rtl.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css">
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
     <script src="permissions.js"></script>
     <style>
-        body { background: #f1f5f9; font-family: 'Cairo','Segoe UI', Tahoma, sans-serif; padding: 15px; font-size: 13px; }
-        .report-card { max-width: 1000px; margin: 0 auto; background: white; border-radius: 10px; padding: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        .section-title { background: #1e3c72; color: white; padding: 4px 8px; border-radius: 4px; font-weight: bold; margin-top: 8px; margin-bottom: 4px; font-size: 12px; }
+        body { font-family: 'Cairo', sans-serif; background-color: #f4f6f9; color: #333; padding: 20px; }
         
-        .cf-row { display: flex; align-items: center; padding: 3px 8px; border-bottom: 1px solid #f1f5f9; font-size: 12px; line-height: 1.3; }
-        .cf-row:hover { background: #f8fafc; }
+        .page-header { background: #fff; padding: 15px 25px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0,0,0,0.05); margin-bottom: 20px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; }
+        .page-title { font-size: 22px; font-weight: 700; color: #2c3e50; display: flex; align-items: center; gap: 10px; margin: 0; }
         
-        .cf-name { width: 400px; min-width: 200px; text-align: right; padding-left: 10px; }
+        .filter-group { display: flex; align-items: center; gap: 15px; flex-wrap: wrap; }
+        .form-control-custom { border-radius: 8px; border: 1px solid #ced4da; padding: 8px 12px; font-size: 14px; }
+        .btn-custom { background-color: #0d6efd; color: #fff; border-radius: 8px; padding: 8px 20px; font-weight: 600; transition: all 0.3s; border: none; }
+        .btn-custom:hover { background-color: #0b5ed7; color: #fff; }
         
-        .cf-amount { font-family: monospace; font-weight: bold; width: 130px; text-align: left; direction: ltr; background: #f8fafc; padding: 2px 8px; border-radius: 4px; border-right: 2px solid #e2e8f0; margin-left: 5px; }
-        .cf-amount-compare { font-family: monospace; font-weight: normal; width: 130px; text-align: left; direction: ltr; background: #f8fafc; padding: 2px 8px; border-radius: 4px; border-right: 2px solid #e2e8f0; color: #64748b; }
+        .is-grid { display: flex; flex-direction: column; gap: 10px; }
+        .is-section { background: #fff; border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,0.04); overflow: hidden; border: 1px solid #e9ecef; }
+        .is-section-header { padding: 8px 15px; font-weight: 700; font-size: 14px; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid #e9ecef; }
         
-        .cf-row-header { display: flex; align-items: center; padding: 6px 8px; background: #e2e8f0; font-weight: 900; font-size: 12px; border-bottom: 2px solid #cbd5e1; margin-bottom: 4px; border-radius: 4px; }
-        .cf-header-name { width: 400px; min-width: 200px; text-align: right; padding-left: 10px; }
-        .cf-header-amount { width: 130px; text-align: left; padding: 2px 8px; margin-left: 5px; }
+        .is-section-header.operating { background-color: #e3f2fd; color: #0d6efd; border-right: 4px solid #0d6efd; }
+        .is-section-header.investing { background-color: #fff3e0; color: #f57c00; border-right: 4px solid #f57c00; }
+        .is-section-header.financing { background-color: #f3e5f5; color: #8e24aa; border-right: 4px solid #8e24aa; }
+        .is-section-header.taxes { background-color: #ffebee; color: #d32f2f; border-right: 4px solid #d32f2f; }
         
-        .cf-subtotal { background: #f1f5f9; font-weight: 800; padding: 4px 8px; border-top: 1px solid #cbd5e1; border-bottom: 1px solid #cbd5e1; display: flex; align-items: center; margin-top: 2px; font-size: 12px; }
-        .cf-subtotal-name { width: 400px; min-width: 200px; text-align: right; padding-left: 10px; }
-        .cf-subtotal-amount { width: 130px; text-align: left; padding: 2px 8px; margin-left: 5px; }
-        .cf-subtotal-amount-compare { width: 130px; text-align: left; padding: 2px 8px; color: #64748b; }
+        /* تخطيط الصفوف - تم تحديد عرض عمود البيان عشان الفراغ يختفي */
+        /* 60px للكود | 40% للبيان | 100px لكل عمود أرقام */
+        .is-row, .is-row-header, .is-subtotal, .is-total { 
+            display: grid; 
+            grid-template-columns: 60px 40% 100px 100px 100px; 
+            padding: 6px 15px; 
+            align-items: center; 
+        }
+
+        .is-row { border-bottom: 1px solid #f1f3f5; font-size: 13px; transition: background 0.2s; }
+        .is-row:last-child { border-bottom: none; }
+        .is-row:hover { background-color: #f8f9fa; }
+        .is-row.parent-row { font-weight: bold; background-color: #f8f9fa; }
         
-        .cf-grand-total { background: #dbeafe; color: #1e3c72; font-weight: 900; padding: 6px 10px; border-radius: 4px; display: flex; align-items: center; margin-top: 10px; font-size: 13px; }
-        .cf-final-total { background: linear-gradient(135deg, #10b981, #059669); color: white; font-weight: 900; padding: 8px 10px; border-radius: 4px; display: flex; align-items: center; margin-top: 10px; font-size: 14px; }
-        .cf-final-total.loss { background: linear-gradient(135deg, #ef4444, #dc2626); }
+        .is-row-header { background-color: #e2e8f0; font-weight: 700; font-size: 13px; color: #333; border-bottom: 2px solid #cbd5e1; border-radius: 8px 8px 0 0; }
+        
+        .is-code { color: #6c757d; font-size: 13px; text-align: right; padding-left: 5px; }
+        .is-name { color: #212529; text-align: right; padding-right: 10px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        
+        .is-amount { text-align: left; font-weight: 600; font-family: 'Courier New', Courier, monospace; direction: ltr; padding-left: 5px; }
+        .is-amount.compare { color: #6c757d; font-weight: normal; }
+        .is-amount.variance { font-weight: 700; }
+        
+        .text-increase { color: #198754; }
+        .text-decrease { color: #dc3545; }
+        
+        .is-subtotal { background-color: #f8f9fa; font-weight: 700; font-size: 13px; color: #495057; border-top: 1px solid #e9ecef; }
+        .is-subtotal .name { grid-column: 1 / 3; text-align: right; padding-right: 10px; }
+        .is-subtotal .amounts { display: contents; }
+        .is-subtotal .amounts span { text-align: left; direction: ltr; font-family: monospace; padding-left: 5px; }
+        
+        .double-underline { border-bottom: 3px double #000 !important; margin-bottom: 10px; }
+        
+        .is-total { border-radius: 8px; font-weight: 700; font-size: 15px; color: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.1); margin-top: 10px; }
+        .is-total .name { grid-column: 1 / 3; text-align: right; padding-right: 10px; }
+        .is-total .amounts { display: contents; }
+        .is-total .amounts span { text-align: left; direction: ltr; font-family: monospace; padding-left: 5px; }
+        .is-total.profit { background: linear-gradient(135deg, #10b981, #059669); }
+        .is-total.loss { background: linear-gradient(135deg, #ef4444, #dc2626); }
+        
     </style>
 </head>
 <body>
-<div class="container-fluid">
-    <div class="report-card">
-        <div class="d-flex justify-content-between align-items-center mb-3">
-            <h4><i class="bi bi-bar-chart-line text-primary"></i> قائمة الدخل — وفق IFRS 18</h4>
-            <a href="index.html" class="btn btn-sm btn-outline-secondary"><i class="bi bi-house"></i> الرئيسية</a>
-        </div>
-        
-        <div class="row mb-3">
-            <div class="col-md-2">
-                <label>من تاريخ</label>
-                <input type="date" id="fromDate" class="form-control form-control-sm">
+    <div class="page-header">
+        <h2 class="page-title"><i class="bi bi-bar-chart-line"></i> قائمة الدخل — وفق IFRS 18</h2>
+        <div class="filter-group">
+            <div class="d-flex align-items-center gap-2">
+                <label class="text-muted" style="white-space: nowrap;">من تاريخ:</label>
+                <input type="date" id="fromDate" class="form-control form-control-custom" style="width: 150px;">
             </div>
-            <div class="col-md-2">
-                <label>إلى تاريخ</label>
-                <input type="date" id="toDate" class="form-control form-control-sm">
+            <div class="d-flex align-items-center gap-2">
+                <label class="text-muted" style="white-space: nowrap;">إلى تاريخ:</label>
+                <input type="date" id="toDate" class="form-control form-control-custom" style="width: 150px;">
             </div>
-            <div class="col-md-2">
-                <label>مستوى العرض</label>
-                <select id="f-level" class="form-select form-select-sm" onchange="loadReport()">
-                    <option value="1">المستوى الأول</option>
-                    <option value="2">المستوى الثاني</option>
-                    <option value="3" selected>المستوى الثالث</option>
-                    <option value="99">كل المستويات</option>
-                </select>
+            <select id="f-level" class="form-control form-control-custom" style="width: 130px;" onchange="loadReport()">
+                <option value="1">المستوى الأول</option>
+                <option value="2">المستوى الثاني</option>
+                <option value="3" selected>المستوى الثالث</option>
+                <option value="99">كل المستويات</option>
+            </select>
+            <div class="form-check form-switch d-flex align-items-center gap-2 mb-0" style="padding-right: 20px;">
+                <input class="form-check-input" type="checkbox" id="f-hide-zero" checked onchange="loadReport()" style="cursor: pointer;">
+                <label class="form-check-label text-muted" for="f-hide-zero" style="cursor: pointer; white-space: nowrap; font-size: 14px;">إخفاء الأصفار</label>
             </div>
-            <div class="col-md-2 d-flex align-items-end">
-                <div class="form-check form-switch mb-1" style="padding-right: 25px;">
-                    <input class="form-check-input" type="checkbox" id="f-hide-zero" checked onchange="loadReport()" style="cursor: pointer;">
-                    <label class="form-check-label text-muted" for="f-hide-zero" style="cursor: pointer; white-space: nowrap; font-size: 12px;">إخفاء الأصفار</label>
-                </div>
-            </div>
-            <div class="col-md-2 d-flex align-items-end">
-                <button class="btn btn-primary btn-sm w-100" onclick="loadReport()"><i class="bi bi-search"></i> عرض</button>
-            </div>
-        </div>
-
-        <div id="report-content">
-            <div class="text-center p-5">جاري التحميل...</div>
+            <button class="btn btn-custom" onclick="loadReport()"><i class="bi bi-search"></i> عرض</button>
+            <a href="reports.html" class="btn btn-outline-secondary" style="border-radius: 8px;"><i class="bi bi-arrow-right"></i> الرجوع للتقارير</a>
         </div>
     </div>
-</div>
-<script>
-const API = '/api/v1';
 
-function getNumLevel(lvl) {
-    if (typeof lvl === 'number') return lvl;
-    if (typeof lvl === 'string') return parseInt(String(lvl).replace('L', '')) || 1;
-    return 1;
-}
+    <div id="report-content">
+        <div class="text-center py-5 text-muted"><i class="bi bi-arrow-clockwise fs-1"></i><p class="mt-2">جاري تحميل البيانات...</p></div>
+    </div>
 
-async function loadReport() {
-    const from = document.getElementById('fromDate').value;
-    const to = document.getElementById('toDate').value;
-    const level = document.getElementById('f-level').value;
-    const hideZero = document.getElementById('f-hide-zero').checked;
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const API = '/api/v1';
 
-    if (from && to && from > to) {
-        document.getElementById('report-content').innerHTML = 
-            '<div class="alert alert-danger text-center mt-3"><i class="bi bi-exclamation-triangle"></i> خطأ: تاريخ البداية يجب أن يكون قبل تاريخ النهاية.</div>';
-        return;
-    }
-    
-    const qs = new URLSearchParams();
-    if (from) qs.append('from_date', from);
-    if (to) qs.append('to_date', to);
-    
-    const content = document.getElementById('report-content');
-    content.innerHTML = '<div class="text-center p-5">جاري التحميل...</div>';
-
-    try {
-        const res = await fetch(`${API}/reports/income-statement?${qs.toString()}`).then(r => r.json());
-        if (!res.success) { content.innerHTML = `<div class="alert alert-danger">${res.message}</div>`; return; }
-        const allData = res.data;
-
-        let compareData = [];
-        try {
-            let compareFrom = '', compareTo = '';
-            if (from) {
-                const d = new Date(from);
-                d.setFullYear(d.getFullYear() - 1);
-                compareFrom = d.toISOString().split('T')[0];
-            }
-            if (to) {
-                const d = new Date(to);
-                d.setFullYear(d.getFullYear() - 1);
-                compareTo = d.toISOString().split('T')[0];
-            }
-
-            if (!(compareFrom && compareTo && compareFrom > compareTo)) {
-                const qsCompare = new URLSearchParams();
-                if (compareFrom) qsCompare.append('from_date', compareFrom);
-                if (compareTo) qsCompare.append('to_date', compareTo);
-                const resCompare = await fetch(`${API}/reports/income-statement?${qsCompare.toString()}`).then(r => r.json());
-                if (resCompare.success) compareData = resCompare.data;
-            }
-        } catch (e) { console.log('لا توجد بيانات مقارنة'); }
-
-        const fmt = (v) => (Number(v) || 0).toLocaleString('en-US', {minimumFractionDigits:2});
-        
-        let isCompareDataSameAsCurrent = false;
-        if (compareData && compareData.length > 0 && allData && allData.length > 0) {
-            const firstCurrent = allData[0];
-            const firstCompare = compareData[0];
-            if (firstCurrent && firstCompare && 
-                firstCurrent.code === firstCompare.code && 
-                Math.abs((firstCurrent.closing_balance || 0) - (firstCompare.closing_balance || 0)) < 0.01) {
-                isCompareDataSameAsCurrent = true;
-            }
+        function getNumLevel(lvl) {
+            if (typeof lvl === 'number') return lvl;
+            if (typeof lvl === 'string') return parseInt(String(lvl).replace('L', '')) || 1;
+            return 1;
         }
 
-        const getCompareBalance = (code) => {
-            if (isCompareDataSameAsCurrent) return 0;
-            if (!compareData || compareData.length === 0) return 0;
-            const item = compareData.find(d => d.code === code);
-            return item ? (Math.abs(item.closing_balance) || 0) : 0;
-        };
+        function renderVariance(current, compare) {
+            const variance = current - compare;
+            if (Math.abs(variance) < 0.01) return `<span class="is-amount variance text-muted">0.00</span>`;
+            
+            const isIncrease = variance > 0;
+            const colorClass = isIncrease ? 'text-increase' : 'text-decrease';
+            const sign = isIncrease ? '+' : '';
+            const fmt = (v) => (Number(v) || 0).toLocaleString('en-US', {minimumFractionDigits:2});
+            
+            return `<span class="is-amount variance ${colorClass}">${sign}${fmt(variance)}</span>`;
+        }
 
-        // 1. تحديد الحسابات الفرعية (Leaf Accounts) فقط
-        // بنشوف كل كود، لو مش موجود كبداية لكود تاني، يبقى ده حساب فرعي (مفيهوش تفريعات)
-        const allCodes = new Set(allData.map(item => item.code));
-        const isLeaf = (code) => {
-            for (let c of allCodes) {
-                if (c !== code && c.startsWith(code) && c.length > code.length) {
-                    return false;
+        async function loadReport() {
+            const from = document.getElementById('fromDate').value;
+            const to = document.getElementById('toDate').value;
+            const level = document.getElementById('f-level').value;
+            const hideZero = document.getElementById('f-hide-zero').checked;
+
+            if (from && to && from > to) {
+                document.getElementById('report-content').innerHTML = 
+                    '<div class="alert alert-danger text-center mt-3"><i class="bi bi-exclamation-triangle"></i> خطأ: تاريخ البداية يجب أن يكون قبل تاريخ النهاية.</div>';
+                return;
+            }
+            
+            const qs = new URLSearchParams();
+            if (from) qs.append('from_date', from);
+            if (to) qs.append('to_date', to);
+            
+            const content = document.getElementById('report-content');
+            content.innerHTML = '<div class="text-center py-5 text-primary"><i class="bi bi-arrow-clockwise fs-1"></i><p class="mt-2">جاري التحميل...</p></div>';
+
+            try {
+                const res = await fetch(`${API}/reports/income-statement?${qs.toString()}`).then(r => r.json());
+                if (!res.success) { content.innerHTML = `<div class="alert alert-danger">${res.message}</div>`; return; }
+                const allData = res.data;
+
+                let compareData = [];
+                try {
+                    let compareFrom = '', compareTo = '';
+                    if (from) { const d = new Date(from); d.setFullYear(d.getFullYear() - 1); compareFrom = d.toISOString().split('T')[0]; }
+                    if (to) { const d = new Date(to); d.setFullYear(d.getFullYear() - 1); compareTo = d.toISOString().split('T')[0]; }
+
+                    if (!(compareFrom && compareTo && compareFrom > compareTo)) {
+                        const qsCompare = new URLSearchParams();
+                        if (compareFrom) qsCompare.append('from_date', compareFrom);
+                        if (compareTo) qsCompare.append('to_date', compareTo);
+                        const resCompare = await fetch(`${API}/reports/income-statement?${qsCompare.toString()}`).then(r => r.json());
+                        if (resCompare.success) compareData = resCompare.data;
+                    }
+                } catch (e) { console.log('لا توجد بيانات مقارنة'); }
+
+                const fmt = (v) => (Number(v) || 0).toLocaleString('en-US', {minimumFractionDigits:2});
+                
+                let isCompareDataSameAsCurrent = false;
+                if (compareData && compareData.length > 0 && allData && allData.length > 0) {
+                    const firstCurrent = allData[0];
+                    const firstCompare = compareData[0];
+                    if (firstCurrent && firstCompare && firstCurrent.code === firstCompare.code && Math.abs((firstCurrent.closing_balance || 0) - (firstCompare.closing_balance || 0)) < 0.01) {
+                        isCompareDataSameAsCurrent = true;
+                    }
                 }
-            }
-            return true;
-        };
 
-        // 2. حساب المجاميع من الحسابات الفرعية فقط لضمان عدم التكرار
-        let totalRevenue = 0, totalCost = 0, totalOpex = 0;
-        let totalFinancing = 0, totalTaxes = 0;
+                const getCompareBalance = (code) => {
+                    if (isCompareDataSameAsCurrent) return 0;
+                    if (!compareData || compareData.length === 0) return 0;
+                    const item = compareData.find(d => d.code === code);
+                    return item ? (Math.abs(item.closing_balance) || 0) : 0;
+                };
 
-        allData.forEach(item => {
-            if (!isLeaf(item.code)) return; // نتجاهل الحسابات الأب
-            const bal = Math.abs(item.closing_balance || 0);
-            if (item.code.startsWith('4')) totalRevenue += bal;
-            else if (item.code.startsWith('3')) totalCost += bal;
-            else if (item.code.startsWith('5')) totalOpex += bal;
-            else if (item.code.startsWith('6')) totalFinancing += bal;
-            else if (item.code.startsWith('7')) totalTaxes += bal;
-        });
+                const allCodes = new Set(allData.map(item => item.code));
+                const isLeaf = (code) => {
+                    for (let c of allCodes) {
+                        if (c !== code && c.startsWith(code) && c.length > code.length) return false;
+                    }
+                    return true;
+                };
 
-        const grossProfit = totalRevenue - totalCost;
-        const operatingProfit = grossProfit - totalOpex;
-        const netProfit = operatingProfit - totalFinancing - totalTaxes;
+                let totalRevenue = 0, totalCost = 0, totalOpex = 0;
+                let totalFinancing = 0, totalTaxes = 0;
 
-        // 3. حساب المجاميع لفترة المقارنة
-        let compareRevenue = 0, compareCost = 0, compareOpex = 0;
-        let compareFinancing = 0, compareTaxes = 0;
+                allData.forEach(item => {
+                    if (!isLeaf(item.code)) return;
+                    const bal = Math.abs(item.closing_balance || 0);
+                    if (item.code.startsWith('4')) totalRevenue += bal;
+                    else if (item.code.startsWith('3')) totalCost += bal;
+                    else if (item.code.startsWith('5')) totalOpex += bal;
+                    else if (item.code.startsWith('6')) totalFinancing += bal;
+                    else if (item.code.startsWith('7')) totalTaxes += bal;
+                });
 
-        if (!isCompareDataSameAsCurrent && compareData && compareData.length > 0) {
-            const compareCodes = new Set(compareData.map(item => item.code));
-            const isCompareLeaf = (code) => {
-                for (let c of compareCodes) {
-                    if (c !== code && c.startsWith(code) && c.length > code.length) return false;
+                const grossProfit = totalRevenue - totalCost;
+                const operatingProfit = grossProfit - totalOpex;
+                const netProfit = operatingProfit - totalFinancing - totalTaxes;
+
+                let compareRevenue = 0, compareCost = 0, compareOpex = 0;
+                let compareFinancing = 0, compareTaxes = 0;
+
+                if (!isCompareDataSameAsCurrent && compareData && compareData.length > 0) {
+                    const compareCodes = new Set(compareData.map(item => item.code));
+                    const isCompareLeaf = (code) => {
+                        for (let c of compareCodes) {
+                            if (c !== code && c.startsWith(code) && c.length > code.length) return false;
+                        }
+                        return true;
+                    };
+
+                    compareData.forEach(item => {
+                        if (!isCompareLeaf(item.code)) return;
+                        const bal = Math.abs(item.closing_balance || 0);
+                        if (item.code.startsWith('4')) compareRevenue += bal;
+                        else if (item.code.startsWith('3')) compareCost += bal;
+                        else if (item.code.startsWith('5')) compareOpex += bal;
+                        else if (item.code.startsWith('6')) compareFinancing += bal;
+                        else if (item.code.startsWith('7')) compareTaxes += bal;
+                    });
                 }
-                return true;
-            };
+                const compareGrossProfit = compareRevenue - compareCost;
+                const compareOperatingProfit = compareGrossProfit - compareOpex;
+                const compareNetProfit = compareOperatingProfit - compareFinancing - compareTaxes;
 
-            compareData.forEach(item => {
-                if (!isCompareLeaf(item.code)) return;
-                const bal = Math.abs(item.closing_balance || 0);
-                if (item.code.startsWith('4')) compareRevenue += bal;
-                else if (item.code.startsWith('3')) compareCost += bal;
-                else if (item.code.startsWith('5')) compareOpex += bal;
-                else if (item.code.startsWith('6')) compareFinancing += bal;
-                else if (item.code.startsWith('7')) compareTaxes += bal;
-            });
-        }
-        const compareGrossProfit = compareRevenue - compareCost;
-        const compareOperatingProfit = compareGrossProfit - compareOpex;
-        const compareNetProfit = compareOperatingProfit - compareFinancing - compareTaxes;
+                let filteredData = allData;
+                if (level !== '99') {
+                    const target = parseInt(level);
+                    filteredData = filteredData.filter(r => getNumLevel(r.level) <= target);
+                }
 
-        // 4. فلترة البيانات للعرض
-        let filteredData = allData;
-        if (level !== '99') {
-            const target = parseInt(level);
-            filteredData = filteredData.filter(r => getNumLevel(r.level) <= target);
-        }
+                if (hideZero) {
+                    filteredData = filteredData.filter(r => {
+                        const currentBal = Math.abs(r.closing_balance || 0);
+                        const compareItem = compareData ? compareData.find(d => d.code === r.code) : null;
+                        const compareBal = compareItem ? Math.abs(compareItem.closing_balance || 0) : 0;
+                        return currentBal > 0.01 || compareBal > 0.01;
+                    });
+                }
 
-        if (hideZero) {
-            filteredData = filteredData.filter(r => {
-                const currentBal = Math.abs(r.closing_balance || 0);
-                const compareItem = compareData ? compareData.find(d => d.code === r.code) : null;
-                const compareBal = compareItem ? Math.abs(compareItem.closing_balance || 0) : 0;
-                return currentBal > 0.01 || compareBal > 0.01;
-            });
-        }
+                const sections = {
+                    'operating': { name: 'قسم التشغيل (Operating)', items: [], class: 'operating', icon: 'bi-gear' },
+                    'investing': { name: 'قسم الاستثمار (Investing)', items: [], class: 'investing', icon: 'bi-graph-up-arrow' },
+                    'financing': { name: 'قسم التمويل (Financing)', items: [], class: 'financing', icon: 'bi-bank' },
+                    'taxes': { name: 'قسم الضرائب (Income Taxes)', items: [], class: 'taxes', icon: 'bi-file-earmark-text' }
+                };
+                
+                filteredData.forEach(r => {
+                    const group = r.pl_group || '';
+                    let section = 'operating';
+                    if (group === 'TAX' || r.code.startsWith('7')) section = 'taxes';
+                    else if (group === 'FIN' || r.code.startsWith('6')) section = 'financing';
+                    else if (group === 'INV' || r.code.startsWith('42')) section = 'investing';
+                    sections[section].items.push(r);
+                });
 
-        // 5. تصنيف الحسابات
-        const sections = {
-            'operating': { name: 'قسم التشغيل (Operating)', items: [] },
-            'investing': { name: 'قسم الاستثمار (Investing)', items: [] },
-            'financing': { name: 'قسم التمويل (Financing)', items: [] },
-            'taxes': { name: 'قسم الضرائب (Income Taxes)', items: [] },
-            'discontinued': { name: 'قسم العمليات المتوقفة', items: [] }
-        };
-        
-        filteredData.forEach(r => {
-            const group = r.pl_group || '';
-            let section = 'operating';
-            if (group === 'TAX' || r.code.startsWith('7')) section = 'taxes';
-            else if (group === 'FIN' || r.code.startsWith('6')) section = 'financing';
-            else if (group === 'INV' || r.code.startsWith('42')) section = 'investing';
-            else if (group === 'DISC') section = 'discontinued';
-            sections[section].items.push(r);
-        });
+                let html = '<div class="is-grid">';
+                
+                // Header Row
+                html += `<div class="is-row-header">
+                    <div class="is-code">الكود</div>
+                    <div class="is-name">البيان</div>
+                    <div class="is-amount">الفترة الحالية</div>
+                    <div class="is-amount">فترة المقارنة</div>
+                    <div class="is-amount variance">التغير</div>
+                </div>`;
 
-        let html = '';
+                const makeRows = (arr) => {
+                    if (!arr.length) return '<div class="text-muted p-3 text-center" style="font-size:13px;">لا توجد حسابات</div>';
+                    return arr.map(a => {
+                        const lvl = a.level || 1;
+                        const indent = lvl > 1 ? '&nbsp;&nbsp;&nbsp;&nbsp;'.repeat(lvl - 1) + '<i class="bi bi-arrow-return-left text-muted" style="font-size:10px; margin-left:5px;"></i> ' : '';
+                        const isParent = !isLeaf(a.code);
+                        const rowClass = isParent ? 'is-row parent-row' : 'is-row';
+                        
+                        const cBal = getCompareBalance(a.code);
+                        const effectiveBal = Math.abs(a.closing_balance || 0);
+                        const amountColor = effectiveBal < 0 ? 'text-danger' : '';
 
-        html += `<div class="cf-row-header">
-            <div class="cf-header-name">البيان</div>
-            <div class="cf-header-amount">الفترة الحالية</div>
-            <div class="cf-header-amount">فترة المقارنة</div>
-        </div>`;
+                        return `<div class="${rowClass}">
+                            <div class="is-code">${a.code}</div>
+                            <div class="is-name">${indent}${a.name}</div>
+                            <div class="is-amount ${amountColor}">${fmt(effectiveBal)}</div>
+                            <div class="is-amount compare">${fmt(cBal)}</div>
+                            ${renderVariance(effectiveBal, cBal)}
+                        </div>`;
+                    }).join('');
+                };
 
-        // قسم التشغيل
-        html += `<div class="section-title">${sections.operating.name}</div>`;
-        let revHtml = '', costHtml = '', opexHtml = '';
-        sections.operating.items.forEach(item => {
-            const compareBal = getCompareBalance(item.code);
-            const effectiveBal = Math.abs(item.closing_balance || 0);
-            const row = `
-                <div class="cf-row">
-                    <div class="cf-name">${item.code} - ${item.name}</div>
-                    <div class="cf-amount ${effectiveBal < 0 ? 'text-danger' : 'text-success'}">${fmt(effectiveBal)}</div>
-                    <div class="cf-amount-compare">${fmt(compareBal)}</div>
-                </div>
-            `;
-            if (item.code.startsWith('4')) revHtml += row;
-            else if (item.code.startsWith('3')) costHtml += row;
-            else if (item.code.startsWith('5')) opexHtml += row;
-        });
-        html += revHtml;
-        html += costHtml;
-        html += `<div class="cf-subtotal">
-            <div class="cf-subtotal-name">مجمل الربح</div>
-            <div class="cf-subtotal-amount">${fmt(grossProfit)}</div>
-            <div class="cf-subtotal-amount-compare">${fmt(compareGrossProfit)}</div>
-        </div>`;
-        html += opexHtml;
-        html += `<div class="cf-subtotal">
-            <div class="cf-subtotal-name">ربح التشغيل</div>
-            <div class="cf-subtotal-amount">${fmt(operatingProfit)}</div>
-            <div class="cf-subtotal-amount-compare">${fmt(compareOperatingProfit)}</div>
-        </div>`;
-
-        // باقي الأقسام (بنفس الطريقة)
-        const renderSection = (sec) => {
-            html += `<div class="section-title">${sec.name}</div>`;
-            if (sec.items.length === 0) {
-                html += '<div class="text-muted p-2 text-center">لا توجد بنود مسجلة</div>';
-            } else {
-                html += sec.items.map(item => {
-                    const compareBal = getCompareBalance(item.code);
+                // Operating Section
+                html += `<div class="is-section">
+                    <div class="is-section-header ${sections.operating.class}"><i class="bi ${sections.operating.icon}"></i> ${sections.operating.name}</div>`;
+                
+                let revHtml = '', costHtml = '', opexHtml = '';
+                sections.operating.items.forEach(item => {
+                    const cBal = getCompareBalance(item.code);
                     const effectiveBal = Math.abs(item.closing_balance || 0);
-                    return `
-                        <div class="cf-row">
-                            <div class="cf-name">${item.code} - ${item.name}</div>
-                            <div class="cf-amount ${effectiveBal < 0 ? 'text-danger' : 'text-success'}">${fmt(effectiveBal)}</div>
-                            <div class="cf-amount-compare">${fmt(compareBal)}</div>
+                    const isParent = !isLeaf(item.code);
+                    const rowClass = isParent ? 'is-row parent-row' : 'is-row';
+                    const amountColor = effectiveBal < 0 ? 'text-danger' : '';
+                    const lvl = item.level || 1;
+                    const indent = lvl > 1 ? '&nbsp;&nbsp;&nbsp;&nbsp;'.repeat(lvl - 1) + '<i class="bi bi-arrow-return-left text-muted" style="font-size:10px; margin-left:5px;"></i> ' : '';
+
+                    const row = `
+                        <div class="${rowClass}">
+                            <div class="is-code">${item.code}</div>
+                            <div class="is-name">${indent}${item.name}</div>
+                            <div class="is-amount ${amountColor}">${fmt(effectiveBal)}</div>
+                            <div class="is-amount compare">${fmt(cBal)}</div>
+                            ${renderVariance(effectiveBal, cBal)}
                         </div>
                     `;
-                }).join('');
+                    if (item.code.startsWith('4')) revHtml += row;
+                    else if (item.code.startsWith('3')) costHtml += row;
+                    else if (item.code.startsWith('5')) opexHtml += row;
+                });
+                
+                html += revHtml;
+                html += costHtml;
+                
+                html += `<div class="is-subtotal double-underline">
+                    <div class="name">مجمل الربح</div>
+                    <div class="amounts">
+                        <span>${fmt(grossProfit)}</span>
+                        <span class="text-muted">${fmt(compareGrossProfit)}</span>
+                        <span class="variance">${renderVariance(grossProfit, compareGrossProfit)}</span>
+                    </div>
+                </div>`;
+                
+                html += opexHtml;
+                
+                html += `<div class="is-subtotal double-underline">
+                    <div class="name">ربح التشغيل</div>
+                    <div class="amounts">
+                        <span>${fmt(operatingProfit)}</span>
+                        <span class="text-muted">${fmt(compareOperatingProfit)}</span>
+                        <span class="variance">${renderVariance(operatingProfit, compareOperatingProfit)}</span>
+                    </div>
+                </div>`;
+                
+                html += `</div>`;
+
+                // Investing, Financing, Taxes Sections
+                const renderSection = (sec) => {
+                    if (!sec.items.length && hideZero) return '';
+                    
+                    html += `<div class="is-section">
+                        <div class="is-section-header ${sec.class}"><i class="bi ${sec.icon}"></i> ${sec.name}</div>`;
+                    if (sec.items.length === 0) {
+                        html += '<div class="text-muted p-3 text-center" style="font-size:13px;">لا توجد بنود مسجلة</div>';
+                    } else {
+                        html += makeRows(sec.items);
+                    }
+                    html += `</div>`;
+                };
+
+                renderSection(sections.investing);
+                renderSection(sections.financing);
+                renderSection(sections.taxes);
+
+                // Final Total
+                const finalLabel = netProfit >= 0 ? 'صافي الربح (Profit)' : 'صافي الخسارة (Loss)';
+                const finalClass = netProfit >= 0 ? 'profit' : 'loss';
+                html += `<div class="is-total ${finalClass} double-underline" style="margin-top: 15px;">
+                    <div class="name">${finalLabel}</div>
+                    <div class="amounts">
+                        <span>${fmt(netProfit)}</span>
+                        <span style="opacity:0.8;">${fmt(compareNetProfit)}</span>
+                        <span style="color: #fff;">${renderVariance(netProfit, compareNetProfit)}</span>
+                    </div>
+                </div>`;
+
+                html += '</div>';
+
+                content.innerHTML = html;
+
+            } catch (e) {
+                console.error(e);
+                content.innerHTML = `<div class="alert alert-danger text-center">فشل تحميل البيانات: ${e.message}</div>`;
             }
+        }
+
+        window.onload = () => {
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('toDate').value = today;
+            document.getElementById('fromDate').value = new Date(new Date().getFullYear(), 0, 1).toISOString().split('T')[0];
+            loadReport();
         };
-
-        renderSection(sections.investing);
-        renderSection(sections.financing);
-        renderSection(sections.taxes);
-
-        // صافي الربح النهائي
-        const finalLabel = netProfit >= 0 ? 'صافي الربح (Profit)' : 'صافي الخسارة (Loss)';
-        const finalClass = netProfit >= 0 ? 'cf-final-total' : 'cf-final-total loss';
-        html += `<div class="${finalClass}">
-            <div style="width:400px; text-align:right;">${finalLabel}</div>
-            <div style="width:130px; text-align:left;">${fmt(netProfit)}</div>
-            <div style="width:130px; text-align:left; opacity:0.8;">${fmt(compareNetProfit)}</div>
-        </div>`;
-
-        content.innerHTML = html;
-
-    } catch (e) {
-        content.innerHTML = `<div class="alert alert-danger">حدث خطأ: ${e.message}</div>`;
-    }
-}
-
-window.onload = () => {
-    const today = new Date().toISOString().split('T')[0];
-    document.getElementById('toDate').value = today;
-    document.getElementById('fromDate').value = new Date(new Date().getFullYear(), 0, 1).toISOString().split('T')[0];
-    loadReport();
-};
-</script>
+    </script>
 </body>
 </html>

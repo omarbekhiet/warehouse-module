@@ -16,6 +16,7 @@
         .form-control-custom { border-radius: 8px; border: 1px solid #ced4da; padding: 8px 12px; font-size: 14px; }
         .btn-custom { background-color: #0d6efd; color: #fff; border-radius: 8px; padding: 8px 20px; font-weight: 600; transition: all 0.3s; border: none; }
         .btn-custom:hover { background-color: #0b5ed7; color: #fff; }
+        
         .bs-grid { display: flex; gap: 20px; align-items: flex-start; }
         .bs-column { flex: 1; display: flex; flex-direction: column; gap: 8px; }
         .bs-section { background: #fff; border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,0.04); overflow: hidden; border: 1px solid #e9ecef; margin-bottom: 8px; }
@@ -23,24 +24,36 @@
         .bs-section-header.assets { background-color: #e3f2fd; color: #0d6efd; border-right: 4px solid #0d6efd; }
         .bs-section-header.liabilities { background-color: #ffebee; color: #dc3545; border-right: 4px solid #dc3545; }
         .bs-section-header.equity { background-color: #e8f5e9; color: #198754; border-right: 4px solid #198754; }
+        
+        /* تنسيق الصفوف لإضافة عمود التغير */
         .bs-row { display: flex; padding: 5px 15px; border-bottom: 1px solid #f1f3f5; font-size: 13px; transition: background 0.2s; }
         .bs-row:last-child { border-bottom: none; }
         .bs-row:hover { background-color: #f8f9fa; }
         .bs-row.parent-row { font-weight: bold; background-color: #f8f9fa; }
-        .bs-code { width: 70px; color: #6c757d; font-size: 13px; }
+        .bs-code { width: 60px; color: #6c757d; font-size: 13px; }
         .bs-name { flex: 1; color: #212529; }
-        .bs-amount { width: 120px; text-align: left; font-weight: 600; font-family: 'Courier New', Courier, monospace; direction: ltr; }
-        .bs-subtotal { display: flex; justify-content: space-between; padding: 8px 15px; background-color: #f8f9fa; font-weight: 700; font-size: 13px; color: #495057; border-top: 1px solid #e9ecef; }
         
-        /* كلاس الخط المزدوج للإجماليات النهائية */
-        .double-underline {
-            border-bottom: 3px double #000 !important;
-            margin-bottom: 15px;
-        }
+        /* تعديل عرض الأعمدة */
+        .bs-amount { width: 100px; text-align: left; font-weight: 600; font-family: 'Courier New', Courier, monospace; direction: ltr; }
+        .bs-amount.compare { color: #6c757d; font-weight: normal; }
+        .bs-amount.variance { width: 110px; font-weight: 700; }
+        .text-increase { color: #198754; }
+        .text-decrease { color: #dc3545; }
+        
+        .bs-subtotal { display: flex; justify-content: space-between; padding: 8px 15px; background-color: #f8f9fa; font-weight: 700; font-size: 13px; color: #495057; border-top: 1px solid #e9ecef; }
+        .bs-subtotal .amounts { display: flex; gap: 20px; }
+        .bs-subtotal .amounts span { width: 100px; text-align: left; direction: ltr; font-family: monospace; }
+        .bs-subtotal .amounts .variance { width: 110px; }
+        
+        .double-underline { border-bottom: 3px double #000 !important; margin-bottom: 15px; }
         .bs-total { padding: 10px 15px; border-radius: 8px; display: flex; justify-content: space-between; font-weight: 700; font-size: 15px; color: #fff; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .bs-total .amounts { display: flex; gap: 20px; }
+        .bs-total .amounts span { width: 100px; text-align: left; direction: ltr; font-family: monospace; }
+        .bs-total .amounts .variance { width: 110px; }
         .bs-total.assets { background: linear-gradient(135deg, #0d6efd, #0b5ed7); }
         .bs-total.liabilities { background: linear-gradient(135deg, #dc3545, #b02a37); }
         .bs-total.liab_eq { background: linear-gradient(135deg, #6c757d, #495057); }
+        
         .balance-check { margin-top: 20px; padding: 20px; border-radius: 10px; text-align: center; font-weight: 700; font-size: 16px; }
         .balance-check.ok { background-color: #d1e7dd; color: #0f5132; border: 2px solid #badbcc; }
         .balance-check.bad { background-color: #f8d7da; color: #842029; border: 2px solid #f5c2c7; }
@@ -85,36 +98,57 @@
                 const asOf = document.getElementById('f-asof').value;
                 const level = document.getElementById('f-level').value;
                 
+                let compareAsOf = '';
+                if (asOf) {
+                    const d = new Date(asOf);
+                    d.setFullYear(d.getFullYear() - 1);
+                    compareAsOf = d.toISOString().split('T')[0];
+                }
+
                 const qs = new URLSearchParams();
                 if (asOf) qs.append('as_of', asOf);
-                
+
+                const qsCompare = new URLSearchParams();
+                if (compareAsOf) qsCompare.append('as_of', compareAsOf);
+
                 const url = `/api/v1/reports/financial-reports/balance-sheet?${qs.toString()}`;
-                const res = await fetch(url).then(r => {
-                    if (!r.ok) throw new Error(`HTTP ${r.status}: المسار غير موجود`);
-                    return r.json();
-                });
+                const urlCompare = `/api/v1/reports/financial-reports/balance-sheet?${qsCompare.toString()}`;
+                
+                const [res, resCompare] = await Promise.all([
+                    fetch(url).then(r => r.json()),
+                    compareAsOf ? fetch(urlCompare).then(r => r.json()) : Promise.resolve({ success: true, data: [] })
+                ]);
                 
                 if (!res.success) throw new Error(res.message || 'حدث خطأ أثناء جلب البيانات');
                 
                 const allData = res.data;
+                const compareData = resCompare.success ? resCompare.data : [];
+
                 const fmt = (v) => (Number(v) || 0).toLocaleString('en-US', {minimumFractionDigits:2, maximumFractionDigits:2});
 
-                // 1. تحديد الحسابات التي لها أبناء (لتخطيها في المجاميع)
+                const getCompareBalance = (code) => {
+                    const item = compareData.find(d => d.code === code);
+                    return item ? item.balance : 0;
+                };
+
                 const parentCodesAll = new Set();
                 allData.forEach(r => { if (r.parent_code) parentCodesAll.add(r.parent_code); });
                 
-                // 2. حساب الإجماليات بالمعادلة المحاسبية الصحيحة
                 let totalAssets = 0, totalLiab = 0, totalEq = 0, totalRevenue = 0, totalExpenses = 0;
+                let cTotalAssets = 0, cTotalLiab = 0, cTotalEq = 0, cTotalRevenue = 0, cTotalExpenses = 0;
                 
                 allData.forEach(r => {
-                    if (parentCodesAll.has(r.code)) return; // تخطي الآباء
+                    if (parentCodesAll.has(r.code)) return;
                     
-                    if (r.code.startsWith('1')) totalAssets += r.balance;
-                    else if (r.code.startsWith('2')) totalLiab += Math.abs(r.balance);
-                    else if (r.code.startsWith('8')) totalEq += Math.abs(r.balance);
-                    else if (r.code.startsWith('4')) totalRevenue += Math.abs(r.balance); // الإيرادات دائنة
+                    const cBal = getCompareBalance(r.code);
+
+                    if (r.code.startsWith('1')) { totalAssets += r.balance; cTotalAssets += cBal; }
+                    else if (r.code.startsWith('2')) { totalLiab += Math.abs(r.balance); cTotalLiab += Math.abs(cBal); }
+                    else if (r.code.startsWith('8')) { totalEq += Math.abs(r.balance); cTotalEq += Math.abs(cBal); }
+                    else if (r.code.startsWith('4')) { totalRevenue += Math.abs(r.balance); cTotalRevenue += Math.abs(cBal); }
                     else if (r.code.startsWith('3') || r.code.startsWith('5') || r.code.startsWith('6') || r.code.startsWith('7')) {
-                        totalExpenses += r.balance; // المصروفات والتكاليف مدينة
+                        totalExpenses += r.balance; 
+                        cTotalExpenses += cBal;
                     }
                 });
 
@@ -122,20 +156,21 @@
                 const adjustedEq = totalEq + netProfit;
                 const totalLiabPlusEq = totalLiab + adjustedEq;
 
-                // 3. فلترة البيانات للعرض
+                const cNetProfit = cTotalRevenue - cTotalExpenses;
+                const cAdjustedEq = cTotalEq + cNetProfit;
+                const cTotalLiabPlusEq = cTotalLiab + cAdjustedEq;
+
                 let data = allData;
                 if (level !== '99') {
                     const target = parseInt(level);
                     data = data.filter(r => (r.level || 1) <= target);
                 }
 
-                // فلترة الحسابات الصفرية إذا كان الخيار مفعلاً
                 const hideZero = document.getElementById('f-hide-zero').checked;
                 if (hideZero) {
-                    // نحتفظ بالحسابات التي لها رصيد، أو التي لها أبناء نشطون (لتجنب اختفاء الحساب الأب)
                     data = data.filter(r => {
                         if (Math.abs(r.balance) > 0.01) return true;
-                        // الاحتفاظ بالحساب الأب إذا كان أحد أبنائه موجوداً في القائمة (نبحث في البيانات الكاملة)
+                        if (Math.abs(getCompareBalance(r.code)) > 0.01) return true;
                         return allData.some(child => child.parent_code === r.code && Math.abs(child.balance) > 0.01);
                     });
                 }
@@ -143,6 +178,18 @@
                 const assets = data.filter(r => r.code.startsWith('1'));
                 const liabilities = data.filter(r => r.code.startsWith('2'));
                 const equity = data.filter(r => r.code.startsWith('8'));
+
+                // دالة لإنشاء عمود التغير
+                const renderVariance = (current, compare) => {
+                    const variance = current - compare;
+                    if (Math.abs(variance) < 0.01) return `<div class="bs-amount variance text-muted">0.00</div>`;
+                    
+                    const isIncrease = variance > 0;
+                    const colorClass = isIncrease ? 'text-increase' : 'text-decrease';
+                    const sign = isIncrease ? '+' : '';
+                    
+                    return `<div class="bs-amount variance ${colorClass}">${sign}${fmt(variance)}</div>`;
+                };
 
                 const makeRows = (arr) => {
                     if (!arr.length) return '<div class="text-muted p-3 text-center" style="font-size:13px;">لا توجد حسابات</div>';
@@ -153,28 +200,29 @@
                         const rowClass = isParent ? 'bs-row parent-row' : 'bs-row';
                         const amountColor = a.balance < 0 ? 'text-danger' : '';
                         
+                        const cBal = getCompareBalance(a.code);
+                        const cAmountColor = cBal < 0 ? 'text-danger' : '';
+
                         return `<div class="${rowClass}">
                             <div class="bs-code">${a.code}</div>
                             <div class="bs-name">${indent}${a.name}</div>
                             <div class="bs-amount ${amountColor}">${fmt(a.balance)}</div>
+                            <div class="bs-amount compare ${cAmountColor}">${fmt(cBal)}</div>
+                            ${renderVariance(a.balance, cBal)}
                         </div>`;
                     }).join('');
                 };
 
-                // دالة مساعدة لإنشاء قسم مع مجموع فرعي
-                const renderSubSection = (title, icon, items, headerClass, subTotalClass) => {
+                const renderSubSection = (title, icon, items, headerClass) => {
                     if (!items.length) return '';
                     
-                    // حساب المجموع الفرعي: نأخذ رصيد الحساب الرئيسي (الأول في القائمة) لأنه يحتوي على مجموع الأبناء
-                    // أو نجمع الحسابات التي لا يوجد لها أباء في هذه القائمة
-                    let subTotal = 0;
+                    let subTotal = 0, cSubTotal = 0;
                     const codesInSection = new Set(items.map(i => i.code));
                     
                     items.forEach(item => {
-                        // إذا كان الحساب ليس له أب داخل هذه القائمة، فهو الحساب الرئيسي لهذا القسم
-                        // أو إذا كان الحساب ليس له أباء إطلاقاً (حساب ورقي)
                         if (!item.parent_code || !codesInSection.has(item.parent_code)) {
                             subTotal += (item.balance || 0);
+                            cSubTotal += getCompareBalance(item.code);
                         }
                     });
                     
@@ -182,54 +230,58 @@
                     <div class="bs-section">
                         <div class="bs-section-header ${headerClass}"><i class="bi ${icon}"></i> ${title}</div>
                         ${makeRows(items)}
-                        <div class="bs-subtotal double-underline"><span>إجمالي ${title}</span><span>${fmt(subTotal)}</span></div>
+                        <div class="bs-subtotal double-underline">
+                            <span>إجمالي ${title}</span>
+                            <div class="amounts">
+                                <span>${fmt(subTotal)}</span>
+                                <span class="text-muted">${fmt(cSubTotal)}</span>
+                                <span class="variance">${renderVariance(subTotal, cSubTotal)}</span>
+                            </div>
+                        </div>
                     </div>`;
                 };
 
                 let html = '<div class="bs-grid">';
 
-                // ================= العمود الأيمن: الأصول =================
                 html += '<div class="bs-column">';
-                
-                // أصول غير متداولة (تبدأ بـ 11)
                 const nonCurrentAssets = assets.filter(a => a.code.startsWith('11'));
-                html += renderSubSection('الأصول غير المتداولة', 'bi-building', nonCurrentAssets, 'assets', 'assets');
+                html += renderSubSection('الأصول غير المتداولة', 'bi-building', nonCurrentAssets, 'assets');
                 
-                // أصول متداولة (تبدأ بـ 12)
                 const currentAssets = assets.filter(a => a.code.startsWith('12'));
-                html += renderSubSection('الأصول المتداولة', 'bi-cash-stack', currentAssets, 'assets', 'assets');
+                html += renderSubSection('الأصول المتداولة', 'bi-cash-stack', currentAssets, 'assets');
                 
-                // أصول أخرى (إذا وجدت ولا تبدأ بـ 11 أو 12)
                 const otherAssets = assets.filter(a => !a.code.startsWith('11') && !a.code.startsWith('12'));
-                html += renderSubSection('أصول أخرى', 'bi-box', otherAssets, 'assets', 'assets');
+                html += renderSubSection('أصول أخرى', 'bi-box', otherAssets, 'assets');
 
-                // إجمالي الأصول
-                html += `<div class="bs-total assets double-underline" >
-                    <span>إجمالي الأصول</span><span>${fmt(totalAssets)}</span>
+                html += `<div class="bs-total assets double-underline">
+                    <span>إجمالي الأصول</span>
+                    <div class="amounts">
+                        <span>${fmt(totalAssets)}</span>
+                        <span class="text-light">${fmt(cTotalAssets)}</span>
+                        ${renderVariance(totalAssets, cTotalAssets)}
+                    </div>
                 </div>`;
                 html += '</div>';
 
-                // ================= العمود الأيسر: الالتزامات + حقوق الملكية =================
                 html += '<div class="bs-column">';
-                
-                // التزامات غير متداولة (تبدأ بـ 21)
                 const nonCurrentLiab = liabilities.filter(l => l.code.startsWith('21'));
-                html += renderSubSection('الالتزامات غير المتداولة', 'bi-bank', nonCurrentLiab, 'liabilities', 'liabilities');
+                html += renderSubSection('الالتزامات غير المتداولة', 'bi-bank', nonCurrentLiab, 'liabilities');
                 
-                // التزامات متداولة (تبدأ بـ 22)
                 const currentLiab = liabilities.filter(l => l.code.startsWith('22'));
-                html += renderSubSection('الالتزامات المتداولة', 'bi-truck', currentLiab, 'liabilities', 'liabilities');
+                html += renderSubSection('الالتزامات المتداولة', 'bi-truck', currentLiab, 'liabilities');
                 
-                // التزامات أخرى
                 const otherLiab = liabilities.filter(l => !l.code.startsWith('21') && !l.code.startsWith('22'));
-                html += renderSubSection('التزامات أخرى', 'bi-files', otherLiab, 'liabilities', 'liabilities');
+                html += renderSubSection('التزامات أخرى', 'bi-files', otherLiab, 'liabilities');
 
-                // إجمالي الالتزامات
-                html += `<div class="bs-total liabilities double-underline" >
-                    <span>إجمالي الالتزامات</span><span>${fmt(totalLiab)}</span>
+                html += `<div class="bs-total liabilities double-underline">
+                    <span>إجمالي الالتزامات</span>
+                    <div class="amounts">
+                        <span>${fmt(totalLiab)}</span>
+                        <span class="text-light">${fmt(cTotalLiab)}</span>
+                        ${renderVariance(totalLiab, cTotalLiab)}
+                    </div>
                 </div>`;
                 
-                // حقوق الملكية
                 html += `<div class="bs-section" >
                     <div class="bs-section-header equity"><i class="bi bi-people"></i> حقوق الملكية</div>
                     ${makeRows(equity)}
@@ -237,29 +289,43 @@
                         <div class="bs-code"></div>
                         <div class="bs-name">صافي الربح (الإيرادات - المصروفات)</div>
                         <div class="bs-amount">${fmt(netProfit)}</div>
+                        <div class="bs-amount compare">${fmt(cNetProfit)}</div>
+                        ${renderVariance(netProfit, cNetProfit)}
                     </div>
-                    <div class="bs-subtotal double-underline"><span>إجمالي حقوق الملكية المعدلة</span><span>${fmt(adjustedEq)}</span></div>
+                    <div class="bs-subtotal double-underline">
+                        <span>إجمالي حقوق الملكية المعدلة</span>
+                        <div class="amounts">
+                            <span>${fmt(adjustedEq)}</span>
+                            <span class="text-muted">${fmt(cAdjustedEq)}</span>
+                            <span class="variance">${renderVariance(adjustedEq, cAdjustedEq)}</span>
+                        </div>
+                    </div>
                 </div>`;
                 
-                // إجمالي الخصوم + الحقوق
-                html += `<div class="bs-total liab_eq double-underline" >
-                    <span>الالتزامات + حقوق الملكية</span><span>${fmt(totalLiabPlusEq)}</span>
+                html += `<div class="bs-total liab_eq double-underline">
+                    <span>الالتزامات + حقوق الملكية</span>
+                    <div class="amounts">
+                        <span>${fmt(totalLiabPlusEq)}</span>
+                        <span class="text-light">${fmt(cTotalLiabPlusEq)}</span>
+                        ${renderVariance(totalLiabPlusEq, cTotalLiabPlusEq)}
+                    </div>
                 </div>`;
                 html += '</div>';
 
-                html += '</div>'; // نهاية bs-grid
+                html += '</div>';
 
-                // 4. فحص التوازن
                 const isBalanced = Math.abs(totalAssets - totalLiabPlusEq) < 0.01;
-                if (isBalanced) {
+                const cIsBalanced = Math.abs(cTotalAssets - cTotalLiabPlusEq) < 0.01;
+
+                if (isBalanced && cIsBalanced) {
                     html += `<div class="balance-check ok">
-                        <i class="bi bi-check-circle-fill fs-3 d-block mb-2"></i> الميزانية متوازنة
-                        <div class="diff">الأصول: ${fmt(totalAssets)} = الالتزامات + حقوق الملكية: ${fmt(totalLiabPlusEq)}</div>
+                        <i class="bi bi-check-circle-fill fs-3 d-block mb-2"></i> الميزانية متوازنة (للفترتين)
+                        <div class="diff">الفترة الحالية: ${fmt(totalAssets)} = ${fmt(totalLiabPlusEq)} | سنة المقارنة: ${fmt(cTotalAssets)} = ${fmt(cTotalLiabPlusEq)}</div>
                     </div>`;
                 } else {
                     html += `<div class="balance-check bad">
-                        <i class="bi bi-exclamation-triangle-fill fs-3 d-block mb-2"></i> الميزانية غير متوازنة
-                        <div class="diff">الفرق: ${fmt(Math.abs(totalAssets - totalLiabPlusEq))}</div>
+                        <i class="bi bi-exclamation-triangle-fill fs-3 d-block mb-2"></i> يوجد خلل في التوازن
+                        <div class="diff">فرق الفترة الحالية: ${fmt(Math.abs(totalAssets - totalLiabPlusEq))} | فرق سنة المقارنة: ${fmt(Math.abs(cTotalAssets - cTotalLiabPlusEq))}</div>
                     </div>`;
                 }
 
@@ -278,8 +344,3 @@
     </script>
 </body>
 </html>
-
-
-
-
-
